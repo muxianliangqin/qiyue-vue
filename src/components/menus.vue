@@ -20,16 +20,15 @@
             <template v-for="menu3 in menu2.children">
               <MenuItem :name="menu.element.code + '-' + menu2.element.code + '-' + menu3.element.code"
                         :key="'subMenu_' + menu3.element.code"
-                        @click.native.stop='setBreadcrumb(menu3.breadcrumbs)'
-                        :to="{path:'/news/' + menu3.element.code,query:{code:menu3.element.url}}">
+                        @click.native.stop='linkToNews(menu3)'
+                        >
                 {{menu3.element.name}}
               </MenuItem>
             </template>
           </Submenu>
           <MenuItem :name="menu.element.code + '-' + menu2.element.code"
                     :key="'subMenu_' + menu2.element.code"
-                    @click.native.stop='setBreadcrumb(menu2.breadcrumbs)'
-                    :to="{path:'/news/' + menu2.element.code,params:{code:menu2.element.url}}"
+                    @click.native.stop='linkToNews(menu2.breadcrumbs)'
                     v-else>
             {{menu2.element.name}}
           </MenuItem>
@@ -53,9 +52,17 @@ export default {
     }
   },
   methods: {
-    setBreadcrumb (breadcrumbs) {
-      this.$store.dispatch('setBreadcrumbs', breadcrumbs)
+    linkToNews (menu) {
+      this.$store.dispatch('setBreadcrumbs', menu.breadcrumbs)
+      this.$router.push({name: 'news', params: {code: menu.element.code, categoryUrl: menu.element.url}})
+    },
+    init () {
+      let initMenu = this.$store.getters.initMenu
+      this.$router.push({name: 'news', params: {code: initMenu.element.code, categoryUrl: initMenu.element.url}})
     }
+  },
+  mounted () {
+    this.init()
   },
   watch: {
     // 监听openNames值得变化，重新执行以下方法，openNames和activeMenu才会生效

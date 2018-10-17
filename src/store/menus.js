@@ -1,17 +1,21 @@
-import root from './root'
+import userHandler from './user'
+import crawlerHandler from './crawler'
 const state = {
-  menuRoot: null,
-  modules: [],
-  menus: [],
-  openNames: [],
-  activeMenu: '',
-  breadcrumbs: []
+  menuRoot: null, // 总菜单树
+  modules: [], // 模块列表
+  menus: [], // 模块下菜单列表
+  openNames: [], // 展开菜单
+  activeMenu: '', // 活动菜单
+  initMenu: null, // 初始化是news组件传的参数
+  breadcrumbs: [] // 所在位置栏
 }
 
 const actions = {
   getMenuRoot ({commit}) {
-    let menuRoot = root.getMenuRoot()
-    commit('setMenuRoot', menuRoot)
+    let userMenu = userHandler.getUserMenu()
+    let crawlerMenu = crawlerHandler.getCrawlerMenu()
+    userMenu = userHandler.completeUserMenu(userMenu, crawlerMenu)
+    commit('setMenuRoot', userMenu)
   },
   getModules ({commit, state}) {
     let modules = state.menuRoot.children
@@ -41,6 +45,7 @@ const actions = {
       }
       commit('setOpenNames', openNames)
       commit('setActiveMenu', activeMenu)
+      commit('initMenu', menu1)
       commit('setBreadcrumbs', menu1.breadcrumbs)
     }
   },
@@ -54,7 +59,8 @@ const getters = {
   menus: (state) => state.menus,
   openNames: (state) => state.openNames,
   activeMenu: (state) => state.activeMenu,
-  breadcrumbs: (state) => root.getBreadcrumbs(state.menuRoot, state.breadcrumbs)
+  breadcrumbs: (state) => userHandler.getBreadcrumbs(state.menuRoot, state.breadcrumbs),
+  initMenu: (state) => state.initMenu
 }
 
 const mutations = {
@@ -75,6 +81,9 @@ const mutations = {
   },
   setBreadcrumbs (state, breadcrumbs) {
     state.breadcrumbs = breadcrumbs
+  },
+  initMenu (state, menu) {
+    state.initMenu = menu
   }
 }
 
