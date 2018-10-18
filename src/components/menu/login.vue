@@ -1,6 +1,6 @@
 <template>
   <div :style="login">
-    <img src="../assets/logo.png">
+    <img src="../../assets/logo.png">
     <h1>Welcome aiqiyue.com</h1>
     <Form ref="formInline" :model="formInline" :rules="ruleInline" >
       <FormItem prop="username">

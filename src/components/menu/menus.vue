@@ -20,7 +20,7 @@
             <template v-for="menu3 in menu2.children">
               <MenuItem :name="menu.element.code + '-' + menu2.element.code + '-' + menu3.element.code"
                         :key="'subMenu_' + menu3.element.code"
-                        @click.native.stop='linkToNews(menu3)'
+                        @click.native.stop='linkToNext(menu3)'
                         >
                 {{menu3.element.name}}
               </MenuItem>
@@ -28,7 +28,7 @@
           </Submenu>
           <MenuItem :name="menu.element.code + '-' + menu2.element.code"
                     :key="'subMenu_' + menu2.element.code"
-                    @click.native.stop='linkToNews(menu2.breadcrumbs)'
+                    @click.native.stop='linkToNext(menu2)'
                     v-else>
             {{menu2.element.name}}
           </MenuItem>
@@ -52,13 +52,25 @@ export default {
     }
   },
   methods: {
-    linkToNews (menu) {
-      this.$store.dispatch('setBreadcrumbs', menu.breadcrumbs)
-      this.$router.push({name: 'news', params: {code: menu.element.code, categoryUrl: menu.element.url}})
+    setBreadcrumbs (breadcrumbs) {
+      this.$store.dispatch('setBreadcrumbs', breadcrumbs)
+    },
+    toComponent (menu) {
+      let re  = /^category.*/
+      let code = menu.element.code
+      let url = menu.element.url
+      let path = menu.element.url
+      if (re.test(code)) {
+        path = 'news_show'
+      }
+      this.$router.push({name: path, params: {code: code, url: url}})
+    },
+    linkToNext (menu) {
+      this.toComponent(menu)
+      this.setBreadcrumbs(menu.breadcrumbs)
     },
     init () {
-      let initMenu = this.$store.getters.initMenu
-      this.$router.push({name: 'news', params: {code: initMenu.element.code, categoryUrl: initMenu.element.url}})
+      this.toComponent(this.$store.getters.initMenu)
     }
   },
   mounted () {

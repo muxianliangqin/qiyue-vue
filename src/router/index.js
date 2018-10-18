@@ -1,9 +1,10 @@
 import Vue from 'vue'
 import Router from 'vue-router'
-import login from '../components/login'
-import index from '../components/index'
+import login from '../components/menu/login'
+import index from '../components/menu/index'
 import home from '../components/home/index'
-import news from '../components/news/index'
+import news_show from '../components/news/show/index'
+import news_set from '../components/news/set/index'
 
 Vue.use(Router)
 
@@ -20,14 +21,14 @@ const Index = {
   component: index,
   children: [
     {
-      path: '/news/:code',
-      name: 'news',
-      component: news
+      path: '/news_show/:code',
+      name: 'news_show',
+      component: news_show
     },
     {
-      path: '/webs',
-      name: 'webs',
-      component: news
+      path: '/news_set',
+      name: 'news_set',
+      component: news_set
     },
     {
       path: '/home',
@@ -35,8 +36,8 @@ const Index = {
       component: home
     },
     {
-      path: '',
-      name: '',
+      path: '/',
+      name: 'home',
       component: home
     }
   ]

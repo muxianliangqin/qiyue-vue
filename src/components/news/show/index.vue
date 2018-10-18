@@ -7,7 +7,8 @@
            :stripe="true"
            :highlight-row="true"
            size="small"
-           :height="400"></Table>
+           :height="400">
+    </Table>
     <Page :total='getTotalNum' show-sizer @on-change="pageChange" @on-page-size-change="pageSizeChange"/>
   </div>
 </template>
@@ -42,10 +43,10 @@ export default {
   },
   computed: {
     getNews () {
-      return crawlerHandler.getNews({'categoryUrl': this.$route.params.categoryUrl})
+      return crawlerHandler.getNews({'categoryUrl': this.$route.params.url})
     },
     getTotalNum () {
-      return crawlerHandler.getTotal({'categoryUrl': this.$route.params.categoryUrl})
+      return crawlerHandler.getTotal({'categoryUrl': this.$route.params.url})
     }
   },
   methods: {
