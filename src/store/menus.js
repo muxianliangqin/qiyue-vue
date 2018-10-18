@@ -21,10 +21,10 @@ const actions = {
     let modules = state.menuRoot.children
     commit('setModules', modules)
   },
-  setModuleCode ({commit, state}, moduleCode) {
+  setModuleId ({commit, state}, moduleId) {
     let menus = []
     for (let module of state.menuRoot.children) {
-      if (module.element.code === moduleCode) {
+      if (module.element.id === moduleId) {
         menus = module.children
         break
       }
@@ -32,13 +32,13 @@ const actions = {
     commit('setMenus', menus)
     if (menus.length > 0) {
       let menu1 = menus[0]
-      let openName = menu1.element.code
+      let openName = menu1.element.id
       let openNames = [openName]
-      let activeMenu = menu1.element.code
+      let activeMenu = menu1.element.id
       while (menu1.hasChild) {
-        activeMenu = activeMenu + '-' + menu1.children[0].element.code
+        activeMenu = activeMenu + '-' + menu1.children[0].element.id
         if (menu1.height > 2) {
-          openName = openName + '-' + menu1.children[0].element.code
+          openName = openName + '-' + menu1.children[0].element.id
           openNames.push(openName)
         }
         menu1 = menu1.children[0]

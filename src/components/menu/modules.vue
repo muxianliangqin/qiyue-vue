@@ -4,9 +4,9 @@
       <div class="layout-logo"></div>
       <div class="layout-nav">
         <template v-for="module in getModules">
-          <MenuItem :name="module['element'].code" :key="'module_'+ module['element'].code" @click.native="setModuleCode(module['element'].code)">
-            <Icon type="ios-navigate" :key="'icon_'+ module['element'].code"></Icon>
-            {{module['element'].name}}
+          <MenuItem :name="module.element.id" :key="'module_'+ module.element.id" @click.native="setModuleId(module.element.id)">
+            <Icon type="ios-navigate" :key="'icon_'+ module.element.id"></Icon>
+            {{module.element.name}}
           </MenuItem>
         </template>
       </div>
@@ -23,15 +23,15 @@ export default {
   computed: {
     getModules () {
       let modules = this.$store.getters.modules
-      this.$store.dispatch('setModuleCode', modules[0]['element'].code)
+      this.$store.dispatch('setModuleId', modules[0]['element'].id)
       return modules
     }
   },
   methods: {
-    setModuleCode (moduleCode) {
+    setModuleId (moduleId) {
       // @click.native 组件绑定原生事件
-      this.$store.dispatch('setModuleCode', moduleCode)
-      this.$router.push({path: '/news', query: {code: this.$store.getters.menus[0].children[0].element.code}})
+      this.$store.dispatch('setModuleId', moduleId)
+      this.$router.push({path: '/news', query: {id: this.$store.getters.menus[0].children[0].element.id}})
     }
   }
 }

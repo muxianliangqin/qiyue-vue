@@ -1,8 +1,11 @@
 <template>
   <div>
     <Collapse v-model="value1" accordion>
-      <template v-for="web of getWebs.children">
-        <Panel :name="web.element.code" style="text-align: left;">
+      <template v-for="web of data">
+        <Panel :name="web.element.id"
+               style="text-align: left;"
+               :key="web.element.id"
+               >
           {{web.element.name}}
           <div slot="content">
             <Table :border="true"
@@ -11,7 +14,8 @@
                    :show-header="true"
                    :stripe="true"
                    :highlight-row="true"
-                   size="small">
+                   size="small"
+            >
             </Table>
           </div>
         </Panel>
@@ -22,12 +26,14 @@
 
 <script>
 import crawlerHandler from '@/store/crawler'
+import ajax from '@/assets/util/ajax'
 export default {
-  name: "index",
+  name: 'index',
   isModifying: false,
   data () {
     return {
       value1: '1',
+      data: [],
       columns: [
         {
           type: 'index',
@@ -47,20 +53,19 @@ export default {
           title: '链接',
           key: 'url',
           render: (h, params) => {
-            var self = this
-            if (this.isModifying) {
-              return h('Input',{
-                props:{
-                  value:params.row.element.url
+            if (params.row.isModifying) {
+              return h('Input', {
+                props: {
+                  value: params.row.element.url
                 },
-                on:{
+                on: {
                   input: function (value) {
                     params.row.element.url = value
                   }
                 }
               })
             } else {
-              return h('span',params.row.element.url)
+              return h('span', params.row.element.url)
             }
           }
         },
@@ -69,20 +74,20 @@ export default {
           key: 'xpath',
           render: (h, params) => {
             let xpath = params.row.element.xpath
-            xpath = 'null' === xpath?'':xpath
-            if (this.isModifying) {
-              return h('Input',{
-                props:{
-                  value:xpath
+            xpath = xpath === 'null' ? '' : xpath
+            if (params.row.isModifying) {
+              return h('Input', {
+                props: {
+                  value: xpath
                 },
-                on:{
+                on: {
                   input: function (value) {
                     params.row.element.xpath = xpath
                   }
                 }
               })
             } else {
-              return h('span',xpath)
+              return h('span', xpath)
             }
           }
         },
@@ -90,9 +95,9 @@ export default {
           title: '操作',
           width: 150,
           render: (h, params) => {
-            let self = this
-            return h('div',[
-              h('Button', {
+            let buttons = []
+            if (params.row.isModifying) {
+              let saveButton = h('Button', {
                 props: {
                   type: 'primary',
                   size: 'small'
@@ -102,51 +107,74 @@ export default {
                 },
                 nativeOn: {
                   click: () => {
-                    self.beModifying(true)
-                    // self.$emit('modify',true)
+                    this.doneModified(params.row)
                   }
                 }
-              }, 'modify'),
-              h('Button', {
+              }, '保存')
+              buttons.push(saveButton)
+            } else {
+              let modifyButton = h('Button', {
                 props: {
-                  type: 'error',
+                  type: 'primary',
                   size: 'small'
                 },
                 style: {
                   marginRight: '5px'
                 },
-                on: {
+                nativeOn: {
                   click: () => {
-                    // this.show(params.index)
+                    this.beModifying(params.row)
                   }
                 }
-              }, 'delete')
-            ])
+              }, '修改')
+              buttons.push(modifyButton)
+            }
+            let deleteButton = h('Button', {
+              props: {
+                type: 'error',
+                size: 'small'
+              },
+              style: {
+                marginRight: '5px'
+              },
+              on: {
+                click: () => {
+                  this.delete(params.row)
+                }
+              }
+            }, '删除')
+            buttons.push(deleteButton)
+            return h('div', buttons)
           }
         }
       ]
     }
   },
   computed: {
-    getWebs () {
-      let webs = crawlerHandler.getCrawlerMenu()
-      return webs
-    }
   },
   methods: {
-    beModifying (value) {
-      if (value) {
-        this.isModifying = value
-        return value
-      } else {
-        return this.isModifying
+    beModifying (row) {
+      this.$set(row, 'isModifying', true)
+    },
+    doneModified (row) {
+      this.$set(row, 'isModifying', false)
+    },
+    delete (row) {
+      if (confirm('确定删除此类别吗?')) {
+        let url = '/crawler/deleteCategory'
+        let params = {'categoryCode': row.element.id}
+        let result = ajax.ajax(url, params)
+        if (result === 1) {
+          alert('删除成功')
+          this.data = crawlerHandler.getCrawlerMenu().children
+        } else {
+          alert('删除失败')
+        }
       }
-      // let beModifying = this.isModifying
-      // this.$on('modify',function (value) {
-      //   beModifying = value
-      // })
-      // return beModifying
     }
+  },
+  mounted: function () {
+    this.data = crawlerHandler.getCrawlerMenu().children
   }
 }
 </script>

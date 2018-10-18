@@ -3,8 +3,8 @@ import Router from 'vue-router'
 import login from '../components/menu/login'
 import index from '../components/menu/index'
 import home from '../components/home/index'
-import news_show from '../components/news/show/index'
-import news_set from '../components/news/set/index'
+import newsShow from '../components/news/show/index'
+import newSet from '../components/news/set/index'
 
 Vue.use(Router)
 
@@ -21,14 +21,14 @@ const Index = {
   component: index,
   children: [
     {
-      path: '/news_show/:code',
+      path: '/news_show/:id',
       name: 'news_show',
-      component: news_show
+      component: newsShow
     },
     {
       path: '/news_set',
       name: 'news_set',
-      component: news_set
+      component: newSet
     },
     {
       path: '/home',

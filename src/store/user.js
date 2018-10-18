@@ -24,9 +24,9 @@ function getUserMenu () {
 }
 function completeUserMenu (userMenu, crawlerMenu) {
   for (let module of userMenu.children) {
-    if (module.element.code === 'n001') {
+    if (module.element.id === 'n001') {
       for (let menu of module.children) {
-        if (menu.element.code === 'n002') {
+        if (menu.element.id === 'n002') {
           addBreadcrumbs(crawlerMenu, menu.breadcrumbs)
           menu.children = crawlerMenu.children
           menu.hasChild = true
@@ -38,20 +38,20 @@ function completeUserMenu (userMenu, crawlerMenu) {
   }
   return userMenu
 }
-function getBreadcrumbs (menuRoot, breadcrumbCodes) {
+function getBreadcrumbs (menuRoot, breadcrumbs) {
   let index = 0
   let items = menuRoot.children
-  while (index < breadcrumbCodes.length) {
+  while (index < breadcrumbs.length) {
     for (let item of items) {
-      if (breadcrumbCodes[index] === item.element.code) {
-        breadcrumbCodes[index] = item.element.name
+      if (breadcrumbs[index] === item.element.id) {
+        breadcrumbs[index] = item.element.name
         items = item.children
         break
       }
     }
     index++
   }
-  return breadcrumbCodes
+  return breadcrumbs
 }
 export default {
   // addBreadcrumbs,
