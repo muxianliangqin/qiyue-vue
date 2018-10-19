@@ -1,26 +1,8 @@
-import $ from 'jquery'
 function addBreadcrumbs (menuRoot, superBreadcrumbs) {
   for (let menu of menuRoot.children) {
     menu.breadcrumbs = superBreadcrumbs.concat(menu.breadcrumbs)
     addBreadcrumbs(menu, superBreadcrumbs)
   }
-}
-function getUserMenu () {
-  let userMenu = null
-  $.ajax({
-    type: 'post',
-    url: '/user/getMenuNode',
-    dataType: 'json',
-    async: false,
-    data: {
-      id: 1
-    }
-  }).done(function (response) {
-    userMenu = response
-  }).fail(function (response) {
-    alert('网络异常')
-  })
-  return userMenu
 }
 function completeUserMenu (userMenu, crawlerMenu) {
   for (let module of userMenu.children) {
@@ -54,8 +36,6 @@ function getBreadcrumbs (menuRoot, breadcrumbs) {
   return breadcrumbs
 }
 export default {
-  // addBreadcrumbs,
-  getUserMenu,
   completeUserMenu,
   getBreadcrumbs
 }

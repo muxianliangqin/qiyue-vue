@@ -9,16 +9,18 @@
            size="small"
            :height="400">
     </Table>
-    <Page :total='getTotalNum' show-sizer @on-change="pageChange" @on-page-size-change="pageSizeChange"/>
+    <Page :total='getTotal' show-sizer @on-change="pageChange" @on-page-size-change="pageSizeChange"/>
   </div>
 </template>
 
 <script>
-import crawlerHandler from '@/store/crawler'
+  import ajaxUtil from '@/assets/util/ajaxUtil'
 export default {
   name: 'cus_news',
   data () {
     return {
+      getNewsUrl: '/crawler/findNews',
+      totalNumUrl: '/crawler/totalNum',
       columns: [
         {
           type: 'index',
@@ -43,11 +45,13 @@ export default {
   },
   computed: {
     getNews () {
-      return crawlerHandler.getNews({'categoryUrl': this.$route.params.url})
+      let params = {'categoryUrl': this.$route.params.url}
+      return ajaxUtil.ajaxSync(this.getNewsUrl,params)
     },
-    getTotalNum () {
-      return crawlerHandler.getTotal({'categoryUrl': this.$route.params.url})
-    }
+    getTotal () {
+      let params = {'categoryUrl': this.$route.params.url}
+      return ajaxUtil.ajaxSync(this.totalNumUrl,params)
+    },
   },
   methods: {
     pageChange (page) {
@@ -57,9 +61,7 @@ export default {
       console.log(pageSize)
     }
   },
-  mounted () {
-  },
-  deactivated () {
+  mounted: function () {
   }
 }
 </script>

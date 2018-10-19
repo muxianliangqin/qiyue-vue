@@ -1,5 +1,5 @@
-import userHandler from './user'
-import crawlerHandler from './crawler'
+import ajaxUtil from '@/assets/util/ajaxUtil'
+import menuUtil from '@/assets/util/menuUtil'
 const state = {
   menuRoot: null, // 总菜单树
   modules: [], // 模块列表
@@ -12,9 +12,10 @@ const state = {
 
 const actions = {
   getMenuRoot ({commit}) {
-    let userMenu = userHandler.getUserMenu()
-    let crawlerMenu = crawlerHandler.getCrawlerMenu()
-    userMenu = userHandler.completeUserMenu(userMenu, crawlerMenu)
+    let params = {id:1}
+    let userMenu = ajaxUtil.ajaxSync('/user/getMenuNode',params)
+    let crawlerMenu = ajaxUtil.ajaxSync('/crawler/getMenuNode')
+    userMenu = menuUtil.completeUserMenu(userMenu, crawlerMenu)
     commit('setMenuRoot', userMenu)
   },
   getModules ({commit, state}) {
@@ -59,7 +60,7 @@ const getters = {
   menus: (state) => state.menus,
   openNames: (state) => state.openNames,
   activeMenu: (state) => state.activeMenu,
-  breadcrumbs: (state) => userHandler.getBreadcrumbs(state.menuRoot, state.breadcrumbs),
+  breadcrumbs: (state) => menuUtil.getBreadcrumbs(state.menuRoot, state.breadcrumbs),
   initMenu: (state) => state.initMenu
 }
 

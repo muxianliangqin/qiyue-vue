@@ -1,6 +1,6 @@
 <template>
   <div>
-    <Collapse v-model="value1" accordion>
+    <Collapse v-model="unfold" accordion>
       <template v-for="web of data">
         <Panel :name="web.element.id"
                style="text-align: left;"
@@ -25,14 +25,16 @@
 </template>
 
 <script>
-import crawlerHandler from '@/store/crawler'
-import ajax from '@/assets/util/ajax'
+import ajaxUtil from '@/assets/util/ajaxUtil'
 export default {
   name: 'index',
   isModifying: false,
   data () {
     return {
-      value1: '1',
+      deleteUrl: '/crawler/deleteCategory',
+      modifyUrl: '/crawler/ModifyCategory',
+      initUrl: '/crawler/getMenuNode',
+      unfold: '1',
       data: [],
       columns: [
         {
@@ -53,6 +55,7 @@ export default {
           title: '链接',
           key: 'url',
           render: (h, params) => {
+            let self = this
             if (params.row.isModifying) {
               return h('Input', {
                 props: {
@@ -60,7 +63,8 @@ export default {
                 },
                 on: {
                   input: function (value) {
-                    params.row.element.url = value
+                    self.$set(params.row,'url',value)
+                    // params.row.element.url = value
                   }
                 }
               })
@@ -82,7 +86,8 @@ export default {
                 },
                 on: {
                   input: function (value) {
-                    params.row.element.xpath = xpath
+                    self.$set(params.row,'xpath',value)
+                    // params.row.element.xpath = xpath
                   }
                 }
               })
@@ -107,7 +112,7 @@ export default {
                 },
                 nativeOn: {
                   click: () => {
-                    this.doneModified(params.row)
+                    this.save(params.row)
                   }
                 }
               }, '保存')
@@ -123,7 +128,7 @@ export default {
                 },
                 nativeOn: {
                   click: () => {
-                    this.beModifying(params.row)
+                    this.modify(params.row)
                   }
                 }
               }, '修改')
@@ -153,28 +158,36 @@ export default {
   computed: {
   },
   methods: {
-    beModifying (row) {
+    modify (row) {
       this.$set(row, 'isModifying', true)
     },
-    doneModified (row) {
+    save (row) {
+      ajaxUtil.ajax(this.modifyUrl, row.element).done(function (response) {
+        console.log(response)
+      }).fail(function (response) {
+        alert('网络异常')
+      })
       this.$set(row, 'isModifying', false)
     },
     delete (row) {
       if (confirm('确定删除此类别吗?')) {
-        let url = '/crawler/deleteCategory'
-        let params = {'categoryCode': row.element.id}
-        let result = ajax.ajax(url, params)
-        if (result === 1) {
-          alert('删除成功')
-          this.data = crawlerHandler.getCrawlerMenu().children
-        } else {
-          alert('删除失败')
-        }
+        let self = this
+        let params = {'categoryId': row.element.id}
+        ajaxUtil.ajax(self.deleteUrl, params).done(function (response) {
+          if (response === 1) {
+            alert('删除成功')
+            ajaxUtil.ajax(self.initUrl).done(function (response) {
+              self.data = response.children
+            })
+          } else {
+            alert('删除失败')
+          }
+        })
       }
     }
   },
   mounted: function () {
-    this.data = crawlerHandler.getCrawlerMenu().children
+    this.data = ajaxUtil.ajaxSync(this.initUrl).children
   }
 }
 </script>
