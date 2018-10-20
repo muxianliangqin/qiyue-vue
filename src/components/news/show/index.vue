@@ -9,12 +9,12 @@
            size="small"
            :height="400">
     </Table>
-    <Page :total='getTotal' show-sizer @on-change="pageChange" @on-page-size-change="pageSizeChange"/>
+    <Page :total='getTotal' :style="{margin: '20px 0'}" show-sizer @on-change="pageChange" @on-page-size-change="pageSizeChange"/>
   </div>
 </template>
 
 <script>
-  import ajaxUtil from '@/assets/util/ajaxUtil'
+import ajaxUtil from '@/assets/util/ajaxUtil'
 export default {
   name: 'cus_news',
   data () {
@@ -46,12 +46,12 @@ export default {
   computed: {
     getNews () {
       let params = {'categoryUrl': this.$route.params.url}
-      return ajaxUtil.ajaxSync(this.getNewsUrl,params)
+      return ajaxUtil.ajaxSync(this.getNewsUrl, params)
     },
     getTotal () {
       let params = {'categoryUrl': this.$route.params.url}
-      return ajaxUtil.ajaxSync(this.totalNumUrl,params)
-    },
+      return ajaxUtil.ajaxSync(this.totalNumUrl, params)
+    }
   },
   methods: {
     pageChange (page) {
