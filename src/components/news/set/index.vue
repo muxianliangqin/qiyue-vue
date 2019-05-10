@@ -48,21 +48,7 @@ export default {
           key: 'name',
           width: 100,
           render: (h, params) => {
-            let self = this
-            if (params.row.isModifying) {
-              return h('Input', {
-                props: {
-                  value: params.row.element.name
-                },
-                on: {
-                  input: function (value) {
-                    self.$set(params.row.element, 'name', value)
-                  }
-                }
-              })
-            } else {
-              return h('span', params.row.element.name)
-            }
+            return h('span', params.row.element.name)
           }
         },
         {
@@ -77,7 +63,8 @@ export default {
                 },
                 on: {
                   input: function (value) {
-                    self.$set(params.row.element, 'url', value)
+                    self.$set(params.row,'url',value)
+                    // params.row.element.url = value
                   }
                 }
               })
@@ -90,7 +77,6 @@ export default {
           title: 'xpath',
           key: 'xpath',
           render: (h, params) => {
-            let self = this
             let xpath = params.row.element.xpath
             xpath = xpath === 'null' ? '' : xpath
             if (params.row.isModifying) {
@@ -100,7 +86,8 @@ export default {
                 },
                 on: {
                   input: function (value) {
-                    self.$set(params.row.element, 'xpath', value)
+                    self.$set(params.row,'xpath',value)
+                    // params.row.element.xpath = xpath
                   }
                 }
               })
@@ -172,24 +159,14 @@ export default {
   },
   methods: {
     modify (row) {
-      let element = JSON.parse(JSON.stringify(row.element))
       this.$set(row, 'isModifying', true)
-      this.$set(row, 'element_old', element)
     },
     save (row) {
-      if (confirm('确定要保存此修改吗?')) {
-        let self = this
-        ajaxUtil.ajax(self.modifyUrl, row.element).done(function (response) {
-          alert('修改成功')
-          ajaxUtil.ajax(self.initUrl).done(function (response) {
-            self.data = response.children
-          })
-        }).fail(function (response) {
-          alert('网络异常')
-        })
-      } else {
-        this.$set(row, 'element', row.element_old)
-      }
+      ajaxUtil.ajax(this.modifyUrl, row.element).done(function (response) {
+        console.log(response)
+      }).fail(function (response) {
+        alert('网络异常')
+      })
       this.$set(row, 'isModifying', false)
     },
     delete (row) {
