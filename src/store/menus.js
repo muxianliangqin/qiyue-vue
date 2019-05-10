@@ -12,10 +12,21 @@ const state = {
 
 const actions = {
   getMenuRoot ({commit}) {
-    let params = {id:1}
-    let userMenu = ajaxUtil.ajaxSync('/user/getMenuNode',params)
-    let crawlerMenu = ajaxUtil.ajaxSync('/crawler/getMenuNode')
-    userMenu = menuUtil.completeUserMenu(userMenu, crawlerMenu)
+    let params = {id:3}
+    let userMenu = ajaxUtil.ajaxSync('/user/getMenuNode', params)
+    // 如果用户菜单出现'n002'爬虫网站列表，则从crawler获取数据
+    const crawlerId = 'n002'
+    const crawlerUrl = '/crawler/getMenuNode'
+    if (menuUtil.contain(userMenu, crawlerId)) {
+      let crawlerMenu = ajaxUtil.ajaxSync(crawlerUrl)
+      userMenu = menuUtil.addUserMenu(userMenu, crawlerId, crawlerMenu)
+    }
+    const weChatId = 'w002'
+    const weChatUrl = '/weChat/getMenuNode'
+    if (menuUtil.contain(userMenu, weChatId)) {
+      let weChatMenu = ajaxUtil.ajaxSync(weChatUrl, {userId:3})
+      userMenu = menuUtil.addUserMenu(userMenu, weChatId, weChatMenu)
+    }
     commit('setMenuRoot', userMenu)
   },
   getModules ({commit, state}) {

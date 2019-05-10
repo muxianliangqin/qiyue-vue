@@ -4,21 +4,21 @@ function addBreadcrumbs (menuRoot, superBreadcrumbs) {
     addBreadcrumbs(menu, superBreadcrumbs)
   }
 }
-function completeUserMenu (userMenu, crawlerMenu) {
-  for (let module of userMenu.children) {
-    if (module.element.id === 'n001') {
-      for (let menu of module.children) {
-        if (menu.element.id === 'n002') {
-          addBreadcrumbs(crawlerMenu, menu.breadcrumbs)
-          menu.children = crawlerMenu.children
-          menu.hasChild = true
-          menu.height = crawlerMenu.height
-          break
-        }
+function addUserMenu (rootMenu, id, newMenu) {
+  for (let item of rootMenu.children) {
+    if (item.element.id === id) {
+      addBreadcrumbs(newMenu, item.breadcrumbs)
+      item.children = newMenu.children
+      item.hasChild = true
+      item.height = newMenu.height
+      break
+    } else {
+      if (item.hasChild) {
+        addUserMenu (item, id, newMenu)
       }
     }
   }
-  return userMenu
+  return rootMenu
 }
 function getBreadcrumbs (menuRoot, breadcrumbs) {
   let index = 0
@@ -26,7 +26,20 @@ function getBreadcrumbs (menuRoot, breadcrumbs) {
   while (index < breadcrumbs.length) {
     for (let item of items) {
       if (breadcrumbs[index] === item.element.id) {
-        breadcrumbs[index] = item.element.name
+        let url = item.element.url
+        if (!url || url === 'null') {
+          url = null
+        } else {
+          if (index === 0) {
+            url = '/' + url
+          } else {
+            url = breadcrumbs[index-1].url + '/' + url
+          }
+        }
+        breadcrumbs[index] = {
+          url: url,
+          name: item.element.name
+        }
         items = item.children
         break
       }
@@ -35,7 +48,26 @@ function getBreadcrumbs (menuRoot, breadcrumbs) {
   }
   return breadcrumbs
 }
+function contain(rootMenu, node) {
+  let flag = false
+  for (let item of rootMenu.children) {
+    if (item.element.id === node) {
+      flag = true
+      break
+    }
+  }
+  if (!flag) {
+    for (let item of rootMenu.children) {
+      flag = contain(item, node)
+      if (flag) {
+        break
+      }
+    }
+  }
+  return flag
+}
 export default {
-  completeUserMenu,
+  contain,
+  addUserMenu,
   getBreadcrumbs
 }

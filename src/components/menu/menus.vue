@@ -56,14 +56,9 @@ export default {
       this.$store.dispatch('setBreadcrumbs', breadcrumbs)
     },
     toComponent (menu) {
-      let re = /^\d+$/
-      let id = menu.element.id
-      let url = menu.element.url
-      let path = menu.element.url
-      if (re.test(id)) {
-        path = 'news_show'
-      }
-      this.$router.push({name: path, params: {id: id, url: url}})
+      let path = menu.breadcrumbs[menu.breadcrumbs.length-2].url
+      path = '23'
+      this.$router.push({name: path, params: menu.element})
     },
     linkToNext (menu) {
       this.toComponent(menu)
@@ -74,7 +69,7 @@ export default {
     }
   },
   mounted () {
-    this.init()
+    // this.init()
   },
   watch: {
     // 监听openNames值得变化，重新执行以下方法，openNames和activeMenu才会生效

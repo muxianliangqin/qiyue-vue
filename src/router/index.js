@@ -5,6 +5,7 @@ import index from '../components/menu/index'
 import home from '../components/home/index'
 import newsShow from '../components/news/show/index'
 import newSet from '../components/news/set/index'
+import wcShow from '../components/wechat/show/index'
 
 Vue.use(Router)
 
@@ -29,6 +30,11 @@ const Index = {
       path: '/news_set',
       name: 'news_set',
       component: newSet
+    },
+    {
+      path: '/23/:id',
+      name: '23',
+      component: wcShow
     },
     {
       path: '/home',
