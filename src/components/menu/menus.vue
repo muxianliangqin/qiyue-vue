@@ -38,6 +38,7 @@
   </Menu>
 </template>
 <script>
+  import baseUtil from '@/assets/util/baseUtil.js'
 export default {
   name: 'cus_menus',
   computed: {
@@ -56,8 +57,7 @@ export default {
       this.$store.dispatch('setBreadcrumbs', breadcrumbs)
     },
     toComponent (menu) {
-      let path = menu.breadcrumbs[menu.breadcrumbs.length-2].url
-      path = '23'
+      let path = baseUtil.generateCompName(menu.element.xpath)
       this.$router.push({name: path, params: menu.element})
     },
     linkToNext (menu) {
@@ -69,7 +69,7 @@ export default {
     }
   },
   mounted () {
-    // this.init()
+    this.init()
   },
   watch: {
     // 监听openNames值得变化，重新执行以下方法，openNames和activeMenu才会生效

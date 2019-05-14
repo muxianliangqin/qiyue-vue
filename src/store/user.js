@@ -1,6 +1,7 @@
 import ajaxUtil from '@/assets/util/ajaxUtil'
 import menuUtil from '@/assets/util/menuUtil'
 const state = {
+  userInfo: JSON.parse(sessionStorage.getItem('userInfo'))||{}, // 用户信息
   menuRoot: null, // 总菜单树
   modules: [], // 模块列表
   menus: [], // 模块下菜单列表
@@ -11,22 +12,27 @@ const state = {
 }
 
 const actions = {
+  checkLogin ({commit}, userInfo) {
+    ajaxUtil.ajax('/user/login',userInfo).done(function (response) {
+      commit('setUserInfo', response)
+    })
+  },
   getMenuRoot ({commit}) {
-    let params = {id:3}
+    let params = {userId:3}
     let userMenu = ajaxUtil.ajaxSync('/user/getMenuNode', params)
-    // 如果用户菜单出现'n002'爬虫网站列表，则从crawler获取数据
-    const crawlerId = 'n002'
-    const crawlerUrl = '/crawler/getMenuNode'
-    if (menuUtil.contain(userMenu, crawlerId)) {
-      let crawlerMenu = ajaxUtil.ajaxSync(crawlerUrl)
-      userMenu = menuUtil.addUserMenu(userMenu, crawlerId, crawlerMenu)
-    }
-    const weChatId = 'w002'
-    const weChatUrl = '/weChat/getMenuNode'
-    if (menuUtil.contain(userMenu, weChatId)) {
-      let weChatMenu = ajaxUtil.ajaxSync(weChatUrl, {userId:3})
-      userMenu = menuUtil.addUserMenu(userMenu, weChatId, weChatMenu)
-    }
+    // // 如果用户菜单出现'n002'爬虫网站列表，则从crawler获取数据
+    // const crawlerId = 'n002'
+    // const crawlerUrl = '/crawler/getMenuNode'
+    // if (menuUtil.contain(userMenu, crawlerId)) {
+    //   let crawlerMenu = ajaxUtil.ajaxSync(crawlerUrl)
+    //   userMenu = menuUtil.addUserMenu(userMenu, crawlerId, crawlerMenu)
+    // }
+    // const weChatId = 'w002'
+    // const weChatUrl = '/weChat/getMenuNode'
+    // if (menuUtil.contain(userMenu, weChatId)) {
+    //   let weChatMenu = ajaxUtil.ajaxSync(weChatUrl, {userId:3})
+    //   userMenu = menuUtil.addUserMenu(userMenu, weChatId, weChatMenu)
+    // }
     commit('setMenuRoot', userMenu)
   },
   getModules ({commit, state}) {
@@ -34,16 +40,16 @@ const actions = {
     commit('setModules', modules)
   },
   setModuleId ({commit, state}, moduleId) {
-    let menus = []
+    let user = []
     for (let module of state.menuRoot.children) {
       if (module.element.id === moduleId) {
-        menus = module.children
+        user = module.children
         break
       }
     }
-    commit('setMenus', menus)
-    if (menus.length > 0) {
-      let menu1 = menus[0]
+    commit('setMenus', user)
+    if (user.length > 0) {
+      let menu1 = user[0]
       let openName = menu1.element.id
       let openNames = [openName]
       let activeMenu = menu1.element.id
@@ -67,6 +73,7 @@ const actions = {
 }
 
 const getters = {
+  userInfo: (state) => state.userInfo,
   modules: (state) => state.modules,
   menus: (state) => state.menus,
   openNames: (state) => state.openNames,
@@ -76,6 +83,10 @@ const getters = {
 }
 
 const mutations = {
+  setUserInfo (state, userInfo) {
+    sessionStorage.setItem('userInfo',JSON.stringify(userInfo))
+    state.userInfo = userInfo
+  },
   setMenuRoot (state, menuRoot) {
     state.menuRoot = menuRoot
   },

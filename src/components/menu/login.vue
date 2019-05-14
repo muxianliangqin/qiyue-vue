@@ -51,11 +51,18 @@ export default {
     handleSubmit (name) {
       this.$refs[name].validate((valid) => {
         if (valid) {
-          this.$Message.success('Success!')
+          this.$store.dispatch('checkLogin',this.formInline)
+          if (this.$store.getters.userInfo) {
+            this.$Message.success('Success!')
+            this.$router.push({name: 'index'})
+          } else {
+            this.$Message.error('Fail!')
+          }
         } else {
           this.$Message.error('Fail!')
         }
       })
+
     }
   }
 }

@@ -1,11 +1,8 @@
 import Vue from 'vue'
 import Router from 'vue-router'
-import login from '../components/menu/login'
-import index from '../components/menu/index'
-import home from '../components/home/index'
-import newsShow from '../components/news/show/index'
-import newSet from '../components/news/set/index'
-import wcShow from '../components/wechat/show/index'
+import login from '@/components/menu/login'
+import index from '@/components/menu/index'
+import components from '@/component.js'
 
 Vue.use(Router)
 
@@ -20,33 +17,7 @@ const Index = {
   path: '/index',
   name: 'index',
   component: index,
-  children: [
-    {
-      path: '/news_show/:id',
-      name: 'news_show',
-      component: newsShow
-    },
-    {
-      path: '/news_set',
-      name: 'news_set',
-      component: newSet
-    },
-    {
-      path: '/23/:id',
-      name: '23',
-      component: wcShow
-    },
-    {
-      path: '/home',
-      name: 'home',
-      component: home
-    },
-    {
-      path: '/',
-      name: 'home',
-      component: home
-    }
-  ]
+  children : components
 }
 
 export default new Router({
