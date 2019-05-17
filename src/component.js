@@ -19,7 +19,7 @@ requireComponent.keys().forEach(fileName => {
   // console.log(fileName)
   // 获取组件的 PascalCase 命名
   const componentName = baseUtil.generateCompName(fileName)
-  console.log(componentName)
+  // console.log(componentName)
 
   let path = '/' + componentName + '/'
   let name = componentName

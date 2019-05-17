@@ -10,21 +10,14 @@ module.exports = {
     assetsSubDirectory: 'static',
     assetsPublicPath: '/',
     proxyTable: {
-      // '/user': {
-      //   target: 'http://47.106.140.189:7001/', // 接口的域名
-      //   // secure: false,  // 如果是https接口，需要配置这个参数
-      //   changeOrigin: true, // 如果接口跨域，需要进行这个参数配置
-      //   // pathRewrite: {
-      //   //   '^/user': '/user'
-      //   // }
-      // },
       '/user': {
-        target: 'http://localhost:7010/', // 接口的域名
+        target: 'http://47.106.140.189:7001/', // 接口的域名
+        //   target: 'http://localhost:7010/', // 接口的域名
         // secure: false,  // 如果是https接口，需要配置这个参数
         changeOrigin: true, // 如果接口跨域，需要进行这个参数配置
-        pathRewrite: {
-          '^/user': ''
-        }
+        // pathRewrite: {
+        //     '^/user': ''
+        // }
       },
       '/crawler': {
         target: 'http://47.106.140.189:7001/', // 接口的域名
@@ -35,11 +28,12 @@ module.exports = {
         // }
       },
       '/weChat': {
-        target: 'http://localhost:7030/', // 接口的域名
+        target: 'http://47.106.140.189:7001/', // 接口的域名
+        // target: 'http://localhost:7030/', // 接口的域名
         // secure: false,  // 如果是https接口，需要配置这个参数
         changeOrigin: false, // 如果接口跨域，需要进行这个参数配置
         pathRewrite: {
-          '^/weChat': ''
+          // '^/weChat': ''
         }
       }
     },
@@ -82,7 +76,7 @@ module.exports = {
     // Paths
     assetsRoot: path.resolve(__dirname, '../dist'),
     assetsSubDirectory: 'static',
-    assetsPublicPath: '/',
+    assetsPublicPath: './',
 
     /**
      * Source Maps

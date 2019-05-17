@@ -6,24 +6,23 @@ import components from '@/component.js'
 
 Vue.use(Router)
 
-const Login = {
-  path: '/login',
-  name: 'login',
-  title: '登陆',
-  component: login
-}
-
-const Index = {
-  path: '/index',
-  name: 'index',
-  component: index,
-  children : components
-}
-
 export default new Router({
-  mode: 'history',
+  // mode: 'history',
   routes: [
-    Login,
-    Index
+    {
+      path: '/login',
+      name: 'login',
+      title: '登陆',
+      component: login
+    },{
+      path: '/',
+      redirect: '/login'
+    },
+    {
+      path: '/index',
+      name: 'index',
+      component: index,
+      children : components
+    }
   ]
 })
