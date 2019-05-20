@@ -1,4 +1,5 @@
 import $ from 'jquery'
+import Vue from 'vue'
 import baseUtil from '@/assets/util/baseUtil.js'
 
 const requireComponent = require.context(
@@ -7,7 +8,7 @@ const requireComponent = require.context(
   // 是否查询其子目录
   true,
   // 匹配基础组件文件名的正则表达式
-  /(\.\/)(?!home|menu).+\.(vue|js)$/
+  /(\.\/)(?!menu).+\.(vue|js)$/
 )
 
 let components = []
@@ -27,6 +28,7 @@ requireComponent.keys().forEach(fileName => {
   // if ($.inArray(componentName,suffix_id) != -1) {
   //   path = path + ':id'
   // }
+  Vue.component(name,component)
   components.push({
     path: path,
     name: name,

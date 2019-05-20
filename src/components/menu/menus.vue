@@ -58,7 +58,15 @@ export default {
     },
     toComponent (menu) {
       let path = baseUtil.generateCompName(menu.element.xpath)
-      this.$router.push({name: path, params: menu.element})
+      let param = {
+        name: path,
+        desc: menu.element.name,
+        show: true,
+        params: menu.element
+      }
+      this.$store.dispatch('setComponent',param)
+      // this.$emit('linkTo',params)
+      // this.$router.push({name: path, params: menu.element})
     },
     linkToNext (menu) {
       this.toComponent(menu)

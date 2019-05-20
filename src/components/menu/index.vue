@@ -37,9 +37,21 @@
               <cusMenu></cusMenu>
             </Sider>
             <Content :style="{padding: '0 1rem', minHeight: '280px', background: '#fff'}">
-              <keep-alive :exclude="['news']">
+              <Tabs type="card"
+                    closable
+                    @on-tab-remove="handleTabRemove">
+                <template v-for="comp in components">
+                  <TabPane :label="comp.desc"
+                           v-if="comp.show">
+                    <keep-alive>
+                      <component :is="comp.name" :params="comp.params"> </component>
+                    </keep-alive>
+                  </TabPane>
+                </template>
+              </Tabs>
+              <!--<keep-alive :exclude="['news']">
                 <router-view></router-view>
-              </keep-alive>
+              </keep-alive>-->
             </Content>
           </Layout>
         </Content>
@@ -61,8 +73,18 @@ export default {
     cusMenu,
     cusBreadcrumb
   },
+  data () {
+    return {
+      components: this.$store.getters.components
+    }
+  },
   created () {
     this.$store.dispatch('getMenuRoot')
+  },
+  methods: {
+    handleTabRemove (name) {
+      this['tab' + name] = false;
+    }
   }
 }
 </script>

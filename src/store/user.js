@@ -7,8 +7,17 @@ const state = {
   menus: [], // 模块下菜单列表
   openNames: [], // 展开菜单
   activeMenu: '', // 活动菜单
-  initMenu: null, // 初始化是news组件传的参数
-  breadcrumbs: [] // 所在位置栏
+  initMenu: null, // 初始化菜单
+  breadcrumbs: [], // 导航栏
+  components: [
+    {
+      name: 'HomeIndex',
+      desc: '主页',
+      show: true,
+      new: false,
+      params: null
+    }
+  ] //展示区域组件
 }
 
 const actions = {
@@ -17,22 +26,9 @@ const actions = {
       commit('setUserInfo', response)
     })
   },
-  getMenuRoot ({commit}) {
-    let params = {userId:3}
+  getMenuRoot ({commit,state}) {
+    let params = {userId:state.userInfo.id}
     let userMenu = ajaxUtil.ajaxSync('/user/getMenuNode', params)
-    // // 如果用户菜单出现'n002'爬虫网站列表，则从crawler获取数据
-    // const crawlerId = 'n002'
-    // const crawlerUrl = '/crawler/getMenuNode'
-    // if (menuUtil.contain(userMenu, crawlerId)) {
-    //   let crawlerMenu = ajaxUtil.ajaxSync(crawlerUrl)
-    //   userMenu = menuUtil.addUserMenu(userMenu, crawlerId, crawlerMenu)
-    // }
-    // const weChatId = 'w002'
-    // const weChatUrl = '/weChat/getMenuNode'
-    // if (menuUtil.contain(userMenu, weChatId)) {
-    //   let weChatMenu = ajaxUtil.ajaxSync(weChatUrl, {userId:3})
-    //   userMenu = menuUtil.addUserMenu(userMenu, weChatId, weChatMenu)
-    // }
     commit('setMenuRoot', userMenu)
   },
   getModules ({commit, state}) {
@@ -69,6 +65,25 @@ const actions = {
   },
   setBreadcrumbs ({commit}, breadcrumbs) {
     commit('setBreadcrumbs', breadcrumbs)
+  },
+  setComponent ({commit,state}, component) {
+    let components = state.components
+    let flag = true
+    for (let comp of components) {
+      if (comp.name === component.name) {
+        if (comp.new) {
+          commit('delComponent', comp.name)
+        } else {
+          flag = false
+        }
+      }
+    }
+    if (flag) {
+      commit('setComponent', component)
+    }
+  },
+  delComponent ({commit,state}, name) {
+    commit('delComponent', name)
   }
 }
 
@@ -79,7 +94,8 @@ const getters = {
   openNames: (state) => state.openNames,
   activeMenu: (state) => state.activeMenu,
   breadcrumbs: (state) => menuUtil.getBreadcrumbs(state.menuRoot, state.breadcrumbs),
-  initMenu: (state) => state.initMenu
+  initMenu: (state) => state.initMenu,
+  components: (state) => state.components
 }
 
 const mutations = {
@@ -107,6 +123,20 @@ const mutations = {
   },
   initMenu (state, menu) {
     state.initMenu = menu
+  },
+  setComponent (state, component) {
+    state.components.push(component)
+  },
+  delComponent (state, name) {
+    let ind = null
+    state.components.forEach(function (comp,index) {
+      if (comp.name === name) {
+        ind = index
+      }
+    })
+    if (ind) {
+      delete state.components[ind]
+    }
   }
 }
 
