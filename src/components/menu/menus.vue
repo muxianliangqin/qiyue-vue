@@ -38,7 +38,7 @@
   </Menu>
 </template>
 <script>
-  import baseUtil from '@/assets/util/baseUtil.js'
+import baseUtil from '@/assets/util/baseUtil.js'
 export default {
   name: 'cus_menus',
   computed: {
@@ -62,9 +62,10 @@ export default {
         name: path,
         desc: menu.element.name,
         show: true,
+        new: false,
         params: menu.element
       }
-      this.$store.dispatch('setComponent',param)
+      this.$store.dispatch('addComponent', param)
       // this.$emit('linkTo',params)
       // this.$router.push({name: path, params: menu.element})
     },

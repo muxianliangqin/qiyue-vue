@@ -1,15 +1,15 @@
 <template>
   <div>
     <Table :border="true"
-           :columns="record.columns"
-           :data="record.page.content"
+           :columns="columns"
+           :data="page.content"
            :show-header="true"
            :stripe="true"
            :highlight-row="true"
            size="small"
            :height="400">
     </Table>
-    <Page :total='record.page.totalElements'
+    <Page :total='page.totalElements'
           show-sizer
           @on-change="pageChange"
           @on-page-size-change="pageSizeChange"/>
@@ -24,53 +24,64 @@
     data () {
       return {
         findRecords: '/weChat/findRecords',
-        record: {
-          title: '',
-          page: {},
-          columns: [
-            {
-              title: '序号',
-              type: 'index'
-            },
-            {
-              title: '用户名',
-              key: 'nickName'
-            },
-            {
-              title: '用户群组显示名',
-              key: 'actualNickName'
-            },
-            {
-              title: '信息内容',
-              key: 'textOrFilename'
-            },
-            {
-              title: '记录时间',
-              key: 'recordTime'
-            }
-          ]
-        }
+        pageNumber: 0,
+        pageSize: 10,
+        page: {},
+        columns: [
+          {
+            title: '序号',
+            type: 'index'
+          },
+          {
+            title: '用户名',
+            key: 'nickName'
+          },
+          {
+            title: '用户群组显示名',
+            key: 'actualNickName'
+          },
+          {
+            title: '信息内容',
+            key: 'textOrFilename'
+          },
+          {
+            title: '记录时间',
+            key: 'recordTime'
+          }
+        ]
       }
+    },
+    computed: {
+
     },
     methods: {
       init: function () {
         let self = this
-        let groupNickName = self.params
-        self.record.title = groupNickName
-        let param = {'groupNickName': groupNickName}
+        let param = {
+          groupNickName: self.params,
+          page: this.pageNumber,
+          size: this.pageSize
+        }
         ajaxUtil.ajax(self.findRecords, param).done(function (response) {
-          self.record.page = response
+          self.page = response
         })
       },
       pageChange (page) {
-        console.log(page)
+        this.pageNumber = page -1
+        this.init()
       },
       pageSizeChange (pageSize) {
-        console.log(pageSize)
+        this.pageSize = pageSize
+        this.init()
       }
     },
     mounted () {
       this.init()
+    },
+    watch: {
+      'params': function () {
+        this.init()
+      }
     }
   }
 </script>

@@ -9,15 +9,18 @@ const state = {
   activeMenu: '', // 活动菜单
   initMenu: null, // 初始化菜单
   breadcrumbs: [], // 导航栏
-  components: [
-    {
-      name: 'HomeIndex',
-      desc: '主页',
-      show: true,
-      new: false,
-      params: null
-    }
-  ] //展示区域组件
+  tabs: {
+    active: 'HomeIndex',
+    components: [
+      {
+        name: 'HomeIndex',
+        desc: '主页',
+        show: true,
+        new: false,
+        params: null
+      }
+    ]
+  } //展示区域组件
 }
 
 const actions = {
@@ -66,8 +69,8 @@ const actions = {
   setBreadcrumbs ({commit}, breadcrumbs) {
     commit('setBreadcrumbs', breadcrumbs)
   },
-  setComponent ({commit,state}, component) {
-    let components = state.components
+  addComponent ({commit,state}, component) {
+    let components = state.tabs.components
     let flag = true
     for (let comp of components) {
       if (comp.name === component.name) {
@@ -79,7 +82,7 @@ const actions = {
       }
     }
     if (flag) {
-      commit('setComponent', component)
+      commit('addComponent', component)
     }
   },
   delComponent ({commit,state}, name) {
@@ -95,7 +98,7 @@ const getters = {
   activeMenu: (state) => state.activeMenu,
   breadcrumbs: (state) => menuUtil.getBreadcrumbs(state.menuRoot, state.breadcrumbs),
   initMenu: (state) => state.initMenu,
-  components: (state) => state.components
+  tabs: (state) => state.tabs
 }
 
 const mutations = {
@@ -124,19 +127,15 @@ const mutations = {
   initMenu (state, menu) {
     state.initMenu = menu
   },
-  setComponent (state, component) {
-    state.components.push(component)
+  addComponent (state, component) {
+    state.tabs.active = component.name
+    state.tabs.components.push(component)
   },
   delComponent (state, name) {
-    let ind = null
-    state.components.forEach(function (comp,index) {
-      if (comp.name === name) {
-        ind = index
-      }
+    state.tabs.components = state.tabs.components.filter(function (value) {
+      return value.name !== name
     })
-    if (ind) {
-      delete state.components[ind]
-    }
+    state.tabs.active = state.tabs.components[state.tabs.components.length-1].name
   }
 }
 

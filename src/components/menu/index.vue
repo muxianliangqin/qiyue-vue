@@ -31,32 +31,36 @@
       <cusModule></cusModule>
       <Layout :style="{padding: '0 50px'}">
         <cusBreadcrumb></cusBreadcrumb>
-        <Content :style="{padding: '0px 0', minHeight: '280px', background: '#fff'}">
+        <Content :style="{padding: '0px 0', minHeight: '260px', background: '#fff'}">
           <Layout>
             <Sider hide-trigger :style="{background: '#fff'}">
               <cusMenu></cusMenu>
             </Sider>
-            <Content :style="{padding: '0 1rem', minHeight: '280px', background: '#fff'}">
+            <Content :style="{padding: '0 .5rem', minHeight: '260px', background: '#fff'}">
+              <!--
+              此处不能使用v-model双向绑定，因为store的值不允许在除了mutation的地方修改
+              error:Do not mutate vuex store state outside mutation handlers.
+              -->
               <Tabs type="card"
                     closable
+                    :value="getTabs.active"
                     @on-tab-remove="handleTabRemove">
-                <template v-for="comp in components">
+                <template v-for="comp in getTabs.components">
                   <TabPane :label="comp.desc"
-                           v-if="comp.show">
+                           v-if="comp.show"
+                           :key="comp.name"
+                           :name="comp.name">
                     <keep-alive>
                       <component :is="comp.name" :params="comp.params"> </component>
                     </keep-alive>
                   </TabPane>
                 </template>
               </Tabs>
-              <!--<keep-alive :exclude="['news']">
-                <router-view></router-view>
-              </keep-alive>-->
             </Content>
           </Layout>
         </Content>
       </Layout>
-      <Footer class="layout-footer-center">2011-2016 &copy; TalkingData</Footer>
+      <Footer class="layout-footer-center">2019 &copy; AI-qiyue</Footer>
     </Layout>
   </div>
 </template>
@@ -75,7 +79,11 @@ export default {
   },
   data () {
     return {
-      components: this.$store.getters.components
+    }
+  },
+  computed: {
+    getTabs: function () {
+      return this.$store.getters.tabs
     }
   },
   created () {
@@ -83,7 +91,8 @@ export default {
   },
   methods: {
     handleTabRemove (name) {
-      this['tab' + name] = false;
+      // debugger
+      this.$store.dispatch('delComponent', name)
     }
   }
 }
