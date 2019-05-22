@@ -43,9 +43,9 @@
               -->
               <Tabs type="card"
                     closable
-                    :value="getTabs.active"
+                    v-model="getActive"
                     @on-tab-remove="handleTabRemove">
-                <template v-for="comp in getTabs.components">
+                <template v-for="comp in getComponents">
                   <TabPane :label="comp.desc"
                            v-if="comp.show"
                            :key="comp.name"
@@ -82,8 +82,16 @@ export default {
     }
   },
   computed: {
-    getTabs: function () {
-      return this.$store.getters.tabs
+    getComponents: function () {
+      return this.$store.getters.tabs.components
+    },
+    getActive: {
+      get () {
+        return this.$store.getters.tabs.active
+      },
+      set (value) {
+        this.$store.dispatch('setTabsActive', value)
+      }
     }
   },
   created () {
@@ -91,9 +99,10 @@ export default {
   },
   methods: {
     handleTabRemove (name) {
-      // debugger
       this.$store.dispatch('delComponent', name)
     }
+  },
+  watch: {
   }
 }
 </script>

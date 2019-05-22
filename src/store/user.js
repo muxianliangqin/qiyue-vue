@@ -75,10 +75,9 @@ const actions = {
     for (let comp of components) {
       if (comp.name === component.name) {
         if (comp.new) {
-          commit('delComponent', comp.name)
-        } else {
-          flag = false
+          commit('updateComponent', component)
         }
+        flag = false
       }
     }
     if (flag) {
@@ -87,6 +86,9 @@ const actions = {
   },
   delComponent ({commit,state}, name) {
     commit('delComponent', name)
+  },
+  setTabsActive ({commit,state}, active) {
+    commit('setTabsActive', active)
   }
 }
 
@@ -131,11 +133,22 @@ const mutations = {
     state.tabs.active = component.name
     state.tabs.components.push(component)
   },
+  updateComponent (state, component) {
+    state.tabs.components.forEach(function (value,index,array) {
+      if (value.name === component.name) {
+        array[index] = component
+        state.tabs.active = component.name
+      }
+    })
+  },
   delComponent (state, name) {
     state.tabs.components = state.tabs.components.filter(function (value) {
       return value.name !== name
     })
     state.tabs.active = state.tabs.components[state.tabs.components.length-1].name
+  },
+  setTabsActive (state, active) {
+    state.tabs.active = active
   }
 }
 
