@@ -26,10 +26,8 @@
 
 <script>
   import ajaxUtil from '@/assets/util/ajaxUtil'
-  import Cell from "iview/src/components/cell/cell";
   export default {
-    name: 'cus_news',
-    components: {Cell},
+    name: 'weChatShow',
     props: ['params'],
     data () {
       return {

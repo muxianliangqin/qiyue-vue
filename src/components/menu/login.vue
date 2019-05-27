@@ -20,6 +20,7 @@
   </div>
 </template>
 <script>
+import ajaxUtil from '@/assets/util/ajaxUtil'
 export default {
   data () {
     return {
@@ -50,16 +51,19 @@ export default {
   methods: {
     handleSubmit (name) {
       this.$refs[name].validate((valid) => {
+        let self = this
         if (valid) {
-          this.$store.dispatch('checkLogin',this.formInline)
-          if (this.$store.getters.userInfo) {
-            this.$Message.success('Success!')
-            this.$router.push({name: 'index'})
-          } else {
-            this.$Message.error('Fail!')
-          }
+          ajaxUtil.ajax('/user/login',self.formInline).done(function (response) {
+            if (response.errorCode === '0000') {
+              self.$Message.success('Success!')
+              self.$store.dispatch('setUserInfo',response.userInfo)
+              self.$router.push({name: 'index'})
+            } else {
+              self.$Message.error('Fail!')
+            }
+          })
         } else {
-          this.$Message.error('Fail!')
+          self.$Message.error('Fail!')
         }
       })
 

@@ -24,10 +24,8 @@ const state = {
 }
 
 const actions = {
-  checkLogin ({commit}, userInfo) {
-    ajaxUtil.ajax('/user/login',userInfo).done(function (response) {
-      commit('setUserInfo', response)
-    })
+  setUserInfo ({commit}, userInfo) {
+    commit('setUserInfo', userInfo)
   },
   getMenuRoot ({commit,state}) {
     let params = {userId:state.userInfo.id}
