@@ -141,18 +141,6 @@ export default {
                 }
               }
             }, '修改')
-            let add = h('Button', {
-              attrs: {
-                type: 'primary',
-                size: 'small',
-                style: 'margin-right: 2em;'
-              },
-              on: {
-                click: function () {
-                  self.modal.add.show = true
-                }
-              }
-            }, '新增')
             let del = h('Button', {
               attrs: {
                 type: 'primary',
@@ -164,7 +152,7 @@ export default {
                 }
               }
             }, '删除')
-            return [modify, add, del]
+            return [modify, del]
           }
         }
       ]

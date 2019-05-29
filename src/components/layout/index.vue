@@ -172,8 +172,8 @@ export default {
       let params = {userId: this.$store.getters.userInfo.id}
       let menuNode = ajaxUtil.ajaxSync('/user/getMenuNode', params)
       this.layout.root = menuNode
-      this.initModule ()
-      this.initSide ()
+      this.initModule()
+      this.initSide()
     },
     initModule () {
       let moduleMenus = this.layout.root.children

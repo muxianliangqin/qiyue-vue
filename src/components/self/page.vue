@@ -10,6 +10,7 @@
            :highlight-row="true"
            :ref="ref.table"
            :height="tableHeight"
+           :style="{border: 'none'}"
            size="small">
     </Table>
     <Page :total='page.totalElements'
@@ -82,6 +83,8 @@
     },
     watch: {
       '$attrs.params': function () {
+        this.pageNumber = 0
+        this.pageSize = 10
         this.init()
       }
     }
