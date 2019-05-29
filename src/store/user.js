@@ -1,8 +1,9 @@
 const state = {
-  userInfo: JSON.parse(sessionStorage.getItem('userInfo'))||{},// 用户信息
-  tabs: {                 // 内容展示标签区
-    active: 'HomeWelcome',
-    components: [         // 展示区域组件
+  userInfo: JSON.parse(sessionStorage.getItem('userInfo'))||{}, // 用户信息
+  tabs: {                   // 内容展示标签区
+    height: 300,            // 标签区的高度
+    active: 'HomeWelcome',  // 活动标签
+    components: [           // 展示区域组件
       {
         name: 'HomeWelcome',
         desc: '主页',
@@ -33,11 +34,14 @@ const actions = {
       commit('addComponent', component)
     }
   },
-  delComponent ({commit,state}, name) {
+  delComponent ({commit}, name) {
     commit('delComponent', name)
   },
-  setTabsActive ({commit,state}, active) {
+  setTabsActive ({commit}, active) {
     commit('setTabsActive', active)
+  },
+  setTabsHeight ({commit}, height) {
+    commit('setTabsHeight', height)
   }
 }
 
@@ -71,6 +75,9 @@ const mutations = {
   },
   setTabsActive (state, active) {
     state.tabs.active = active
+  },
+  setTabsHeight (state, height) {
+    state.tabs.height = height
   }
 }
 

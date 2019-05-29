@@ -14,7 +14,7 @@ function addUserMenu (rootMenu, id, newMenu) {
       break
     } else {
       if (item.hasChild) {
-        addUserMenu (item, id, newMenu)
+        addUserMenu(item, id, newMenu)
       }
     }
   }
@@ -33,7 +33,7 @@ function getBreadcrumbs (menuRoot, breadcrumbs) {
           if (index === 0) {
             url = '/' + url
           } else {
-            url = breadcrumbs[index-1].url + '/' + url
+            url = breadcrumbs[index - 1].url + '/' + url
           }
         }
         breadcrumbs[index] = {

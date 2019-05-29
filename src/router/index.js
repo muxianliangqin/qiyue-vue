@@ -14,7 +14,8 @@ export default new Router({
       name: 'login',
       title: '登陆',
       component: login
-    },{
+    },
+    {
       path: '/',
       redirect: '/login'
     },
@@ -22,7 +23,7 @@ export default new Router({
       path: '/index',
       name: 'index',
       component: index,
-      children : components
+      children: components
     }
   ]
 })

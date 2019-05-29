@@ -59,7 +59,9 @@
                       desc: '消息记录[' + params.row.groupNickName + ']',
                       show: true,
                       new: true,
-                      params: params.row.groupNickName
+                      params: {
+                        groupNickName: params.row.groupNickName
+                      }
                     }
                     self.$store.dispatch('addComponent', component)
                   }

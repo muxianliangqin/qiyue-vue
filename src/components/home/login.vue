@@ -53,10 +53,10 @@ export default {
       this.$refs[name].validate((valid) => {
         let self = this
         if (valid) {
-          ajaxUtil.ajax('/user/login',self.formInline).done(function (response) {
+          ajaxUtil.ajax('/user/login', self.formInline).done(function (response) {
             if (response.errorCode === '0000') {
               self.$Message.success('Success!')
-              self.$store.dispatch('setUserInfo',response.userInfo)
+              self.$store.dispatch('setUserInfo', response.userInfo)
               self.$router.push({name: 'index'})
             } else {
               self.$Message.error('Fail!')

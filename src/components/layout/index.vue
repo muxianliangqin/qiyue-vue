@@ -6,22 +6,26 @@
         <Menu mode="horizontal"
               theme="dark"
               active-name="1"
+              :ref="layout.module.ref"
               @on-select="changeModule">
-          <div class="layout-logo"></div>
+          <div class="layout-logo">
+            <!--<span>七月于我，惟梦之初</span>-->
+          </div>
           <div class="layout-nav">
             <template v-for="(module, index) in layout.module.menus">
               <MenuItem :name="index"
-                        :key="'module_'+ module.element.id">
-                <Icon type="ios-navigate" :key="'icon_'+ module.element.id"></Icon>
+                        :key="module.element.id">
+                <Icon type="ios-navigate" :key="module.element.id"></Icon>
                 {{module.element.name}}
               </MenuItem>
             </template>
           </div>
         </Menu>
       </Header>
-      <Layout :style="{padding: '0 2em'}">
+      <Layout :style="{padding: '0 32px'}">
         <!-- 导航区 -->
-        <Breadcrumb :style="{margin: '16px 0', 'text-align': 'left'}">
+        <Breadcrumb :ref="layout.breadcrumb.ref"
+                    :style="{padding: '16px 0', 'text-align': 'left'}">
           <template v-for="breadcrumb in getBreadcrumbs">
             <BreadcrumbItem :key="'breadcrumb_' + breadcrumb.url">
               <a :href="breadcrumb.url" v-if="breadcrumb.url">
@@ -33,11 +37,13 @@
             </BreadcrumbItem>
           </template>
         </Breadcrumb>
-        <Content :style="{padding: '1em 0', minHeight: '280px', background: '#fff'}">
+        <Content :style="{padding: '8px 0', minHeight: '300px', background: '#fff'}">
           <Layout>
             <!-- 侧边栏菜单区 -->
-            <Sider hide-trigger :style="{background: '#fff'}">
-              <Menu ref='sideMenu'
+            <Sider hide-trigger
+                   :ref="layout.side.ref"
+                   :style="{background: '#fff', borderRight: '1px solid #dcdee2'}">
+              <Menu :ref='layout.side.sideMenuRef'
                     :active-name="getSideActiveMenu"
                     :open-names="getSideOpenNames"
                     theme="light"
@@ -52,21 +58,9 @@
                       {{menu.element.name}}
                     </template>
                     <template v-for="(menu2, index2) in menu.children">
-                      <Submenu :name="menuNamePrefix+index + '-' + index2"
-                               v-if="menu2.hasChild">
-                        <template slot="title">{{menu2.element.name}}</template>
-                        <template v-for="(menu3, index3) in menu2.children">
-                          <MenuItem :name="index + '-' + index2 + '-' + index3"
-                                    :key="menu3.element.id"
-                                    @click.native.stop='linkToNext(menu3)'>
-                            {{menu3.element.name}}
-                          </MenuItem>
-                        </template>
-                      </Submenu>
                       <MenuItem :name="menuNamePrefix+index + '-' + index2"
                                 :key="menu2.element.id"
-                                @click.native.stop='linkToNext(menu2)'
-                                v-else>
+                                @click.native.stop='linkToNext(menu2)'>
                         {{menu2.element.name}}
                       </MenuItem>
                     </template>
@@ -75,7 +69,8 @@
               </Menu>
             </Sider>
             <!-- 内容展示区 -->
-            <Content :style="{padding: '0 .5rem', minHeight: '280px', background: '#fff'}">
+            <Content :ref="layout.content.ref"
+                     :style="layout.content.style">
               <Tabs type="card"
                     closable
                     v-model="getActive"
@@ -96,7 +91,10 @@
         </Content>
       </Layout>
       <!-- 底部页脚区 -->
-      <Footer class="layout-footer-center">2019 &copy; AI-qiyue</Footer>
+      <Footer :ref="layout.foot.ref"
+              class="layout-footer-center">
+        2019 &copy; AI-qiyue
+      </Footer>
     </Layout>
   </div>
 </template>
@@ -104,23 +102,40 @@
 import baseUtil from '@/assets/util/baseUtil'
 import ajaxUtil from '@/assets/util/ajaxUtil'
 import menuUtil from '@/assets/util/menuUtil'
+import $ from 'jquery'
 export default {
-  name: 'cus_home',
   data () {
     return {
       menuNamePrefix: 'm',
       layout: {               // 页面总体布局
         root: null,           // 总菜单树
         module: {             // 顶部模块区
+          ref: 'module',
           menus: [],
           activeMenus: []     // 活动菜单
         },
-        breadcrumbs: [],      // 导航区
+        breadcrumb: {
+          ref: 'breadcrumb',
+          breadcrumbs: []     // 导航区
+        },
         side: {               // 侧边菜单区
+          ref: 'side',
           menus: [],
           activeMenus: [],    // 活动菜单
           openNames: [],      // 展开菜单
-          initMenus: []       // 初始化菜单
+          initMenus: [],      // 初始化菜单
+          sideMenuRef: 'sideMenu'
+        },
+        content: {
+          ref: 'content',
+          style: {
+            padding: '0 8px',
+            height: '300px',
+            background: '#fff'
+          }
+        },
+        foot: {
+          ref: 'foot'
         }
       },
     }
@@ -135,7 +150,7 @@ export default {
       return openNames
     },
     getBreadcrumbs: function () {
-      return menuUtil.getBreadcrumbs(this.layout.root, this.layout.breadcrumbs)
+      return menuUtil.getBreadcrumbs(this.layout.root, this.layout.breadcrumb.breadcrumbs)
     },
     getComponents: function () {
       return this.$store.getters.tabs.components
@@ -178,7 +193,7 @@ export default {
       }
       this.layout.side.activeMenus = sideActiveMenus
       this.layout.side.initMenus.push(activeMenus[0])
-      this.layout.breadcrumbs = activeMenus[0].breadcrumbs
+      this.layout.breadcrumb.breadcrumbs = activeMenus[0].breadcrumbs
       let sideOpenNames = []
       if (sideActiveMenus.length > 1) {
         sideOpenNames = sideActiveMenus.slice(-2, -1)
@@ -222,25 +237,35 @@ export default {
     },
     initMenus () {
       this.layout.side.initMenus.forEach((v)=>{this.toComponent(v)})
+    },
+    contentHeight () {
+      let clientHeight = document.documentElement.clientHeight
+      let moduleHeight = this.$refs[this.layout.module.ref].$el.clientHeight
+      let breadcrumbHeight = this.$refs[this.layout.breadcrumb.ref].$el.clientHeight
+      let footHeight = this.$refs[this.layout.foot.ref].$el.clientHeight
+      let contentHeight = clientHeight - moduleHeight - breadcrumbHeight - footHeight -25
+      this.layout.content.style.height = contentHeight + 'px'
+      this.$store.dispatch('setTabsHeight', contentHeight)
     }
   },
   mounted () {
     this.initMenus()
     this.$nextTick(() => {
-      this.$refs.sideMenu.updateOpened()
-      this.$refs.sideMenu.updateActiveName()
+      this.$refs[this.layout.side.sideMenuRef].updateOpened()
+      this.$refs[this.layout.side.sideMenuRef].updateActiveName()
     })
+    this.contentHeight()
   },
   watch: {
     // 监听openNames值的变化，重新执行以下方法，openNames和activeMenu才会生效
     getSideActiveMenu () {
       this.$nextTick(() => {
-        this.$refs.sideMenu.updateOpened()
+        this.$refs[this.layout.side.sideMenuRef].updateOpened()
       })
     },
     getSideOpenNames () {
       this.$nextTick(() => {
-        this.$refs.sideMenu.updateActiveName()
+        this.$refs[this.layout.side.sideMenuRef].updateActiveName()
       })
     }
   }
@@ -258,14 +283,12 @@ export default {
     text-align: center;
   }
   .layout-logo{
-    width: 100px;
-    height: 3rem;
-    /*background: #5b6270;*/
+    width: 160px;
+    line-height: 64px;
+    color: white;
     border-radius: 3px;
     float: left;
     position: relative;
-    top: 15px;
-    left: 20px;
   }
   .layout-nav{
     position: relative;
