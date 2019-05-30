@@ -1,9 +1,10 @@
 const state = {
   userInfo: JSON.parse(sessionStorage.getItem('userInfo'))||{}, // 用户信息
-  tabs: {                   // 内容展示标签区
-    height: 300,            // 标签区的高度
-    active: 'HomeWelcome',  // 活动标签
-    components: [           // 展示区域组件
+  tabs: {                       // 内容展示标签区
+    height: 300,                // 标签区的高度
+    contentHeight: 0,           // 标签区内容的高度
+    active: 'HomeWelcome',      // 活动标签
+    components: [               // 展示区域组件
       {
         name: 'HomeWelcome',
         desc: '主页',
@@ -78,6 +79,7 @@ const mutations = {
   },
   setTabsHeight (state, height) {
     state.tabs.height = height
+    state.tabs.contentHeight = height - 50
   }
 }
 

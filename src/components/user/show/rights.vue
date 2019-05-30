@@ -12,13 +12,11 @@
 </template>
 
 <script>
-  import Divider from "iview/src/components/divider/divider";
   export default {
-    name: "menus",
-    components: {Divider},
+    name: 'rights',
     data () {
       return {
-        url:　'user/findMenus',
+        url:　'user/findRights',
         columns: [
           {
             title: '序号',
@@ -26,11 +24,11 @@
             width: 100
           },
           {
-            title: '菜单代码',
+            title: '权限代码',
             key: 'code'
           },
           {
-            title: '菜单名称',
+            title: '权限名称',
             key: 'name'
           },
           {
@@ -83,12 +81,6 @@
         ]
       }
     },
-    computed: {
-
-    },
-    mounted () {
-
-    }
   }
 </script>
 

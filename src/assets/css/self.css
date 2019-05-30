@@ -41,5 +41,15 @@
   position: relative;
   float: right;
   right: 4em;
-  line-height: 64px;
+  /*line-height: 48px;*/
+}
+
+.ivu-layout-header{
+  height: 48px;
+  line-height: 48px;
+}
+
+.ivu-layout-header .ivu-menu-horizontal{
+  height: inherit;
+  line-height: inherit;
 }

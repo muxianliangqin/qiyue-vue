@@ -171,7 +171,7 @@ export default {
       let params = {'userId': this.$store.getters.userInfo.id}
       // debugger
       ajaxUtil.ajax(self.findWebsUrl, params).done(function (response) {
-        self.page = response
+        self.page = response.content
       })
     },
     pageChange (page) {

@@ -25,7 +25,7 @@
       <Layout :style="{padding: '0 32px'}">
         <!-- 导航区 -->
         <Breadcrumb :ref="layout.breadcrumb.ref"
-                    :style="{padding: '16px 0', 'text-align': 'left'}">
+                    :style="{padding: '8px 0', 'text-align': 'left'}">
           <template v-for="breadcrumb in getBreadcrumbs">
             <BreadcrumbItem :key="'breadcrumb_' + breadcrumb.url">
               <a :href="breadcrumb.url" v-if="breadcrumb.url">

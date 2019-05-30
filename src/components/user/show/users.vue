@@ -1,16 +1,15 @@
 <template>
-  <div>
+  <SelfPage :url="url"
+            :columns="columns"
+            v-bind="$attrs"
+            v-on="$listeners">
     <div :ref="ref.buttons"
+         slot="buttons"
          class="self-buttons">
-      <Button type="primary">新增</Button>
-      <Divider style="margin: 8px 0px 0px 0px"></Divider>
+      <Button type="primary" style="margin-right: 80px">新增</Button>
+      <Divider style="margin: 4px 0px 0px 0px"></Divider>
     </div>
-    <SelfPage :url="url"
-              :columns="columns"
-              v-bind="$attrs"
-              v-on="$listeners">
-    </SelfPage>
-  </div>
+  </SelfPage>
 </template>
 
 <script>
@@ -107,9 +106,7 @@
       }
     },
     mounted () {
-      let pageHeight = this.$store.getters.tabs.height
-      let buttonsHeight = this.$refs[this.ref.buttons].clientHeight
-      this.$store.dispatch("setTabsHeight",pageHeight - buttonsHeight)
+
     }
   }
 </script>

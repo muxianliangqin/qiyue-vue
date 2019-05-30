@@ -2,6 +2,7 @@
   <div class="self-root-div"
        :ref="ref.rootDiv"
        :style="divStyle">
+    <slot :name="slot.buttons"></slot>
     <Table :border="true"
            :columns="columns"
            :data="page.content"
@@ -29,7 +30,6 @@
     props: {
       url: String,
       columns: Array,
-      height: Number
     },
     data () {
       return {
@@ -41,13 +41,16 @@
           table: 'table',
           page: 'page'
         },
-        tableHeight: this.height
+        slot: {
+          buttons: 'buttons'
+        },
+        tableHeight: null
       }
     },
     computed: {
       divStyle () {
         return {
-          height: this.height + 'px'
+          height: this.$store.getters.tabs.contentHeight + 'px'
         }
       }
     },
@@ -70,14 +73,21 @@
         this.init()
       },
       computeTableHeight () {
-        let divHeight = this.height
+        let divHeight = this.$store.getters.tabs.contentHeight
         let pageHeight = this.$refs[this.ref.page].$el.clientHeight
-        let contentHeight = divHeight - pageHeight - 16
-        let tableHeight = this.$refs[this.ref.table].$el.clientHeight
-        if (tableHeight > contentHeight) {
-          tableHeight = contentHeight
+        let buttonSlots = this.$slots[this.slot.buttons]
+        let contentHeight = 0
+        if (buttonSlots) {
+          let slotHeight = this.$slots[this.slot.buttons][0].elm.clientHeight
+          contentHeight = divHeight - pageHeight - slotHeight - 16
+        } else {
+          contentHeight = divHeight - pageHeight - 16
         }
-        this.tableHeight = tableHeight
+        // let tableHeight = this.$refs[this.ref.table].$el.clientHeight
+        // if (tableHeight > contentHeight) {
+        //   tableHeight = contentHeight
+        // }
+        this.tableHeight = contentHeight
       }
     },
     created () {
