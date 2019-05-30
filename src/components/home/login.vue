@@ -56,10 +56,10 @@ export default {
           ajaxUtil.ajax('/user/login', self.formInline).done(function (response) {
             if (response.errorCode === '0000') {
               self.$Message.success('Success!')
-              self.$store.dispatch('setUserInfo', response.userInfo)
+              self.$store.dispatch('setUserInfo', response.content)
               self.$router.push({name: 'index'})
             } else {
-              self.$Message.error('Fail!')
+              self.$Message.error('用户名或密码错误')
             }
           })
         } else {

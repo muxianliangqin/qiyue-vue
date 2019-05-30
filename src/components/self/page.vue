@@ -28,7 +28,8 @@
     name: "page",
     props: {
       url: String,
-      columns: Array
+      columns: Array,
+      height: Number
     },
     data () {
       return {
@@ -40,13 +41,13 @@
           table: 'table',
           page: 'page'
         },
-        tableHeight: 300
+        tableHeight: this.height
       }
     },
     computed: {
       divStyle () {
         return {
-          height: (this.$store.getters.tabs.height - 48) + 'px'
+          height: this.height + 'px'
         }
       }
     },
@@ -57,7 +58,7 @@
         params.page = self.pageNumber
         params.size = self.pageSize
         ajaxUtil.ajax(self.url, params).done(function (response) {
-          self.page = response
+          self.page = response.content
         })
       },
       pageChange (page) {
@@ -69,10 +70,14 @@
         this.init()
       },
       computeTableHeight () {
-        let divHeight = this.$refs[this.ref.rootDiv].clientHeight
+        let divHeight = this.height
         let pageHeight = this.$refs[this.ref.page].$el.clientHeight
-        let tableHeight = divHeight - pageHeight
-        this.tableHeight = tableHeight -16
+        let contentHeight = divHeight - pageHeight - 16
+        let tableHeight = this.$refs[this.ref.table].$el.clientHeight
+        if (tableHeight > contentHeight) {
+          tableHeight = contentHeight
+        }
+        this.tableHeight = tableHeight
       }
     },
     created () {
@@ -86,6 +91,9 @@
         this.pageNumber = 0
         this.pageSize = 10
         this.init()
+      },
+      'height': function () {
+        this.computeTableHeight()
       }
     }
   }

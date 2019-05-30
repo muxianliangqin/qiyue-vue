@@ -107,6 +107,7 @@ export default {
   data () {
     return {
       menuNamePrefix: 'm',
+      getMenuNode: '/user/getMenuNode',
       layout: {               // 页面总体布局
         root: null,           // 总菜单树
         module: {             // 顶部模块区
@@ -170,15 +171,14 @@ export default {
   methods: {
     initLayout () {
       let params = {userId: this.$store.getters.userInfo.id}
-      let menuNode = ajaxUtil.ajaxSync('/user/getMenuNode', params)
-      this.layout.root = menuNode
+      this.layout.root = ajaxUtil.ajaxSync(this.getMenuNode, params).content
       this.initModule()
       this.initSide()
     },
     initModule () {
       let moduleMenus = this.layout.root.children
       this.layout.module.menus = moduleMenus
-      let moduleActiveMenus = [0]
+      let moduleActiveMenus = [1]
       this.layout.module.activeMenus = moduleActiveMenus
     },
     initSide () {
@@ -243,7 +243,7 @@ export default {
       let moduleHeight = this.$refs[this.layout.module.ref].$el.clientHeight
       let breadcrumbHeight = this.$refs[this.layout.breadcrumb.ref].$el.clientHeight
       let footHeight = this.$refs[this.layout.foot.ref].$el.clientHeight
-      let contentHeight = clientHeight - moduleHeight - breadcrumbHeight - footHeight -25
+      let contentHeight = clientHeight - moduleHeight - breadcrumbHeight - footHeight - 25
       this.layout.content.style.height = contentHeight + 'px'
       this.$store.dispatch('setTabsHeight', contentHeight)
     }
@@ -272,28 +272,5 @@ export default {
 }
 </script>
 <style scoped>
-  .layout{
-    border: 1px solid #d7dde4;
-    background: #f5f7f9;
-    position: relative;
-    border-radius: 4px;
-    overflow: hidden;
-  }
-  .layout-footer-center{
-    text-align: center;
-  }
-  .layout-logo{
-    width: 160px;
-    line-height: 64px;
-    color: white;
-    border-radius: 3px;
-    float: left;
-    position: relative;
-  }
-  .layout-nav{
-    position: relative;
-    float: right;
-    right: 4em;
-    line-height: 64px;
-  }
+
 </style>
