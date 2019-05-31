@@ -3,8 +3,7 @@
             :columns="columns"
             v-bind="$attrs"
             v-on="$listeners">
-    <div :ref="ref.buttons"
-         slot="buttons"
+    <div slot="buttons"
          class="self-buttons">
       <Button type="primary" style="margin-right: 80px">新增</Button>
       <Divider style="margin: 4px 0px 0px 0px"></Divider>
@@ -17,9 +16,6 @@
     name: "menus",
     data () {
       return {
-        ref: {
-          buttons: 'buttons'
-        },
         url:　'user/findUsers',
         columns: [
           {

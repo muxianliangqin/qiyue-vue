@@ -1,25 +1,40 @@
 <template>
   <div>
-    <Button type="primary" @click="add" style="float: right">新增</Button>
-    <Divider style="margin-bottom:0"/>
-    <Table :border="true"
-           :columns="columns"
-           :data="page.content"
-           :show-header="true"
-           :stripe="true"
-           :highlight-row="true"
-           size="small"
-           :height="400">
-    </Table>
-    <Page :total='page.totalElements'
-          show-sizer @on-change="pageChange"
-          @on-page-size-change="pageSizeChange"/>
+    <SelfPage :url="url"
+              :columns="columns"
+              :selfParams="selfParams"
+              v-bind="$attrs"
+              v-on="$listeners">
+      <div slot="buttons"
+           class="self-buttons">
+        <Button type="primary" style="margin-right: 80px" @click="add_show">新增</Button>
+        <Divider style="margin: 4px 0px 0px 0px"></Divider>
+      </div>
+    </SelfPage>
     <Modal
-      v-model="modal.show"
-      @on-ok="ok"
-      @on-cancel="cancel"
-      title="新增监控群组">
-      <Input v-model="modal.groupNickName" placeholder="请输入群组名"/>
+      v-model="add.modal"
+      @on-ok="add_ok"
+      title="新增记录">
+      <Input v-model="add.groupNickName" placeholder="请输入群组名"/>
+    </Modal>
+    <Modal
+      v-model="modify.modal"
+      @on-ok="modify_ok"
+      title="记录修改">
+      <Input v-model="modify.groupNickName" placeholder="请输入群组名"/>
+    </Modal>
+    <Modal v-model="del.modal"
+           @on-ok="del_ok">
+      <p slot="header" style="text-align:center">
+        <Icon type="ios-information-circle" style="color: red"></Icon>
+        <span>确定删除以下记录吗？</span>
+      </p>
+      <div style="text-align:center">
+        <p>群组：{{del.msg}}</p>
+      </div>
+      <div slot="footer" style="text-align:center">
+        <Button type="error" size="large" @click="del_ok">删除</Button>
+      </div>
     </Modal>
   </div>
 </template>
@@ -28,19 +43,26 @@
   import ajaxUtil from '@/assets/util/ajaxUtil'
   export default {
     name: 'weChatShow',
-    props: ['params'],
     data () {
       return {
-        modal: {
-          show: false,
+        add: {
+          modal: false,
           groupNickName: ''
         },
-        findGroups: '/weChat/findGroups',
+        modify: {
+          modal: false,
+        },
+        del: {
+          modal: false,
+          id: null,
+          msg: null
+        },
+        selfParams: {
+          userId: this.$store.getters.userInfo.id
+        },
+        url: '/weChat/findGroups',
         delGroup: '/weChat/delete',
         addGroup: '/weChat/add',
-        pageNumber: 0,
-        pageSize: 10,
-        page: {},
         columns: [
           {
             title: '序号',
@@ -60,7 +82,7 @@
                       show: true,
                       new: true,
                       params: {
-                        groupNickName: params.row.groupNickName
+                        groupId: params.row.id
                       }
                     }
                     self.$store.dispatch('addComponent', component)
@@ -84,24 +106,29 @@
           },
           {
             title: '操作',
+            align: 'center',
             render: (h, params) => {
               let self = this
+              let modify = h('a', {
+                style: {
+                  marginRight: '2em'
+                },
+                on: {
+                  click: function () {
+                    self.modify.modal = true
+                    // self.modify.msg = params.row.groupNickName
+                  }
+                }
+              }, '修改')
               let del = h('a', {
                 on: {
                   click: function () {
-                    let param = {
-                      groupId: params.row.id
-                    }
-                    ajaxUtil.ajax(self.delGroup, param).done(function (response) {
-                      if (response === 1) {
-                        self.$Message.info('删除成功');
-                        self.init()
-                      }
-                    })
+                    self.del.modal = true
+                    self.del.msg = params.row.groupNickName
                   }
                 }
               }, '删除')
-              return [del]
+              return [modify, del]
             }
           }
         ]
@@ -111,33 +138,14 @@
 
     },
     methods: {
-      init () {
+      add_show () {
+        this.add.modal = true
+      },
+      add_ok () {
         let self = this
         let params = {
           userId: self.$store.getters.userInfo.id,
-          page: this.pageNumber,
-          size: this.pageSize
-        }
-        ajaxUtil.ajax(this.findGroups,params).done(function (response) {
-          self.page = response
-        })
-      },
-      pageChange (page) {
-        this.pageNumber = page -1
-        this.init()
-      },
-      pageSizeChange (pageSize) {
-        this.pageSize = pageSize
-        this.init()
-      },
-      add: function () {
-        this.modal.show = true
-      },
-      ok: function () {
-        let self = this
-        let params = {
-          userId: self.$store.getters.userInfo.id,
-          groupNickName: self.modal.groupNickName
+          groupNickName: self.add.groupNickName
         }
         ajaxUtil.ajax(self.addGroup, params).done(function (response) {
           if (response === 1) {
@@ -147,12 +155,21 @@
           }
         })
       },
-      cancel: function () {
-        this.modal.show = false
+      modify_ok () {
+
+      },
+      del_ok () {
+        let param = {
+          groupId: params.row.id
+        }
+        ajaxUtil.ajax(self.delGroup, param).done(function (response) {
+          if (response === 1) {
+            self.$Message.info('删除成功');
+          }
+        })
       }
     },
     mounted () {
-      this.init()
     }
   }
 </script>

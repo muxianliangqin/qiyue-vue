@@ -61,7 +61,7 @@ const mutations = {
     state.tabs.components.push(component)
   },
   updateComponent (state, component) {
-    state.tabs.components.forEach(function (value,index,array) {
+    state.tabs.components.forEach(function (value, index, array) {
       if (value.name === component.name) {
         array[index] = component
         state.tabs.active = component.name

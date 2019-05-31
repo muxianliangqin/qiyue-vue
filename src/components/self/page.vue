@@ -30,6 +30,8 @@
     props: {
       url: String,
       columns: Array,
+      /*自定义参数，默认由this.$attrs.params传递参数，若selfParams存在则优先使用*/
+      selfParams: Object
     },
     data () {
       return {
@@ -44,20 +46,26 @@
         slot: {
           buttons: 'buttons'
         },
+        contentHeight: this.$store.getters.tabs.contentHeight,
         tableHeight: null
       }
     },
     computed: {
       divStyle () {
         return {
-          height: this.$store.getters.tabs.contentHeight + 'px'
+          height: this.contentHeight + 'px'
         }
       }
     },
     methods: {
       init: function () {
         let self = this
-        let params = this.$attrs.params
+        let params = {}
+        if (this.selfParams) {
+          params = this.selfParams
+        } else {
+          params = this.$attrs.params
+        }
         params.page = self.pageNumber
         params.size = self.pageSize
         ajaxUtil.ajax(self.url, params).done(function (response) {
@@ -73,7 +81,7 @@
         this.init()
       },
       computeTableHeight () {
-        let divHeight = this.$store.getters.tabs.contentHeight
+        let divHeight = this.contentHeight
         let pageHeight = this.$refs[this.ref.page].$el.clientHeight
         let buttonSlots = this.$slots[this.slot.buttons]
         let contentHeight = 0
@@ -83,10 +91,6 @@
         } else {
           contentHeight = divHeight - pageHeight - 16
         }
-        // let tableHeight = this.$refs[this.ref.table].$el.clientHeight
-        // if (tableHeight > contentHeight) {
-        //   tableHeight = contentHeight
-        // }
         this.tableHeight = contentHeight
       }
     },
@@ -98,12 +102,20 @@
     },
     watch: {
       '$attrs.params': function () {
-        this.pageNumber = 0
-        this.pageSize = 10
-        this.init()
-      },
-      'height': function () {
-        this.computeTableHeight()
+        let components = this.$store.getters.tabs.components
+        let active = this.$store.getters.tabs.active
+        let activeComponent = {}
+        for (let i=0;i<components.length;i++) {
+          if (components[i].name === active) {
+            activeComponent = components[i]
+            break
+          }
+        }
+        if (activeComponent.new) {
+          this.pageNumber = 0
+          this.pageSize = 10
+          this.init()
+        }
       }
     }
   }

@@ -46,11 +46,12 @@
               <Menu :ref='layout.side.sideMenuRef'
                     :active-name="getSideActiveMenu"
                     :open-names="getSideOpenNames"
+                    @on-select="menuSelect"
                     theme="light"
                     width="auto"
                     accordion>
                 <template v-for="(menu, index) in layout.side.menus">
-                  <Submenu :name="menuNamePrefix+index"
+                  <Submenu :name="menuNamePrefix + index"
                            :key="menu.element.id"
                            @click.native=''>
                     <template slot="title">
@@ -58,9 +59,8 @@
                       {{menu.element.name}}
                     </template>
                     <template v-for="(menu2, index2) in menu.children">
-                      <MenuItem :name="menuNamePrefix+index + '-' + index2"
-                                :key="menu2.element.id"
-                                @click.native.stop='linkToNext(menu2)'>
+                      <MenuItem :name="menuNamePrefix + index + '-' + index2"
+                                :key="menu2.element.id">
                         {{menu2.element.name}}
                       </MenuItem>
                     </template>
@@ -107,6 +107,7 @@ export default {
   data () {
     return {
       menuNamePrefix: 'm',
+      menuNameSeparator: '-',
       getMenuNode: '/user/getMenuNode',
       layout: {               // 页面总体布局
         root: null,           // 总菜单树
@@ -143,11 +144,11 @@ export default {
   },
   computed: {
     getSideActiveMenu: function () {
-      return this.menuNamePrefix + this.layout.side.activeMenus.join('-')
+      return this.menuNamePrefix + this.layout.side.activeMenus.join(this.menuNameSeparator)
     },
     getSideOpenNames: function () {
       let openNames = this.layout.side.openNames
-      openNames.forEach((v,i)=>{openNames[i]=this.menuNamePrefix+v})
+      openNames.forEach((v,i) => {openNames[i]=this.menuNamePrefix + v })
       return openNames
     },
     getBreadcrumbs: function () {
@@ -170,20 +171,26 @@ export default {
   },
   methods: {
     initLayout () {
+      /* 初始化页面布局 */
       let params = {userId: this.$store.getters.userInfo.id}
       this.layout.root = ajaxUtil.ajaxSync(this.getMenuNode, params).content
       this.initModule()
       this.initSide()
     },
     initModule () {
+      /* 初始化模块区 */
       let moduleMenus = this.layout.root.children
       this.layout.module.menus = moduleMenus
-      let moduleActiveMenus = [1]
+      let moduleActiveMenus = [0]
       this.layout.module.activeMenus = moduleActiveMenus
     },
     initSide () {
-      let sideMenus = this.getSideMenusFromModule()
+      /* 初始化侧边栏菜单区 */
+      let sideModule = this.getSideModuleFromModule()
+      let sideMenus = sideModule.menus
       this.layout.side.menus = sideMenus
+      // 设定MenuItem的name前缀
+      this.menuNamePrefix = sideModule.element.id + this.menuNameSeparator
       let sideActiveMenus = []
       sideActiveMenus.push(0)
       let activeMenus = sideMenus
@@ -202,25 +209,37 @@ export default {
       }
       this.layout.side.openNames = sideOpenNames
     },
-    getSideMenusFromModule () {
+    getSideModuleFromModule () {
+      /* 切换模块时获取侧边栏菜单组以及模块详情 */
       let moduleMenus = this.layout.module.menus
       let moduleActiveMenus = this.layout.module.activeMenus
       let sideMenus = []
+      let moduleElement = {}
       for (let i=0;i<moduleActiveMenus.length;i++) {
         let vi = moduleActiveMenus[i]
         sideMenus = moduleMenus[vi].children
+        moduleElement = moduleMenus[vi].element
         moduleMenus = sideMenus
       }
-      return sideMenus
+      return {
+        menus: sideMenus,
+        element: moduleElement
+      }
     },
     changeModule (name) {
+      /* 切换模块 */
       this.layout.module.activeMenus = [parseInt(name)]
       this.initSide()
+      this.initMenus()
+      let activeName = this.menuNamePrefix + this.layout.side.activeMenus.join(this.menuNameSeparator)
+      this.menuSelect(activeName)
     },
     handleTabRemove (name) {
+      /* 点击关闭标签时执行 */
       this.$store.dispatch('delComponent', name)
     },
     toComponent (menu) {
+      /* 跳转标签 */
       let path = baseUtil.generateCompName(menu.element.xpath)
       let param = {
         name: path,
@@ -231,14 +250,12 @@ export default {
       }
       this.$store.dispatch('addComponent', param)
     },
-    linkToNext (menu) {
-      this.toComponent(menu)
-      // this.setBreadcrumbs(menu.breadcrumbs)
-    },
     initMenus () {
+      /* 页面加载后打开初始化页面 */
       this.layout.side.initMenus.forEach((v)=>{this.toComponent(v)})
     },
     contentHeight () {
+      /* 计算标签显示区的高度 */
       let clientHeight = document.documentElement.clientHeight
       let moduleHeight = this.$refs[this.layout.module.ref].$el.clientHeight
       let breadcrumbHeight = this.$refs[this.layout.breadcrumb.ref].$el.clientHeight
@@ -246,14 +263,33 @@ export default {
       let contentHeight = clientHeight - moduleHeight - breadcrumbHeight - footHeight - 25
       this.layout.content.style.height = contentHeight + 'px'
       this.$store.dispatch('setTabsHeight', contentHeight)
+    },
+    getMenuByName (menus, name) {
+      /* 根据name从menus数组中获得menu */
+      let indices = name.slice(this.menuNamePrefix.length).split(this.menuNameSeparator)
+      let selectedMenu = []
+      for (let i=0;i<indices.length;i++) {
+        let index = parseInt(indices[i])
+        selectedMenu = menus[index]
+        menus = selectedMenu.children
+      }
+      return selectedMenu
+    },
+    menuSelect (name) {
+      /* 点击选择菜单 */
+      let sideMenus = this.layout.side.menus
+      let selectedMenu = this.getMenuByName(sideMenus, name)
+      // 更新导航区
+      this.layout.breadcrumb.breadcrumbs = selectedMenu.breadcrumbs
+      // 跳转到标签
+      this.toComponent(selectedMenu)
+      // 更新活动标签
+      let tabsActive = baseUtil.generateCompName(selectedMenu.element.xpath)
+      this.$store.dispatch('setTabsActive',tabsActive)
     }
   },
   mounted () {
     this.initMenus()
-    this.$nextTick(() => {
-      this.$refs[this.layout.side.sideMenuRef].updateOpened()
-      this.$refs[this.layout.side.sideMenuRef].updateActiveName()
-    })
     this.contentHeight()
   },
   watch: {
