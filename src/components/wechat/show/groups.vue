@@ -3,66 +3,69 @@
     <SelfPage :url="url"
               :columns="columns"
               :selfParams="selfParams"
+              ref="selfPage"
               v-bind="$attrs"
               v-on="$listeners">
       <div slot="buttons"
            class="self-buttons">
-        <Button type="primary" style="margin-right: 80px" @click="add_show">新增</Button>
+        <Button type="primary" style="margin-right: 80px" @click="add_ok">新增</Button>
         <Divider style="margin: 4px 0px 0px 0px"></Divider>
       </div>
     </SelfPage>
-    <Modal
-      v-model="add.modal"
-      @on-ok="add_ok"
-      title="新增记录">
-      <Input v-model="add.groupNickName" placeholder="请输入群组名"/>
-    </Modal>
-    <Modal
-      v-model="modify.modal"
-      @on-ok="modify_ok"
-      title="记录修改">
-      <Input v-model="modify.groupNickName" placeholder="请输入群组名"/>
-    </Modal>
-    <Modal v-model="del.modal"
-           @on-ok="del_ok">
-      <p slot="header" style="text-align:center">
-        <Icon type="ios-information-circle" style="color: red"></Icon>
-        <span>确定删除以下记录吗？</span>
-      </p>
-      <div style="text-align:center">
-        <p>群组：{{del.msg}}</p>
+    <SelfModalAdd v-model="add.modal"
+                  :columns="columns"
+                  :url="add.url">
+
+    </SelfModalAdd>
+
+    <!--<Modal-->
+      <!--v-model="add.modal"-->
+      <!--@on-ok="add_ok"-->
+      <!--title="新增记录">-->
+      <!--<Input v-model="add.groupNickName" placeholder="请输入群组名"/>-->
+    <!--</Modal>-->
+    <!--<Modal-->
+      <!--v-model="modify.modal"-->
+      <!--@on-ok="modify_ok"-->
+      <!--title="记录修改">-->
+      <!--<Input v-model="modify.groupNickName" placeholder="请输入群组名"/>-->
+    <!--</Modal>-->
+    <SelfModalDel v-model="del.modal"
+                  :url="del.url"
+                  :params="del.params"
+                  @self-cancel="del_cancel">
+      <div slot="msg" style="text-align: center">
+        <p>群组: {{del.msg}}</p>
       </div>
-      <div slot="footer" style="text-align:center">
-        <Button type="error" size="large" @click="del_ok">删除</Button>
-      </div>
-    </Modal>
+    </SelfModalDel>
   </div>
 </template>
 
 <script>
   import ajaxUtil from '@/assets/util/ajaxUtil'
   export default {
-    name: 'weChatShow',
+    name: 'groups',
     data () {
       return {
         add: {
           modal: false,
-          groupNickName: ''
+          url: '/weChat/add',
+          msg: null,
+          params: null
         },
         modify: {
           modal: false,
         },
         del: {
           modal: false,
-          id: null,
-          msg: null
+          url: '/weChat/delete',
+          msg: null,
+          params: null
         },
         selfParams: {
           userId: this.$store.getters.userInfo.id
         },
         url: '/weChat/findGroups',
-        delGroup: '/weChat/delete',
-        addGroup: '/weChat/add',
         columns: [
           {
             title: '序号',
@@ -124,6 +127,9 @@
                 on: {
                   click: function () {
                     self.del.modal = true
+                    self.del.params = {
+                      groupId: params.row.id
+                    }
                     self.del.msg = params.row.groupNickName
                   }
                 }
@@ -138,35 +144,17 @@
 
     },
     methods: {
-      add_show () {
+      add_ok () {
         this.add.modal = true
       },
-      add_ok () {
-        let self = this
-        let params = {
-          userId: self.$store.getters.userInfo.id,
-          groupNickName: self.add.groupNickName
-        }
-        ajaxUtil.ajax(self.addGroup, params).done(function (response) {
-          if (response === 1) {
-            self.modal.show = false
-            self.$Message.info('新增成功');
-            self.init()
-          }
-        })
+      add_cancel () {
+        this.$refs.selfPage.reload()
       },
-      modify_ok () {
-
+      modify_cancel () {
+        this.$refs.selfPage.reload()
       },
-      del_ok () {
-        let param = {
-          groupId: params.row.id
-        }
-        ajaxUtil.ajax(self.delGroup, param).done(function (response) {
-          if (response === 1) {
-            self.$Message.info('删除成功');
-          }
-        })
+      del_cancel () {
+        this.$refs.selfPage.reload()
       }
     },
     mounted () {

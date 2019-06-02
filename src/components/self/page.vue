@@ -92,6 +92,9 @@
           contentHeight = divHeight - pageHeight - 16
         }
         this.tableHeight = contentHeight
+      },
+      reload () {
+        this.init()
       }
     },
     created () {
