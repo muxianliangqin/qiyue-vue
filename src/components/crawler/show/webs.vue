@@ -6,14 +6,12 @@
               accordion
               @on-change="computeCollapseStyle"
               :style="collapseStyle">
-      <template v-for="web of page.content">
-        <Panel :name="web.url"
-               style="text-align: left;"
+      <template v-for="(web, index) of page.content">
+        <Panel style="text-align: left;"
                :key="web.url">
-            <span>{{web.title}}
-            </span>
+            <span>{{web.title}}</span>
           <Button type="primary"
-                  @click=""
+                  @click.native="category_handleSubmit('categoryForm')"
                   size='small'
                   class="self-button">新增</Button>
           <div slot="content">
@@ -35,27 +33,64 @@
           show-sizer
           @on-change="pageChange"
           @on-page-size-change="pageSizeChange"/>
-    <Modal
-      v-model="modal.modify.show"
-      @on-ok="modify_ok"
-      @on-cancel="modify_cancel"
-      title="修改网站设置">
-      <Input v-model="modal.groupNickName" placeholder="请输入群组名"/>
+    <Modal v-model="category.form.modal">
+      <p slot="header" style="text-align:center">
+        <template v-if="category.form.action === 'add'">
+          <Icon type="md-add-circle" />
+          <span>新增记录</span>
+        </template>
+        <template v-if="category.form.action === 'modify'">
+          <Icon type="md-analytics" />
+          <span>修改记录</span>
+        </template>
+      </p>
+      <Form ref="categoryForm" :model="category.form.items" :rules="category.form.rules" :label-width="150">
+        <FormItem :label="category.form.labels.title" prop="title">
+          <Row>
+            <Col span="15">
+              <Input type="text"
+                     clearable
+                     v-model="category.form.items.title"
+                     :placeholder="category.form.labels.title"></Input>
+            </Col>
+          </Row>
+        </FormItem>
+        <FormItem :label="category.form.labels.url" prop="url">
+          <Row>
+            <Col span="15">
+              <Input type="text"
+                     clearable
+                     v-model="category.form.items.url"
+                     :placeholder="category.form.labels.url"></Input>
+            </Col>
+          </Row>
+        </FormItem>
+        <FormItem :label="category.form.labels.xpath" prop="xpath">
+          <Row>
+            <Col span="15">
+              <Input type="text"
+                     clearable
+                     v-model="category.form.items.xpath"
+                     :placeholder="category.form.labels.xpath"></Input>
+            </Col>
+          </Row>
+        </FormItem>
+        <FormItem :label-width="0" style="text-align: center;margin-bottom: 0px;">
+          <Button type="primary" @click="category_handleSubmit('categoryForm')">提交</Button>
+          <Button @click="category_handleReset('categoryForm')" style="margin-left: 8px">重置</Button>
+        </FormItem>
+      </Form>
+      <div slot="footer" style="display: none">
+      </div>
     </Modal>
-    <Modal
-      v-model="modal.add.show"
-      @on-ok="add_ok"
-      @on-cancel="add_cancel"
-      title="新增网站设置">
-      <Input v-model="modal.groupNickName" placeholder="请输入群组名"/>
-    </Modal>
-    <Modal
-      v-model="modal.del.show"
-      @on-ok="del_ok"
-      @on-cancel="del_cancel"
-      title="删除网站设置">
-      <Input v-model="modal.groupNickName" placeholder="请输入群组名"/>
-    </Modal>
+    <SelfModalDel v-model="category.del.modal"
+                  :url="category.del.url"
+                  :params="category.del.params"
+                  @self-cancel="category_del_cancel">
+      <div slot="msg" style="text-align: center">
+        <p>{{category.del.msg}}</p>
+      </div>
+    </SelfModalDel>
   </div>
 </template>
 <script>
@@ -64,7 +99,8 @@ export default {
   props: ['params'],
   data () {
     return {
-      unfold: 'http://www.gd.gov.cn/',
+      unfold: '1',
+      panelNamePrefix: 'p',
       findWebsUrl: '/crawler/findWebs',
       pageNumber: 0,
       pageSize: 10,
@@ -74,28 +110,57 @@ export default {
         rootDiv: 'rootDiv',
         page: 'page'
       },
-      modal: {
-        modify: {
-          show: false
+      category: {
+        webUrl : '',
+        form: {
+          modal: false,
+          action: 'add',
+          labels: {
+            title: '标题',
+            url: '链接',
+            xpath: '抓取路径'
+          },
+          items: {
+            title: '',
+            url: '',
+            xpath: ''
+          },
+          rules: {
+            title: [
+              {required: true, message: '请输入标题', trigger: 'blur'}
+            ],
+            url: [
+              {required: true, message: '请输入链接', trigger: 'blur'}
+            ],
+            xpath: [
+              {required: true, message: '请输入抓取路径', trigger: 'blur'}
+            ]
+          },
+          extraParams: {}
         },
         add: {
-          show: false
+          url: '/crawler/addCategory'
+        },
+        modify: {
+          url: '/crawler/modifyCategory'
         },
         del: {
-          show: false
-        }
+          modal: false,
+          url: '/crawler/deleteCategory',
+          msg: null,
+          params: null
+        },
       },
       columns: [
         {
           type: 'index',
           title: '序号',
           align: 'center',
-          width: 60
+          width: 100
         },
         {
-          title: '分类',
+          title: '标题',
           key: 'title',
-          width: 200,
           render: (h, params) => {
             let self = this
             return h('a', {
@@ -117,7 +182,7 @@ export default {
           }
         },
         {
-          title: '网址',
+          title: '网址链接',
           key: 'url'
         },
         {
@@ -137,7 +202,15 @@ export default {
               },
               on: {
                 click: function () {
-                  self.modal.modify.show = true
+                  self.category.form.modal = true
+                  self.category.form.action = 'modify'
+                  self.category.form.items.title = params.row.title
+                  self.category.form.items.url = params.row.url
+                  self.category.form.items.xpath = params.row.xpath
+                  self.category.form.extraParams = {
+                    id: params.row.id,
+                    webUrl: self.category.webUrl
+                  }
                 }
               }
             }, '修改')
@@ -148,7 +221,11 @@ export default {
               },
               on: {
                 click: function () {
-                  self.modal.del.show = true
+                  self.category.del.modal = true
+                  self.category.del.msg = '分类标题：' + params.row.title
+                  self.category.del.params = {
+                    categoryId: params.row.id
+                  }
                 }
               }
             }, '删除')
@@ -169,7 +246,6 @@ export default {
     init: function () {
       let self = this
       let params = {'userId': this.$store.getters.userInfo.id}
-      // debugger
       ajaxUtil.ajax(self.findWebsUrl, params).done(function (response) {
         self.page = response.content
       })
@@ -182,26 +258,12 @@ export default {
       this.pageSize = pageSize
       this.init()
     },
-    modify_ok: function () {
-
-    },
-    modify_cancel: function () {
-      self.modal.modify.show = false
-    },
-    add_ok: function () {
-
-    },
-    add_cancel: function () {
-      self.modal.add.show = false
-    },
-    del_ok: function () {
-
-    },
-    del_cancel: function () {
-      self.modal.del.show = false
+    category_del_cancel: function () {
+      this.init()
     },
     computeCollapseStyle (keys) {
       if (keys.length !== 0) {
+        this.category.webUrl = this.page.content[keys[0]].url
         let divHeight = this.$refs[this.ref.rootDiv].clientHeight
         let pageHeight = this.$refs[this.ref.page].$el.clientHeight
         let contentHeight = divHeight - pageHeight
@@ -213,6 +275,48 @@ export default {
       } else {
         this.collapseStyle = {}
       }
+    },
+    category_handleSubmit (name) {
+      let self = this
+      this.$refs[name].validate((valid) => {
+        if (valid) {
+          self.handleForm(self.category)
+        }
+      })
+    },
+    category_handleReset (name) {
+      this.$refs[name].resetFields();
+    },
+    handleForm (src) {
+      let url = null
+      let msgSuccess = null
+      let msgFail = null
+      if (src.form.action == 'add') {
+        url = src.add.url
+        msgSuccess = '新增记录成功'
+        msgFail = '新增记录失败，原因:'
+      } else if (src.form.action == 'modify') {
+        url = src.modify.url
+        msgSuccess = '修改记录成功'
+        msgFail = '修改记录失败，原因:'
+      }
+      let params = src.form.items
+      params = Object.assign(params, src.form.extraParams);
+      let self = this
+      ajaxUtil.ajax(url,params).done(function (response) {
+        if (response.errorCode === '0000') {
+          self.$Message.success(msgSuccess);
+          src.form.modal = false
+          self.reload()
+        } else {
+          self.$Message.error(msgFail + response.errorMsg);
+        }
+      }).fail(function (response) {
+        self.$Message.info('网络异常:' + response.responseJSON.message);
+      })
+    },
+    reload () {
+      this.init()
     }
   },
   created () {

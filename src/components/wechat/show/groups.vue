@@ -24,13 +24,13 @@
         </template>
       </p>
       <Form ref="form" :model="form.items" :rules="form.rules" :label-width="150">
-        <FormItem label="群组名" prop="groupNickName">
+        <FormItem :label="form.labels.groupNickName" prop="groupNickName">
           <Row>
             <Col span="15">
               <Input type="text"
                      clearable
                      v-model="form.items.groupNickName"
-                     placeholder="群组名"></Input>
+                     :placeholder="form.labels.groupNickName"></Input>
             </Col>
           </Row>
         </FormItem>
@@ -42,19 +42,6 @@
       <div slot="footer" style="display: none">
       </div>
     </Modal>
-
-    <!--<Modal-->
-      <!--v-model="add.modal"-->
-      <!--@on-ok="add_ok"-->
-      <!--title="新增记录">-->
-      <!--<Input v-model="add.groupNickName" placeholder="请输入群组名"/>-->
-    <!--</Modal>-->
-    <!--<Modal-->
-      <!--v-model="modify.modal"-->
-      <!--@on-ok="modify_ok"-->
-      <!--title="记录修改">-->
-      <!--<Input v-model="modify.groupNickName" placeholder="请输入群组名"/>-->
-    <!--</Modal>-->
     <SelfModalDel v-model="del.modal"
                   :url="del.url"
                   :params="del.params"
@@ -75,6 +62,9 @@
         form: {
           modal: false,
           action: 'add',
+          labels: {
+            groupNickName: '群组名'
+          },
           items: {
             groupNickName: ''
           },
