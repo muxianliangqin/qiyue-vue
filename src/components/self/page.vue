@@ -31,7 +31,7 @@
       url: String,
       columns: Array,
       /*自定义参数，默认由this.$attrs.params传递参数，若selfParams存在则优先使用*/
-      selfParams: Object
+      pageParams: Object
     },
     data () {
       return {
@@ -61,8 +61,8 @@
       init: function () {
         let self = this
         let params = {}
-        if (this.selfParams) {
-          params = this.selfParams
+        if (this.pageParams) {
+          params = this.pageParams
         } else {
           params = this.$attrs.params
         }

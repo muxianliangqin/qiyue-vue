@@ -46,12 +46,14 @@
       ok () {
         let self = this
         ajaxUtil.ajax(self.url, self.params).done(function (response) {
-          if (response >= 1) {
-            self.$Message.info('删除成功');
+          if (response.errorCode === "0000") {
+            self.$Message.success('删除成功');
             self.cancel()
+          } else {
+            self.$Message.error('删除失败，原因：' + response.errorMsg);
           }
         }).fail(function (response) {
-          self.$Message.info('网络异常:' + response.responseJSON.message);
+          self.$Message.error('网络异常:' + response.responseJSON.message);
         })
       },
       cancel () {
