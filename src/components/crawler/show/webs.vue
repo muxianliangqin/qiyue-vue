@@ -272,7 +272,7 @@ export default {
           type: 'index',
           title: '序号',
           align: 'center',
-          width: 100
+          width: 70
         },
         {
           title: '标题',
@@ -288,7 +288,7 @@ export default {
                     show: true,
                     new: true,
                     params: {
-                      categoryUrl: params.row.url
+                      categoryId: params.row.id
                     }
                   };
                   self.$store.dispatch('addComponent', component)
@@ -308,6 +308,7 @@ export default {
         {
           title: '操作',
           align: 'center',
+          width: 150,
           render: (h, params) => {
             let self = this;
             let modify = h('a', {

@@ -16,7 +16,7 @@
           {
             title: '序号',
             type: 'index',
-            width: 100
+            width: 70
           },
           {
             title: '标题',
