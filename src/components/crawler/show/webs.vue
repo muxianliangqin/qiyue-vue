@@ -48,6 +48,7 @@
                    :show-header="true"
                    :stripe="true"
                    :highlight-row="true"
+                   style="border:none"
                    size="small">
             </Table>
           </div>
