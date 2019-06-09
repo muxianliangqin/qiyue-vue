@@ -21,6 +21,7 @@
                :ref="panelNamePrefix + index"
                :key="web.url">
           <span>{{web.title}}</span>
+          <Badge :count="webNewNum(web)" type="success" style="margin-left: 8px"></Badge>
           <span style="position: absolute;left: 35%;">
             {{web.url}}
           </span>
@@ -177,6 +178,7 @@ export default {
       unfold: 'p_0',
       panelNamePrefix: 'p_',
       findWebsUrl: '/crawler/findWebs',
+      hasRead: '/crawler/categoryHasRead',
       pageNumber: 0,
       pageSize: 10,
       page: {},
@@ -280,7 +282,7 @@ export default {
           key: 'title',
           render: (h, params) => {
             let self = this;
-            return h('a', {
+            let a  = h('a', {
               on: {
                 click: function () {
                   let component = {
@@ -293,9 +295,27 @@ export default {
                     }
                   };
                   self.$store.dispatch('addComponent', component)
+                  let param = {
+                    categoryId: params.row.id
+                  }
+                  ajaxUtil.ajax(self.hasRead, param).done(function (response) {
+                    if (response.errorCode === '0000') {
+                      self.reload()
+                    }
+                  })
                 }
               }
             }, params.row.title)
+            let badge = h('Badge', {
+              attrs: {
+                count: params.row.newNum,
+                type: 'success'
+              },
+              style:{
+                marginLeft: '8px'
+              }
+            })
+            return [a, badge]
           }
         },
         {
@@ -357,8 +377,13 @@ export default {
   methods: {
     init: function () {
       let self = this;
-      let params = {'userId': this.$store.getters.userInfo.id};
-      ajaxUtil.ajax(self.findWebsUrl, params).done(function (response) {
+      let rightEqual = this.params.rightEqual;
+      rightEqual = JSON.parse(rightEqual)
+      rightEqual.push(this.$store.getters.userInfo.id)
+      let params = {
+        userIds: rightEqual
+      };
+      ajaxUtil.ajaxArr("/crawler/findByUserIdInAndState", params).done(function (response) {
         self.page = response.content
       })
     },
@@ -457,6 +482,13 @@ export default {
         height: contentHeight,
         border: '1px solid #e8eaec'
       }
+    },
+    webNewNum (web) {
+      let num = 0;
+        web.categories.forEach((v) => {
+          num += v.newNum;
+        })
+      return num;
     },
     reload () {
       this.init()

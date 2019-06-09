@@ -13,7 +13,7 @@
       <Panel name="2">
         下载插件
         <div slot="content">
-          <a href="https://www.aiqiyue.xyz/crawler-assistant.zip" download="crawler-assistant">crawler-assistant下载</a>
+          <a href="https://www.aiqiyue.xyz/download/crawler-assistant.zip" download="crawler-assistant">crawler-assistant下载</a>
           <p></p>
         </div>
       </Panel>
