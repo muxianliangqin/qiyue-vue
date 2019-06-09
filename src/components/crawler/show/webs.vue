@@ -383,7 +383,7 @@ export default {
       let params = {
         userIds: rightEqual
       };
-      ajaxUtil.ajaxArr("/crawler/findByUserIdInAndState", params).done(function (response) {
+      ajaxUtil.ajaxArr(this.findWebsUrl, params).done(function (response) {
         self.page = response.content
       })
     },
