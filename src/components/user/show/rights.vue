@@ -5,7 +5,7 @@
             v-on="$listeners">
     <div slot="buttons"
          class="self-buttons">
-      <Button type="primary" style="margin-right: 80px">新增</Button>
+      <Button type="primary" size="small" style="margin-right: 80px">新增</Button>
       <divider style="margin: 4px 0px 0px 0px"></divider>
     </div>
   </SelfPage>
@@ -32,8 +32,13 @@
             key: 'name'
           },
           {
+            title: '权限描述',
+            key: 'desc'
+          },
+          {
             title: '状态',
             key: 'state',
+            width: 250,
             render: (h, params) => {
               let state = params.row.state
               let stateCn = ''
@@ -56,7 +61,7 @@
                 attrs: {
                   type: 'primary',
                   size: 'small',
-                  style: 'margin-right: 2em;'
+                  style: 'margin: 0 1em;'
                 },
                 on: {
                   click: function () {
@@ -67,7 +72,8 @@
               let del = h('Button', {
                 attrs: {
                   type: 'primary',
-                  size: 'small'
+                  size: 'small',
+                  style: 'margin: 0 1em;'
                 },
                 on: {
                   click: function () {

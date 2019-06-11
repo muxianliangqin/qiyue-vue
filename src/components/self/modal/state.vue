@@ -3,7 +3,7 @@
          @on-cancel="cancel">
     <p slot="header" style="text-align:center">
       <Icon type="ios-information-circle" style="color: red"></Icon>
-      <span>您确定要删除以下记录吗？</span>
+      <span>{{title?title:'您确定要删除以下记录吗？'}}</span>
     </p>
     <slot name="msg">
     </slot>
@@ -20,6 +20,7 @@
     props: {
       show: Boolean,  // 是否显示
       url: String,    // 删除的url
+      title: String,
       params: Object  // 参数
     },
     model: {
@@ -28,7 +29,7 @@
     },
     data () {
       return {
-        modal: this.show
+        modal: this.show,
       }
     },
     computed: {
@@ -47,10 +48,10 @@
         let self = this
         ajaxUtil.ajax(self.url, self.params).done(function (response) {
           if (response.errorCode === "0000") {
-            self.$Message.success('删除成功');
+            self.$Message.success('操作成功');
             self.cancel()
           } else {
-            self.$Message.error('删除失败，原因：' + response.errorMsg);
+            self.$Message.error('操作失败，原因：' + response.errorMsg);
           }
         }).fail(function (response) {
           self.$Message.error('网络异常:' + response.responseJSON.message);

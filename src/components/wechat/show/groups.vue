@@ -42,14 +42,14 @@
       <div slot="footer" style="display: none">
       </div>
     </Modal>
-    <SelfModalDel v-model="del.modal"
+    <SelfModalState v-model="del.modal"
                   :url="del.url"
                   :params="del.params"
                   @self-cancel="del_cancel">
       <div slot="msg" style="text-align: center">
         <p>群组: {{del.msg}}</p>
       </div>
-    </SelfModalDel>
+    </SelfModalState>
   </div>
 </template>
 
@@ -84,7 +84,7 @@
         del: {
           modal: false,
           url: '/weChat/delete',
-          msg: null,
+          msg: '',
           params: null
         },
         page: {

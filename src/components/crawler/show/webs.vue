@@ -95,14 +95,14 @@
       <div slot="footer" style="display: none">
       </div>
     </Modal>
-    <SelfModalDel v-model="web.del.modal"
+    <SelfModalState v-model="web.del.modal"
                   :url="web.del.url"
                   :params="web.del.params"
                   @self-cancel="del_cancel">
       <div slot="msg" style="text-align: center">
         <p>{{web.del.msg}}</p>
       </div>
-    </SelfModalDel>
+    </SelfModalState>
     <!--网站处理区-->
     <!--分类处理区-->
     <Modal v-model="category.form.modal">
@@ -150,14 +150,14 @@
       <div slot="footer" style="display: none">
       </div>
     </Modal>
-    <SelfModalDel v-model="category.del.modal"
+    <SelfModalState v-model="category.del.modal"
                   :url="category.del.url"
                   :params="category.del.params"
                   @self-cancel="del_cancel">
       <div slot="msg" style="text-align: center">
         <p>{{category.del.msg}}</p>
       </div>
-    </SelfModalDel>
+    </SelfModalState>
     <!--分类处理区-->
     <!--分页区-->
     <Page :total='page.totalElements'
@@ -378,8 +378,12 @@ export default {
     init: function () {
       let self = this;
       let rightEqual = this.params.rightEqual;
-      rightEqual = JSON.parse(rightEqual)
-      rightEqual.push(this.$store.getters.userInfo.id)
+      if (rightEqual === 'null') {
+        rightEqual = []
+      } else {
+        rightEqual = JSON.parse(rightEqual);
+      }
+      rightEqual.push(this.$store.getters.userInfo.id);
       let params = {
         userIds: rightEqual
       };
