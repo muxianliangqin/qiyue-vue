@@ -174,6 +174,7 @@ export default {
       /* 初始化页面布局 */
       let params = {userId: this.$store.getters.userInfo.id}
       this.layout.root = ajaxUtil.ajaxSync(this.getMenuNode, params).content
+      this.$store.dispatch('setMenuRoot', this.layout.root)
       this.initModule()
       this.initSide()
     },
@@ -181,7 +182,7 @@ export default {
       /* 初始化模块区 */
       let moduleMenus = this.layout.root.children
       this.layout.module.menus = moduleMenus
-      let moduleActiveMenus = [0]
+      let moduleActiveMenus = [1]
       this.layout.module.activeMenus = moduleActiveMenus
     },
     initSide () {

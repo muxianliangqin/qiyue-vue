@@ -11,18 +11,14 @@
         <Divider style="margin: 4px 0px 0px 0px"></Divider>
       </div>
     </SelfPage>
-    <Modal v-model="form.modal">
-      <p slot="header" style="text-align:center">
-        <template v-if="form.action === 'add'">
-          <Icon type="md-add-circle" />
-          <span>新增记录</span>
-        </template>
-        <template v-if="form.action === 'modify'">
-          <Icon type="md-analytics" />
-          <span>修改记录</span>
-        </template>
-      </p>
-      <Form ref="form" :model="form.items" :rules="form.rules" :label-width="150">
+    <SelfModalForm v-model="form.modal"
+                   :title="form.title"
+                   :url="form.url"
+                   :items="form.items"
+                   :rules="form.rules"
+                   :extraParams="form.extraParams"
+                   @self-done="reload">
+      <div slot="fields">
         <FormItem :label="form.labels.username" prop="username">
           <Row>
             <Col span="15">
@@ -74,19 +70,13 @@
             </Col>
           </Row>
         </FormItem>
-        <FormItem :label-width="0" style="text-align: center;margin-bottom: 0px;">
-          <Button type="primary" @click="handleSubmit('form')">提交</Button>
-          <Button @click="handleReset('form')" style="margin-left: 8px">重置</Button>
-        </FormItem>
-      </Form>
-      <div slot="footer" style="display: none">
       </div>
-    </Modal>
+    </SelfModalForm>
     <SelfModalState v-model="state.modal"
                     :url="state.url"
                     :params="state.params"
                     :title="state.title"
-                    @self-cancel="del_cancel">
+                    @self-done="reload">
       <div slot="msg" style="text-align: center">
         <p>{{state.msg}}</p>
       </div>
@@ -95,14 +85,14 @@
 </template>
 
 <script>
-  import ajaxUtil from '@/assets/util/ajaxUtil'
   export default {
     name: "users",
     data () {
       return {
         form: {
           modal: false,
-          action: 'add',
+          title: '',
+          url: '',
           labels: {
             username: '用户名称',
             mobile: '手机号码',
@@ -238,7 +228,8 @@
                   on: {
                     click: function () {
                       self.form.modal = true;
-                      self.form.action = 'modify';
+                      self.form.title = '修改记录';
+                      self.form.url = self.modify.url;
                       self.form.items.username = params.row.username;
                       self.form.items.mobile = params.row.mobile;
                       self.form.items.alias = params.row.alias;
@@ -262,7 +253,7 @@
                       self.state.msg = '用户：' + params.row.username;
                       self.state.title = '确定要停用以下记录吗？';
                       self.state.params = {
-                        userId: params.row.id
+                        id: params.row.id
                       }
                     }
                   }
@@ -280,7 +271,7 @@
                       self.state.url = self.restart.url;
                       self.state.title = '确定要启用以下记录吗？';
                       self.state.params = {
-                        userId: params.row.id
+                        id: params.row.id
                       }
                     }
                   }
@@ -297,7 +288,7 @@
                       self.state.msg = '用户：' + params.row.username;
                       self.state.url = self.del.url;
                       self.state.params = {
-                        userId: params.row.id
+                        id: params.row.id
                       }
                     }
                   }
@@ -318,7 +309,8 @@
     methods: {
       addItem () {
         this.form.modal = true;
-        this.form.action = 'add';
+        this.form.title = '新增记录';
+        this.form.url = this.add.url;
         this.form.items.username = '';
         this.form.items.mobile = '';
         this.form.items.alias = '';
@@ -326,49 +318,11 @@
         this.form.items.password = '';
 
       },
-      handleSubmit (name) {
-        this.$refs[name].validate((valid) => {
-          if (valid) {
-            let url = null
-            let msgSuccess = null
-            let msgFail = null
-            let params = this.form.items
-            if (this.form.action == 'add') {
-              url = this.add.url
-              msgSuccess = '新增记录成功'
-              msgFail = '新增记录失败，原因:'
-            } else if (this.form.action == 'modify') {
-              url = this.modify.url
-              msgSuccess = '修改记录成功'
-              msgFail = '修改记录失败，原因:'
-            }
-            params = Object.assign(params, this.form.extraParams);
-            let self = this
-            ajaxUtil.ajax(url,params).done(function (response) {
-              if (response.errorCode === '0000') {
-                self.$Message.success(msgSuccess);
-                self.form.modal = false
-                self.$refs[self.page.ref].reload()
-              } else {
-                self.$Message.error(msgFail + response.errorMsg);
-              }
-            }).fail(function (response) {
-              self.$Message.info('网络异常:' + response.responseJSON.message);
-            })
-          } else {
-            this.$Message.error('校验不通过，请重新填写');
-          }
-        })
-      },
-      handleReset (name) {
-        this.$refs[name].resetFields();
-      },
-      del_cancel () {
-        this.$refs[this.page.ref].reload()
+      reload (value) {
+        if (value) {
+          this.$refs[this.page.ref].reload()
+        }
       }
-    },
-    mounted () {
-
     }
   }
 </script>

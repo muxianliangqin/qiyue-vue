@@ -13,7 +13,8 @@ const state = {
         params: null
       }
     ]
-  }
+  },
+  menuRoot: {}
 }
 
 const actions = {
@@ -43,12 +44,16 @@ const actions = {
   },
   setTabsHeight ({commit}, height) {
     commit('setTabsHeight', height)
-  }
+  },
+  setMenuRoot ({commit}, menuRoot) {
+    commit('setMenuRoot', menuRoot)
+  },
 }
 
 const getters = {
   userInfo: (state) => state.userInfo,
-  tabs: (state) => state.tabs
+  tabs: (state) => state.tabs,
+  menuRoot: (state) => state.menuRoot
 }
 
 const mutations = {
@@ -80,6 +85,9 @@ const mutations = {
   setTabsHeight (state, height) {
     state.tabs.height = height
     state.tabs.contentHeight = height - 50
+  },
+  setMenuRoot (state, menuRoot) {
+    state.menuRoot = menuRoot
   }
 }
 

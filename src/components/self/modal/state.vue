@@ -1,3 +1,18 @@
+<!--
+本组件用于处理记录状态的改变
+Params:
+  show: 控制modal的显示和隐藏
+  url: 后台接口链接
+  title: modal显示是的标题
+  params: 传入的参数，一般为 {xxId:}
+
+self-done:
+  自定义的完结事件，返回boolean值，
+  true表示操作成功，需要更新数据
+  false表示取消操作，不需要更新数据
+self-model:
+  自定义组件的v-model
+-->
 <template>
   <Modal v-model="modalShow"
          @on-cancel="cancel">
@@ -8,7 +23,7 @@
     <slot name="msg">
     </slot>
     <div slot="footer" style="text-align:center">
-      <Button type="error" size="large" @click="ok">删除</Button>
+      <Button type="error" size="large" @click="ok">确定</Button>
     </div>
   </Modal>
 </template>
@@ -25,7 +40,7 @@
     },
     model: {
       prop: 'show',
-      event: 'self-cancel'
+      event: 'self-model'
     },
     data () {
       return {
@@ -49,7 +64,8 @@
         ajaxUtil.ajax(self.url, self.params).done(function (response) {
           if (response.errorCode === "0000") {
             self.$Message.success('操作成功');
-            self.cancel()
+            self.$emit('self-done', true)
+            self.$emit('self-model', false)
           } else {
             self.$Message.error('操作失败，原因：' + response.errorMsg);
           }
@@ -58,7 +74,8 @@
         })
       },
       cancel () {
-        this.$emit('self-cancel', false)
+        this.$emit('self-done', false)
+        this.$emit('self-model', false)
       }
     }
   }

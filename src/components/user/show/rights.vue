@@ -1,14 +1,69 @@
 <template>
-  <SelfPage :url="url"
-            :columns="columns"
-            v-bind="$attrs"
-            v-on="$listeners">
-    <div slot="buttons"
-         class="self-buttons">
-      <Button type="primary" size="small" style="margin-right: 80px">新增</Button>
-      <divider style="margin: 4px 0px 0px 0px"></divider>
-    </div>
-  </SelfPage>
+  <div>
+    <SelfPage :url="page.url"
+              :columns="page.columns"
+              :ref="page.ref"
+              v-bind="$attrs"
+              v-on="$listeners">
+      <div slot="buttons"
+           class="self-buttons">
+        <Button type="primary" size="small" style="margin-right: 80px" @click="addItem">新增</Button>
+        <divider style="margin: 4px 0px 0px 0px"></divider>
+      </div>
+    </SelfPage>
+    <SelfModalForm v-model="form.modal"
+                   :title="form.title"
+                   :url="form.url"
+                   :items="form.items"
+                   :rules="form.rules"
+                   :extraParams="form.extraParams"
+                   @self-done="reload">
+      <div slot="fields">
+        <FormItem :label="form.labels.code" prop="code">
+          <Row>
+            <Col span="15">
+              <Input type="text"
+                     clearable
+                     v-model="form.items.code"
+                     :placeholder="form.labels.code"></Input>
+            </Col>
+          </Row>
+        </FormItem>
+        <FormItem :label="form.labels.name" prop="name">
+          <Row>
+            <Col span="15">
+              <Input type="text"
+                     clearable
+                     v-model="form.items.name"
+                     :placeholder="form.labels.name"></Input>
+            </Col>
+          </Row>
+        </FormItem>
+        <FormItem :label="form.labels.desc" prop="desc">
+          <Row>
+            <Col span="15">
+              <Input type="text"
+                     clearable
+                     v-model="form.items.desc"
+                     :placeholder="form.labels.desc"></Input>
+            </Col>
+          </Row>
+        </FormItem>
+      </div>
+    </SelfModalForm>
+    <SelfModalState v-model="state.modal"
+                    :url="state.url"
+                    :params="state.params"
+                    :title="state.title"
+                    @self-done="reload">
+      <div slot="msg" style="text-align: center">
+        <p>{{state.msg}}</p>
+      </div>
+    </SelfModalState>
+    <SelfTree v-model="tree.modal">
+
+    </SelfTree>
+  </div>
 </template>
 
 <script>
@@ -16,77 +71,222 @@
     name: 'rights',
     data () {
       return {
-        url:　'user/findRights',
-        columns: [
-          {
-            title: '序号',
-            type: 'index',
-            width: 100
+        form: {
+          modal: false,
+          title: '',
+          url: '',
+          labels: {
+            code: '权限编码',
+            name: '权限名称',
+            desc: '权限描述'
           },
-          {
-            title: '权限代码',
-            key: 'code'
+          items: {
+            code: '',
+            name: '',
+            desc: ''
           },
-          {
-            title: '权限名称',
-            key: 'name'
+          rules: {
+            code: [
+              {required: true, message: '请输入权限编码', trigger: 'blur'}
+            ],
+            name: [
+              {required: true, message: '请输入权限名称', trigger: 'blur'}
+            ],
+            desc: [
+              {required: false, message: '请输入权限描述', trigger: 'blur'}
+            ]
           },
-          {
-            title: '权限描述',
-            key: 'desc'
-          },
-          {
-            title: '状态',
-            key: 'state',
-            width: 250,
-            render: (h, params) => {
-              let state = params.row.state
-              let stateCn = ''
-              if (state === '0') {
-                stateCn = '正常'
-              } else if (state === '1') {
-                stateCn = '删除'
-              } else {
-                stateCn = '未知'
+          extraParams: {}
+        },
+        add: {
+          url: 'user/right/add'
+        },
+        modify: {
+          url: 'user/right/modify'
+        },
+        del: {
+          url: 'user/right/del'
+        },
+        stop: {
+          url: 'user/right/stop'
+        },
+        restart: {
+          url: 'user/right/restart'
+        },
+        state: {
+          modal: false,
+            title: undefined,
+            url: '',
+            msg: '',
+            params: null
+        },
+        tree: {
+          modal: false,
+          url: 'user/right/menu'
+        },
+        page: {
+          url:　'user/right/findAll',
+          ref: 'selfPage',
+          columns: [
+            {
+              title: '序号',
+              type: 'index',
+              width: 100
+            },
+            {
+              title: '权限代码',
+              key: 'code'
+            },
+            {
+              title: '权限名称',
+              key: 'name'
+            },
+            {
+              title: '权限描述',
+              key: 'desc'
+            },
+            {
+              title: '状态',
+              key: 'state',
+              render: (h, params) => {
+                let state = params.row.state
+                let stateCn = ''
+                if (state === '0') {
+                  stateCn = '正常'
+                } else if (state === '1') {
+                  stateCn = '删除'
+                } else {
+                  stateCn = '未知'
+                }
+                return h('span',stateCn)
               }
-              return h('span',stateCn)
-            }
-          },
-          {
-            title: '操作',
-            align: 'center',
-            render: (h, params) => {
-              let self = this
-              let modify = h('Button', {
-                attrs: {
-                  type: 'primary',
-                  size: 'small',
-                  style: 'margin: 0 1em;'
-                },
-                on: {
-                  click: function () {
-                    self.modal.modify.show = true
+            },
+            {
+              title: '菜单权限设置',
+              render: (h, params) => {
+                let self = this
+                let set = h('Button', {
+                  attrs: {
+                    type: 'primary',
+                    size: 'small',
+                    style: 'margin: 0 1em;'
+                  },
+                  on: {
+                    click: function () {
+                      self.tree.modal = true
+                    }
                   }
-                }
-              }, '修改')
-              let del = h('Button', {
-                attrs: {
-                  type: 'primary',
-                  size: 'small',
-                  style: 'margin: 0 1em;'
-                },
-                on: {
-                  click: function () {
-                    self.modal.del.show = true
+                }, '菜单权限设置')
+                return [set]
+              }
+            },
+            {
+              title: '操作',
+              align: 'center',
+              width: 250,
+              render: (h, params) => {
+                let self = this
+                let modify = h('Button', {
+                  attrs: {
+                    type: 'primary',
+                    size: 'small',
+                    style: 'margin: 0 1em;'
+                  },
+                  on: {
+                    click: function () {
+                      self.form.modal = true;
+                      self.form.title = '修改记录';
+                      self.form.url = self.modify.url;
+                      self.form.items.code = params.row.code;
+                      self.form.items.name = params.row.name;
+                      self.form.items.desc = params.row.desc;
+                      self.form.extraParams = {
+                        id: params.row.id
+                      }
+                    }
                   }
+                }, '修改')
+                let stop = h('Button', {
+                  attrs: {
+                    type: 'primary',
+                    size: 'small',
+                    style: 'margin: 0 1em;'
+                  },
+                  on: {
+                    click: function () {
+                      self.state.modal = true;
+                      self.state.url = self.stop.url;
+                      self.state.msg = '用户：' + params.row.name;
+                      self.state.title = '确定要停用以下记录吗？';
+                      self.state.params = {
+                        id: params.row.id
+                      }
+                    }
+                  }
+                }, '停用')
+                let restart = h('Button', {
+                  attrs: {
+                    type: 'primary',
+                    size: 'small',
+                    style: 'margin: 0 1em;'
+                  },
+                  on: {
+                    click: function () {
+                      self.state.modal = true;
+                      self.state.msg = '用户：' + params.row.name;
+                      self.state.url = self.restart.url;
+                      self.state.title = '确定要启用以下记录吗？';
+                      self.state.params = {
+                        id: params.row.id
+                      }
+                    }
+                  }
+                }, '启用')
+                let del = h('Button', {
+                  attrs: {
+                    type: 'primary',
+                    size: 'small',
+                    style: 'margin: 0 1em;'
+                  },
+                  on: {
+                    click: function () {
+                      self.state.modal = true;
+                      self.state.msg = '用户：' + params.row.name;
+                      self.state.url = self.del.url;
+                      self.state.params = {
+                        id: params.row.id
+                      }
+                    }
+                  }
+                }, '删除')
+                let ops = []
+                if (params.row.state === '0') {
+                  ops = [modify, stop, del]
+                } else {
+                  ops = [modify, restart, del]
                 }
-              }, '删除')
-              return [modify, del]
+                return ops
+              }
             }
-          }
-        ]
+          ]
+        }
       }
     },
+    methods: {
+      addItem () {
+        this.form.modal = true;
+        this.form.title = '新增记录';
+        this.form.url = this.add.url;
+        this.form.items.code = '';
+        this.form.items.name = '';
+        this.form.items.desc = '';
+      },
+      reload (value) {
+        if (value) {
+          this.$refs[this.page.ref].reload()
+        }
+      }
+    }
   }
 </script>
 
