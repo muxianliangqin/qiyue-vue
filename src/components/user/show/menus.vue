@@ -7,6 +7,7 @@
               v-on="$listeners">
       <div slot="buttons"
            class="self-buttons">
+        <Button type="primary" size="small" style="float: left;margin-left: 20px" @click="menuTree">菜单树展示</Button>
         <Button type="primary" size="small" style="margin-right: 80px" @click="addItem">新增</Button>
         <divider style="margin: 4px 0px 0px 0px"></divider>
       </div>
@@ -254,6 +255,19 @@
         this.form.items.code = ''
         this.form.items.name = ''
         this.form.items.superCode = ''
+      },
+      menuTree () {
+        let component = {
+          name: 'UserSetMenuTree',
+          desc: '菜单树',
+          show: true,
+          new: false,
+          params: {
+            checkbox: false,
+            expand: true
+          }
+        };
+        this.$store.dispatch('addComponent', component)
       },
       reload (value) {
         if (value) {

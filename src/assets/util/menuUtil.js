@@ -6,7 +6,7 @@ function addBreadcrumbs (menuRoot, superBreadcrumbs) {
 }
 function addUserMenu (rootMenu, id, newMenu) {
   for (let item of rootMenu.children) {
-    if (item.element.id === id) {
+    if (item.element.code === id) {
       addBreadcrumbs(newMenu, item.breadcrumbs)
       item.children = newMenu.children
       item.hasChild = true
@@ -21,37 +21,25 @@ function addUserMenu (rootMenu, id, newMenu) {
   return rootMenu
 }
 function getBreadcrumbs (menuRoot, breadcrumbs) {
-  let index = 0
   let items = menuRoot.children
-  while (index < breadcrumbs.length) {
+  for (let index=0;index<breadcrumbs.length;index++) {
     for (let item of items) {
-      if (breadcrumbs[index] === item.element.id) {
-        let url = item.element.url
-        if (!url || url === 'null') {
-          url = null
-        } else {
-          if (index === 0) {
-            url = '/' + url
-          } else {
-            url = breadcrumbs[index - 1].url + '/' + url
-          }
-        }
+      if (breadcrumbs[index] === item.element.code) {
         breadcrumbs[index] = {
-          url: url,
+          code: item.element.code,
           name: item.element.name
         }
         items = item.children
         break
       }
     }
-    index++
   }
   return breadcrumbs
 }
 function contain(rootMenu, node) {
   let flag = false
   for (let item of rootMenu.children) {
-    if (item.element.id === node) {
+    if (item.element.code === node) {
       flag = true
       break
     }

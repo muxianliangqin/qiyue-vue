@@ -14,8 +14,8 @@
           <div class="layout-nav">
             <template v-for="(module, index) in layout.module.menus">
               <MenuItem :name="index"
-                        :key="module.element.id">
-                <Icon type="ios-navigate" :key="module.element.id"></Icon>
+                        :key="module.element.code">
+                <Icon type="ios-navigate" :key="module.element.code"></Icon>
                 {{module.element.name}}
               </MenuItem>
             </template>
@@ -27,11 +27,8 @@
         <Breadcrumb :ref="layout.breadcrumb.ref"
                     :style="{padding: '8px 0', 'text-align': 'left'}">
           <template v-for="breadcrumb in getBreadcrumbs">
-            <BreadcrumbItem :key="'breadcrumb_' + breadcrumb.url">
-              <a :href="breadcrumb.url" v-if="breadcrumb.url">
-                {{breadcrumb.name}}
-              </a>
-              <span v-else>
+            <BreadcrumbItem :key="'breadcrumb_' + breadcrumb.code">
+              <span>
                 {{breadcrumb.name}}
               </span>
             </BreadcrumbItem>
@@ -52,7 +49,7 @@
                     accordion>
                 <template v-for="(menu, index) in layout.side.menus">
                   <Submenu :name="menuNamePrefix + index"
-                           :key="menu.element.id"
+                           :key="menu.element.code"
                            @click.native=''>
                     <template slot="title">
                       <Icon type="ios-keypad" ></Icon>
@@ -60,7 +57,7 @@
                     </template>
                     <template v-for="(menu2, index2) in menu.children">
                       <MenuItem :name="menuNamePrefix + index + '-' + index2"
-                                :key="menu2.element.id">
+                                :key="menu2.element.code">
                         {{menu2.element.name}}
                       </MenuItem>
                     </template>
@@ -191,7 +188,7 @@ export default {
       let sideMenus = sideModule.menus
       this.layout.side.menus = sideMenus
       // 设定MenuItem的name前缀
-      this.menuNamePrefix = sideModule.element.id + this.menuNameSeparator
+      this.menuNamePrefix = sideModule.element.code + this.menuNameSeparator
       let sideActiveMenus = []
       sideActiveMenus.push(0)
       let activeMenus = sideMenus
@@ -241,7 +238,7 @@ export default {
     },
     toComponent (menu) {
       /* 跳转标签 */
-      let path = baseUtil.generateCompName(menu.element.xpath)
+      let path = baseUtil.generateCompName(menu.element.url)
       let param = {
         name: path,
         desc: menu.element.name,
@@ -285,7 +282,7 @@ export default {
       // 跳转到标签
       this.toComponent(selectedMenu)
       // 更新活动标签
-      let tabsActive = baseUtil.generateCompName(selectedMenu.element.xpath)
+      let tabsActive = baseUtil.generateCompName(selectedMenu.element.url);
       this.$store.dispatch('setTabsActive',tabsActive)
     }
   },
