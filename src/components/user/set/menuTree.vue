@@ -7,51 +7,35 @@
               :render="renderContent"
               style="text-align: left"></Tree>
       </Col>
-      <Col span="8">
+      <Col span="8" v-if="form.operate">
+        <Divider>{{form.title}}</Divider>
         <Form ref="form"
               :model="form.items"
               :rules="form.rules"
-              v-if="form.operate"
-              :label-width="150">
+              :label-width="100">
           <FormItem :label="form.labels.code" prop="code">
-            <Row>
-              <Col span="15">
-                <Input type="text"
-                       clearable
-                       v-model="form.items.code"
-                       :placeholder="form.labels.code"></Input>
-              </Col>
-            </Row>
+            <Input type="text"
+                   clearable
+                   v-model="form.items.code"
+                   :placeholder="form.labels.code"></Input>
           </FormItem>
           <FormItem :label="form.labels.name" prop="name">
-            <Row>
-              <Col span="15">
-                <Input type="text"
-                       clearable
-                       v-model="form.items.name"
-                       :placeholder="form.labels.name"></Input>
-              </Col>
-            </Row>
+            <Input type="text"
+                   clearable
+                   v-model="form.items.name"
+                   :placeholder="form.labels.name"></Input>
           </FormItem>
           <FormItem :label="form.labels.url" prop="url">
-            <Row>
-              <Col span="15">
-                <Input type="text"
-                       clearable
-                       v-model="form.items.url"
-                       :placeholder="form.labels.url"></Input>
-              </Col>
-            </Row>
+            <Input type="text"
+                   clearable
+                   v-model="form.items.url"
+                   :placeholder="form.labels.url"></Input>
           </FormItem>
           <FormItem :label="form.labels.superCode" prop="superCode">
-            <Row>
-              <Col span="15">
-                <Input type="text"
-                       clearable
-                       v-model="form.items.superCode"
-                       :placeholder="form.labels.superCode"></Input>
-              </Col>
-            </Row>
+            <Input type="text"
+                   clearable
+                   v-model="form.items.superCode"
+                   :placeholder="form.labels.superCode"></Input>
           </FormItem>
           <FormItem :label-width="0" style="text-align: center;margin-bottom: 0px;">
             <Button type="primary" @click="handleSubmit('form')">提交</Button>
@@ -78,7 +62,8 @@
             name: '根目录',
             code: 'root',
             expand: true,
-            selected: true,
+            selected: false,
+            disabled: true,
             children: []
           }
         ],
@@ -90,6 +75,7 @@
         expand: undefined,
         form: {
           operate: false,
+          title: '',
           labels: {
             code: '菜单编码',
             name: '菜单名称',
@@ -144,7 +130,9 @@
           let node = {
             name: v.element.name,
             code: v.element.code,
-            superCode: v.element.superCode
+            url: v.element.url,
+            superCode: v.element.superCode,
+            selected: false
           };
           if (checkbox instanceof Array && checkbox.indexOf(v.element.code) >= 0) {
             node.check = true
@@ -167,6 +155,36 @@
       },
       renderContent (h, { root, node, data }) {
         let self = this;
+        let _root = root
+        let _data = data
+        let _node = node
+        let name = h('span', {
+          attrs: {
+            class: 'ivu-tree-title ' + (_data.selected?'ivu-tree-title-selected':'')
+          },
+          on: {
+            click (e) {
+              self.form.title = '【' + _data.name + '】修改';
+              for (let i=0;i<_root.length;i++) {
+                _root[i].node.selected = false;
+              }
+              if (_data.code !== 'root') {
+                const parentKey = _root.find(el => el === _node).parent;
+                const parent = _root.find(el => el.nodeKey === parentKey).node;
+                const index = parent.children.indexOf(_data);
+                self.form.operate = true
+                self.form.items.code = _data.code;
+                self.form.items.name = _data.name;
+                self.form.items.superCode = _data.superCode;
+                self.form.items.url = _data.url;
+                _data.selected = true;
+                parent.children.splice(index, 1, _data);
+              } else {
+                _data.selected = true
+              }
+            }
+          }
+        }, data.name)
         return h('span', {
           style: {
             display: 'inline-block',
@@ -182,16 +200,7 @@
                 marginRight: '8px'
               }
             }),
-            h('span', {
-              on: {
-                doubleClick () {
-                  self.form.operate = true
-                },
-                click (e) {
-                  $(e).addClass('ivu-tree-title-selected')
-                }
-              }
-            }, data.name)
+            name
           ]),
           h('span', {
             style: {
@@ -210,7 +219,9 @@
                 width: data.code === 'root'?'64px':'auto',
               },
               on: {
-                click: () => { this.append(root, node, data) }
+                click: (e) => {
+                  this.append(root, node, data);
+                }
               }
             }),
             h('Button', {
@@ -228,20 +239,33 @@
         ]);
       },
       append (root, node, data) {
-        data.selected = true;
-        this.form.operate = true;
-        let code = data.code;
-        let regexp = /^([A-z]+)(\d+)$/;
-        let result = regexp.exec(code);
-        this.form.items.code = this.generateCode(result[1],result[2]);
-        this.form.items.superCode = data.code;
-
-        /*const children = data.children || [];
-        children.push({
-          name: 'appended node',
-          expand: true
-        });
-        this.$set(data, 'children', children);*/
+        for (let i=0;i<root.length;i++) {
+          root[i].node.selected = false;
+        }
+        if (data.code !== 'root') {
+          const parentKey = root.find(el => el === node).parent;
+          const parent = root.find(el => el.nodeKey === parentKey).node;
+          const index = parent.children.indexOf(data);
+          parent.selected = true;
+          this.form.operate = true;
+          let code = data.code;
+          let regexp = /^([A-z]+)(\d+)$/;
+          let result = regexp.exec(code);
+          this.form.items.code = this.generateCode(result[1],result[2]);
+          this.form.items.superCode = data.code;
+          this.form.items.name = data.name;
+          this.form.items.url = data.url;
+          this.form.title = '【' + parent.name + '】新增';
+          parent.children.splice(index, 1, data);
+        } else {
+          data.selected = true;
+          this.form.title = '【' + data.name + '】新增';
+          this.form.operate = true;
+          this.form.items.code = '';
+          this.form.items.superCode = '';
+          this.form.items.name = '';
+          this.form.items.url = '';
+        }
       },
       remove (root, node, data) {
         const parentKey = root.find(el => el === node).parent;
@@ -256,6 +280,12 @@
           num = "0" + num;
         }
         return prefix + num;
+      },
+      setNewData(root, node, data, newData) {
+        const parentKey = root.find(el => el === node).parent;
+        const parent = root.find(el => el.nodeKey === parentKey).node;
+        const index = parent.children.indexOf(data);
+        parent.children.splice(index, 1, newData);
       }
     },
     created () {
