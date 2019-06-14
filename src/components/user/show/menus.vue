@@ -119,7 +119,7 @@
           params: null
         },
         page: {
-          url:　'user/menu/findAll',
+          url:　'user/menu/findAllPage',
           ref: 'selfPage',
           columns: [
             {

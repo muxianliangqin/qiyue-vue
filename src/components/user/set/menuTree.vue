@@ -1,7 +1,7 @@
 <template>
   <div>
     <Row>
-      <Col span="8">
+      <Col span="10">
         <Tree :data="data"
               :show-checkbox="showCheckbox"
               :render="renderContent"
@@ -15,25 +15,29 @@
               :label-width="100">
           <FormItem :label="form.labels.code" prop="code">
             <Input type="text"
-                   clearable
+                   :clearable="!form.disabled.code"
+                   :disabled="form.disabled.code"
                    v-model="form.items.code"
                    :placeholder="form.labels.code"></Input>
           </FormItem>
           <FormItem :label="form.labels.name" prop="name">
             <Input type="text"
-                   clearable
+                   :clearable="!form.disabled.name"
+                   :disabled="form.disabled.name"
                    v-model="form.items.name"
                    :placeholder="form.labels.name"></Input>
           </FormItem>
           <FormItem :label="form.labels.url" prop="url">
             <Input type="text"
-                   clearable
+                   :clearable="!form.disabled.url"
+                   :disabled="form.disabled.url"
                    v-model="form.items.url"
                    :placeholder="form.labels.url"></Input>
           </FormItem>
           <FormItem :label="form.labels.superCode" prop="superCode">
             <Input type="text"
-                   clearable
+                   :clearable="!form.disabled.superCode"
+                   :disabled="form.disabled.superCode"
                    v-model="form.items.superCode"
                    :placeholder="form.labels.superCode"></Input>
           </FormItem>
@@ -48,7 +52,7 @@
 </template>
 
 <script>
-  import $ from 'jquery'
+  import ajaxUtil from '@/assets/util/ajaxUtil'
   export default {
     name: "tree",
     props: {
@@ -56,7 +60,8 @@
     },
     data () {
       return {
-        menuRoot: this.$store.getters.menuRoot,
+        menuFindAll: '/user/menu/findAll',
+        menuRoot: undefined,
         data: [
           {
             name: '根目录',
@@ -64,6 +69,7 @@
             expand: true,
             selected: false,
             disabled: true,
+            state: '0',
             children: []
           }
         ],
@@ -76,11 +82,18 @@
         form: {
           operate: false,
           title: '',
+          url: '',
           labels: {
             code: '菜单编码',
             name: '菜单名称',
             url: '菜单目录',
             superCode: '上级菜单'
+          },
+          disabled: {
+            code: false,
+            name: false,
+            url: false,
+            superCode: false
           },
           items: {
             code: '',
@@ -103,7 +116,22 @@
             ]
           },
           extraParams: {}
-        }
+        },
+        add: {
+          url: 'user/menu/add'
+        },
+        modify: {
+          url: 'user/menu/modify'
+        },
+        del: {
+          url: 'user/menu/del'
+        },
+        stop: {
+          url: 'user/menu/stop'
+        },
+        restart: {
+          url: 'user/menu/restart'
+        },
       }
     },
     computed: {
@@ -119,19 +147,23 @@
     },
     methods: {
       init () {
-        let menuRoot = this.menuRoot;
-        this.checkbox = this.params.checkbox
-        this.expand = this.params.expand
-        this.data[0].children = this.menuNodeToTreeNode(menuRoot.children, this.checkbox, this.expand);
+        ajaxUtil.ajax(this.menuFindAll).done((response) => {
+          this.menuRoot = response.content;
+          this.checkbox = this.params.checkbox;
+          this.expand = this.params.expand;
+          this.data[0].children = this.menuNodeToTreeNode(this.menuRoot.children, this.checkbox, this.expand);
+        });
       },
       menuNodeToTreeNode (menuNodes, checkbox, expand) {
         let treeNode = [];
         menuNodes.forEach((v) => {
           let node = {
+            id: v.element.id,
             name: v.element.name,
             code: v.element.code,
             url: v.element.url,
             superCode: v.element.superCode,
+            state: v.element.state,
             selected: false
           };
           if (checkbox instanceof Array && checkbox.indexOf(v.element.code) >= 0) {
@@ -155,36 +187,40 @@
       },
       renderContent (h, { root, node, data }) {
         let self = this;
-        let _root = root
-        let _data = data
-        let _node = node
         let name = h('span', {
           attrs: {
-            class: 'ivu-tree-title ' + (_data.selected?'ivu-tree-title-selected':'')
+            class: 'ivu-tree-title ' + (data.selected?'ivu-tree-title-selected':'')
           },
           on: {
             click (e) {
-              self.form.title = '【' + _data.name + '】修改';
-              for (let i=0;i<_root.length;i++) {
-                _root[i].node.selected = false;
+              self.form.title = '【' + data.name + '】修改';
+              self.form.url = self.modify.url;
+              for (let i=0;i<root.length;i++) {
+                root[i].node.selected = false;
               }
-              if (_data.code !== 'root') {
-                const parentKey = _root.find(el => el === _node).parent;
-                const parent = _root.find(el => el.nodeKey === parentKey).node;
-                const index = parent.children.indexOf(_data);
-                self.form.operate = true
-                self.form.items.code = _data.code;
-                self.form.items.name = _data.name;
-                self.form.items.superCode = _data.superCode;
-                self.form.items.url = _data.url;
-                _data.selected = true;
-                parent.children.splice(index, 1, _data);
+              data.selected = true
+              if (data.code !== 'root') {
+                self.form.operate = true;
+                self.form.items.code = data.code;
+                self.form.items.name = data.name;
+                self.form.items.superCode = data.superCode;
+                self.form.items.url = data.url;
+                self.form.disabled.code = true;
+                self.form.disabled.superCode = true;
+                self.form.disabled.name = false;
+                self.form.disabled.url = false;
+                self.form.extraParams = {
+                  id: data.id
+                }
               } else {
-                _data.selected = true
+                self.form.operate = false;
+                self.$Notice.warning({
+                  title: '根目录不允许修改'
+                })
               }
             }
           }
-        }, data.name)
+        }, data.code + '-' + data.name);
         return h('span', {
           style: {
             display: 'inline-block',
@@ -194,13 +230,21 @@
           h('span', [
             h('Icon', {
               props: {
-                type: 'ios-paper-outline'
+                type: data.children?'ios-folder-outline':'ios-menu'
               },
               style: {
                 marginRight: '8px'
               }
             }),
-            name
+            name,
+            h('Icon', {
+              props: {
+                type: data.state === '0'?'md-checkmark-circle':'md-close-circle'
+              },
+              style: {
+                marginLeft: '8px'
+              }
+            })
           ]),
           h('span', {
             style: {
@@ -216,11 +260,25 @@
               }),
               style: {
                 marginRight: data.code === 'root'?'0':'8px',
-                width: data.code === 'root'?'64px':'auto',
+                width: data.code === 'root'?'100px':'auto',
               },
               on: {
                 click: (e) => {
                   this.append(root, node, data);
+                }
+              }
+            }),
+            h('Button', {
+              props: Object.assign({}, this.buttonProps, {
+                icon: 'md-swap',
+              }),
+              style: {
+                marginRight: '8px',
+                display: data.code === 'root'?'none':'inline-block',
+              },
+              on: {
+                click: (e) => {
+                  this.swap(data);
                 }
               }
             }),
@@ -239,54 +297,82 @@
         ]);
       },
       append (root, node, data) {
+        this.form.operate = true;
+        this.form.title = '【' + data.name + '】新增子菜单';
+        this.form.url = this.add.url;
+        this.form.operate = true;
+        this.form.items.code = '';
+        this.form.items.superCode = '';
+        this.form.items.name = '';
+        this.form.items.url = '';
+        this.form.disabled.code = false;
+        this.form.disabled.superCode = true;
+        this.form.disabled.name = false;
+        this.form.disabled.url = false;
         for (let i=0;i<root.length;i++) {
           root[i].node.selected = false;
         }
-        if (data.code !== 'root') {
-          const parentKey = root.find(el => el === node).parent;
-          const parent = root.find(el => el.nodeKey === parentKey).node;
-          const index = parent.children.indexOf(data);
-          parent.selected = true;
-          this.form.operate = true;
-          let code = data.code;
-          let regexp = /^([A-z]+)(\d+)$/;
-          let result = regexp.exec(code);
-          this.form.items.code = this.generateCode(result[1],result[2]);
-          this.form.items.superCode = data.code;
-          this.form.items.name = data.name;
-          this.form.items.url = data.url;
-          this.form.title = '【' + parent.name + '】新增';
-          parent.children.splice(index, 1, data);
+        data.selected = true;
+        this.form.items.code = this.generateCode(root, data.code);
+        this.form.items.superCode = data.code;
+      },
+      swap (data) {
+        let params = {
+          id: [data.id]
+        };
+        let url = '';
+        if (data.state === '0') {
+          url = this.stop.url;
         } else {
-          data.selected = true;
-          this.form.title = '【' + data.name + '】新增';
-          this.form.operate = true;
-          this.form.items.code = '';
-          this.form.items.superCode = '';
-          this.form.items.name = '';
-          this.form.items.url = '';
+          url = this.restart.url;
         }
+        ajaxUtil.initAfterAjax(this, url, params, {traditional: true});
       },
       remove (root, node, data) {
         const parentKey = root.find(el => el === node).parent;
         const parent = root.find(el => el.nodeKey === parentKey).node;
         const index = parent.children.indexOf(data);
-        parent.children.splice(index, 1);
+        let params = {
+          id: data.id
+        };
+        let url = this.del.url;
+        ajaxUtil.initAfterAjax(this, url, params);
       },
-      generateCode (prefix, num) {
-        num = parseInt(num);
+      generateCode (root, code) {
+        let regexp = /^([A-z]+)(\d+)$/;
+        let regRes = regexp.exec(code);
+        let prefix = regRes[1];
+        let num = regRes[2];
+        let reg = new RegExp('^' + prefix + '(\\d+)$');
+        let indexes = root.filter(v => {
+          return reg.exec(v.node.code)
+        }).map(v => {
+          return parseInt(reg.exec(v.node.code)[1])
+        }).sort((a,b) => {return b-a});
+        num = indexes[0];
         num = num + 1 + "";
         while ((prefix.length + num.length) < 4) {
           num = "0" + num;
         }
         return prefix + num;
       },
-      setNewData(root, node, data, newData) {
-        const parentKey = root.find(el => el === node).parent;
-        const parent = root.find(el => el.nodeKey === parentKey).node;
-        const index = parent.children.indexOf(data);
-        parent.children.splice(index, 1, newData);
-      }
+      handleSubmit (name) {
+        this.$refs[name].validate((valid) => {
+          if (valid) {
+            let url = this.form.url;
+            let params = this.form.items;
+            params = Object.assign(params, this.form.extraParams);
+            ajaxUtil.initAfterAjax(this, url, params);
+          } else {
+            this.$Notice.error({
+              title: '校验不通过，请重新填写'
+            });
+          }
+        })
+      },
+      handleReset (name) {
+        this.$refs[name].resetFields();
+      },
     },
     created () {
       this.init();
