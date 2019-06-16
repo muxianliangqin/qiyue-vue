@@ -261,10 +261,9 @@
           name: 'UserSetMenuTree',
           desc: '菜单树',
           show: true,
-          new: false,
+          new: true,
           params: {
-            checkbox: false,
-            expand: true
+            edit: true
           }
         };
         this.$store.dispatch('addComponent', component)

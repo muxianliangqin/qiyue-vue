@@ -3,8 +3,10 @@
     <Row>
       <Col span="10">
         <Tree :data="data"
+              ref="menuTree"
               :show-checkbox="showCheckbox"
               :render="renderContent"
+              @on-check-change="checked"
               style="text-align: left"></Tree>
       </Col>
       <Col span="8" v-if="form.operate">
@@ -42,10 +44,38 @@
                    :placeholder="form.labels.superCode"></Input>
           </FormItem>
           <FormItem :label-width="0" style="text-align: center;margin-bottom: 0px;">
-            <Button type="primary" @click="handleSubmit('form')">提交</Button>
+            <Button type="primary" @click="handleSubmit('form')">确认</Button>
             <Button @click="handleReset('form')" style="margin-left: 8px">重置</Button>
           </FormItem>
         </Form>
+      </Col>
+      <Col span="8" v-if="userMenus.show">
+        <Divider>确定更改用户菜单权限吗？</Divider>
+        <h3 style="text-align: left;">已选择菜单</h3>
+        <row>
+          <Col span="6" v-for="v in userMenus.checkedBoxes" style="text-align: left;padding: 8px 0px">
+            {{v.name}}
+          </Col>
+        </row>
+        <p style="padding-top: 20px">
+          <Button type="primary" @click="userMenusSubmit()">确认</Button>
+          <Button @click="userMenusReset()" style="margin-left: 8px">重置</Button>
+        </p>
+      </Col>
+      <Col span="8" v-if="menuLoan.show">
+        <Divider>确定更改用户菜单权限吗？</Divider>
+        <h3 style="text-align: left;">你的菜单【{{menuLoan.menuCode + '-' + menuLoan.menuName}}】</h3>
+        <h3 style="text-align: left;">租借权限给用户{{menuLoan.loanUserIds}}</h3>
+        <Row>
+          <Col span="6" style="text-align: left;padding: 8px 0px">
+            <Select v-model="menuLoan.loanUserIds" multiple style="width:200px">
+              <Option v-for="item in menuLoan.users" :value="item.id" :key="item.id">{{ item.username }}</Option>
+            </Select>
+          </Col>
+        </Row>
+        <p style="padding-top: 20px">
+          <Button type="primary" @click="menuLoanSubmit()">确认</Button>
+        </p>
       </Col>
     </Row>
   </div>
@@ -62,6 +92,20 @@
       return {
         menuFindAll: '/user/menu/findAll',
         menuRoot: undefined,
+        initTreeData: [],
+        userMenus: {
+          show: false,
+          checkedBoxes: [],
+          initChecked: [],
+        },
+        menuLoan: {
+          show: false,
+          userId: this.params.userId,
+          users: [],
+          menuCode: '',
+          menuName: '',
+          loanUserIds: []
+        },
         data: [
           {
             name: '根目录',
@@ -70,6 +114,7 @@
             selected: false,
             disabled: true,
             state: '0',
+            checked: false,
             children: []
           }
         ],
@@ -77,8 +122,6 @@
           type: 'default',
           size: 'small',
         },
-        checkbox: false,
-        expand: undefined,
         form: {
           operate: false,
           title: '',
@@ -124,37 +167,54 @@
           url: 'user/menu/modify'
         },
         del: {
-          url: 'user/menu/del'
+          url: 'user/menu/delBatch'
         },
         stop: {
-          url: 'user/menu/stop'
+          url: 'user/menu/stopBatch'
         },
         restart: {
-          url: 'user/menu/restart'
+          url: 'user/menu/restartBatch'
         },
+        url: {
+          setUserMenus: 'user/user/setUserMenus',
+          findUserMenus: 'user/user/findUserMenus',
+          findAllUser: 'user/user/findAll'
+        }
       }
     },
     computed: {
       showCheckbox () {
-        if (this.checkbox instanceof Boolean) {
-          return this.checkbox
-        } else if (this.checkbox instanceof Array) {
-          return true
-        } else {
-          return false
-        }
+        return !this.params.edit
+      },
+      loanUser () {
+        this.menuLoan.loanUserIds
       }
     },
     methods: {
       init () {
-        ajaxUtil.ajax(this.menuFindAll).done((response) => {
-          this.menuRoot = response.content;
-          this.checkbox = this.params.checkbox;
-          this.expand = this.params.expand;
-          this.data[0].children = this.menuNodeToTreeNode(this.menuRoot.children, this.checkbox, this.expand);
+        let param = {
+          userId: this.params.userId
+        }
+        this.$axios.ajax(this.url.findUserMenus, param).then((response) => {
+          let codes = response.data.content;
+          codes = codes.map(v => {
+            return v.menuCode
+          })
+          this.$axios.ajax(this.menuFindAll).then((response) => {
+            this.menuRoot = response.data.content;
+            let nodeTree = this.menuNodeToTreeNode(this.menuRoot.children,
+              codes,
+              this.params.edit)
+            this.data[0].checked = false
+            this.data[0].children = nodeTree
+            this.initTreeData = JSON.parse(JSON.stringify(this.data));
+          })
+        })
+        this.$axios.ajax(this.url.findAllUser).then((response) => {
+          this.menuLoan.users = response.data.content.filter(v => { return v.id !== this.params.userId })
         });
       },
-      menuNodeToTreeNode (menuNodes, checkbox, expand) {
+      menuNodeToTreeNode (menuNodes, checked, edit) {
         let treeNode = [];
         menuNodes.forEach((v) => {
           let node = {
@@ -164,22 +224,20 @@
             url: v.element.url,
             superCode: v.element.superCode,
             state: v.element.state,
-            selected: false
+            menuLoan: v.element.menuLoanEntities,
+            selected: false,
+            expand: edit,
+            checked: false,
+            edit: edit
           };
-          if (checkbox instanceof Array && checkbox.indexOf(v.element.code) >= 0) {
-            node.check = true
-          } else {
-            node.check = false
-          }
-          if (expand instanceof Array && expand.indexOf(v.element.code) >= 0) {
-            node.expand = true
-          } else if (expand === true) {
-            node.expand = true
-          } else {
-            node.expand = false
+          if (checked instanceof Array && checked.indexOf(v.element.code) >= 0) {
+            node.expand = true;
+            if (!v.hasChild) {
+              node.checked = true;
+            }
           }
           if (v.hasChild) {
-            node.children = this.menuNodeToTreeNode(v.children, checkbox, expand);
+            node.children = this.menuNodeToTreeNode(v.children, checked, edit);
           }
           treeNode.push(node);
         });
@@ -193,30 +251,43 @@
           },
           on: {
             click (e) {
-              self.form.title = '【' + data.name + '】修改';
-              self.form.url = self.modify.url;
               for (let i=0;i<root.length;i++) {
                 root[i].node.selected = false;
               }
+              data.expand = !data.expand
               data.selected = true
-              if (data.code !== 'root') {
-                self.form.operate = true;
-                self.form.items.code = data.code;
-                self.form.items.name = data.name;
-                self.form.items.superCode = data.superCode;
-                self.form.items.url = data.url;
-                self.form.disabled.code = true;
-                self.form.disabled.superCode = true;
-                self.form.disabled.name = false;
-                self.form.disabled.url = false;
-                self.form.extraParams = {
-                  id: data.id
+              if (data.edit) {
+                self.form.title = '【' + data.name + '】修改';
+                self.form.url = self.modify.url;
+                if (data.code !== 'root') {
+                  self.form.operate = true;
+                  self.form.items.code = data.code;
+                  self.form.items.name = data.name;
+                  self.form.items.superCode = data.superCode;
+                  self.form.items.url = data.url;
+                  self.form.disabled.code = true;
+                  self.form.disabled.superCode = true;
+                  self.form.disabled.name = false;
+                  self.form.disabled.url = false;
+                  self.form.extraParams = {
+                    id: data.id
+                  }
+                } else {
+                  self.form.operate = false;
+                  self.$Notice.warning({
+                    title: '根目录不允许修改'
+                  })
                 }
               } else {
-                self.form.operate = false;
-                self.$Notice.warning({
-                  title: '根目录不允许修改'
-                })
+                if (data.children) {
+                  self.menuLoan.show = false
+                } else {
+                  self.menuLoan.menuName = data.name
+                  self.menuLoan.menuCode = data.code
+                  self.menuLoan.loanUserIds = data.menuLoan.filter(v => {return v.userId === self.params.userId})
+                    .map(v => { return v.loanUserId })
+                  self.menuLoan.show = true
+                }
               }
             }
           }
@@ -248,9 +319,10 @@
           ]),
           h('span', {
             style: {
-              display: 'inline-block',
+              display: data.edit?'inline-block':'none',
+              // display: 'inline-block',
               float: 'right',
-              marginRight: '32px'
+              marginRight: '32px',
             }
           }, [
             h('Button', {
@@ -297,6 +369,10 @@
         ]);
       },
       append (root, node, data) {
+        for (let i=0;i<root.length;i++) {
+          root[i].node.selected = false;
+        }
+        data.selected = true;
         this.form.operate = true;
         this.form.title = '【' + data.name + '】新增子菜单';
         this.form.url = this.add.url;
@@ -309,16 +385,12 @@
         this.form.disabled.superCode = true;
         this.form.disabled.name = false;
         this.form.disabled.url = false;
-        for (let i=0;i<root.length;i++) {
-          root[i].node.selected = false;
-        }
-        data.selected = true;
         this.form.items.code = this.generateCode(root, data.code);
         this.form.items.superCode = data.code;
       },
       swap (data) {
         let params = {
-          id: [data.id]
+          ids: this.getAllIdFromData(data)
         };
         let url = '';
         if (data.state === '0') {
@@ -333,10 +405,12 @@
         const parent = root.find(el => el.nodeKey === parentKey).node;
         const index = parent.children.indexOf(data);
         let params = {
-          id: data.id
+          ids: this.getAllIdFromData(data)
         };
         let url = this.del.url;
-        ajaxUtil.initAfterAjax(this, url, params);
+        if (confirm('确认删除菜单【' + data.name + '】' + (data.children?'及其子菜单':'') + '吗？')) {
+          ajaxUtil.initAfterAjax(this, url, params, {traditional: true});
+        }
       },
       generateCode (root, code) {
         let regexp = /^([A-z]+)(\d+)$/;
@@ -356,6 +430,15 @@
         }
         return prefix + num;
       },
+      getAllIdFromData (data) {
+        let ids = [data.id];
+        if (data.children && data.children.length !== 0) {
+          data.children.forEach(v => {
+            ids = ids.concat(this.getAllIdFromData(v))
+          })
+        }
+        return ids;
+      },
       handleSubmit (name) {
         this.$refs[name].validate((valid) => {
           if (valid) {
@@ -373,9 +456,52 @@
       handleReset (name) {
         this.$refs[name].resetFields();
       },
+      checked (datas) {
+        this.userMenus.checkedBoxes = this.$refs.menuTree.getCheckedAndIndeterminateNodes();
+        this.userMenus.edit = true;
+      },
+      userMenusSubmit () {
+        let data = this.userMenus.checkedBoxes;
+        let userMenus = data.map(v => {
+          return {
+            menuCode: v.code,
+            userId: this.params.userId
+          }
+        })
+        let params = {
+          userMenuEntities: JSON.stringify(userMenus)
+        }
+        this.$axios.reloadAfterRequest(this, this.url.setUserMenus, params);
+        let param = {
+          userId: this.params.userId
+        }
+        this.$axios.ajax(this.url.findUserMenus, param).then((response) => {
+          let codes = response.data.content;
+          codes = codes.map(v => {
+            return v.menuCode
+          })
+          this.userMenus.checked = codes
+        });
+      },
+      userMenusReset () {
+        let initData = JSON.parse(JSON.stringify(this.initTreeData))
+        this.$set(this, 'data', initData);
+        this.userMenus.show = false;
+      },
+      menuLoanSubmit () {
+
+      },
+      reload () {
+        this.init();
+      }
     },
     created () {
       this.init();
+    },
+    watch: {
+      'params' () {
+        this.init()
+      }
     }
   }
 </script>

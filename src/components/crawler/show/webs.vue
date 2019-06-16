@@ -377,15 +377,15 @@ export default {
   methods: {
     init: function () {
       let self = this;
-      let rightEqual = this.params.rightEqual;
-      if (rightEqual === 'null') {
-        rightEqual = []
+      let menuLoan = this.params.menuLoanEntities;
+      if (menuLoan.length === 0) {
+        menuLoan = []
       } else {
-        rightEqual = JSON.parse(rightEqual);
+        menuLoan = menuLoan.map(v => {return v.id})
       }
-      rightEqual.push(this.$store.getters.userInfo.id);
+      menuLoan.push(this.$store.getters.userInfo.id);
       let params = {
-        userIds: rightEqual
+        userIds: menuLoan
       };
       ajaxUtil.ajaxArr(this.findWebsUrl, params).done(function (response) {
         self.page = response.content

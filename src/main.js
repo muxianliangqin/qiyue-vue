@@ -11,6 +11,9 @@ import '@/assets/css/self.css'
 Vue.use(iView)
 // Vue.config.productionTip = false
 
+import axios from './axios.js'
+Vue.prototype.$axios = axios
+
 /* eslint-disable no-new */
 new Vue({
   el: '#app',

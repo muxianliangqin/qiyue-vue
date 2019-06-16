@@ -153,6 +153,14 @@
         restart: {
           url: 'user/user/restart'
         },
+        url: {
+          add: 'user/user/add',
+          modify: 'user/user/modify',
+          del: 'user/user/del',
+          stop: 'user/user/stop',
+          restart: 'user/user/restart',
+          findUserMenus: 'user/user/findUserMenus'
+        },
         state: {
           modal: false,
           title: undefined,
@@ -161,7 +169,7 @@
           params: null
         },
         page: {
-          url:　'user/user/findAll',
+          url:　'user/user/findAllPage',
           ref: 'selfPage',
           columns: [
             {
@@ -211,6 +219,35 @@
                   stateCn = '未知'
                 }
                 return h('span',stateCn)
+              }
+            },
+            {
+              title: '菜单权限',
+              render: (h, params) => {
+                const self = this
+                let menus = h('Button', {
+                  attrs: {
+                    type: 'primary',
+                    size: 'small',
+                    style: 'margin: 0 1em;'
+                  },
+                  on: {
+                    click () {
+                      let component = {
+                        name: 'UserSetMenuTree',
+                        desc: '菜单树【' + params.row.username + '】',
+                        show: true,
+                        new: true,
+                        params: {
+                          userId: params.row.id,
+                          edit: false
+                        }
+                      }
+                      self.$store.dispatch('addComponent', component)
+                    }
+                  }
+                }, '菜单权限')
+                return [menus]
               }
             },
             {

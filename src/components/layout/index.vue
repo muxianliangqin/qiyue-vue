@@ -179,7 +179,7 @@ export default {
       /* 初始化模块区 */
       let moduleMenus = this.layout.root.children
       this.layout.module.menus = moduleMenus
-      let moduleActiveMenus = [1]
+      let moduleActiveMenus = [0]
       this.layout.module.activeMenus = moduleActiveMenus
     },
     initSide () {
