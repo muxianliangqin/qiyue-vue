@@ -15,15 +15,15 @@ const state = {
     ]
   },
   menuRoot: {}
-}
+};
 
 const actions = {
   setUserInfo ({commit}, userInfo) {
     commit('setUserInfo', userInfo)
   },
   addComponent ({commit,state}, component) {
-    let components = state.tabs.components
-    let flag = true
+    let components = state.tabs.components;
+    let flag = true;
     for (let comp of components) {
       if (comp.name === component.name) {
         if (comp.new) {
@@ -39,6 +39,9 @@ const actions = {
   delComponent ({commit}, name) {
     commit('delComponent', name)
   },
+  initTabs ({commit}) {
+    commit('initTabs')
+  },
   setTabsActive ({commit}, active) {
     commit('setTabsActive', active)
   },
@@ -48,27 +51,27 @@ const actions = {
   setMenuRoot ({commit}, menuRoot) {
     commit('setMenuRoot', menuRoot)
   },
-}
+};
 
 const getters = {
   userInfo: (state) => state.userInfo,
   tabs: (state) => state.tabs,
   menuRoot: (state) => state.menuRoot
-}
+};
 
 const mutations = {
   setUserInfo (state, userInfo) {
-    sessionStorage.setItem('userInfo',JSON.stringify(userInfo))
+    sessionStorage.setItem('userInfo',JSON.stringify(userInfo));
     state.userInfo = userInfo
   },
   addComponent (state, component) {
-    state.tabs.active = component.name
+    state.tabs.active = component.name;
     state.tabs.components.push(component)
   },
   updateComponent (state, component) {
     state.tabs.components.forEach(function (value, index, array) {
       if (value.name === component.name) {
-        array[index] = component
+        array[index] = component;
         state.tabs.active = component.name
       }
     })
@@ -76,20 +79,23 @@ const mutations = {
   delComponent (state, name) {
     state.tabs.components = state.tabs.components.filter(function (value) {
       return value.name !== name
-    })
+    });
     state.tabs.active = state.tabs.components[state.tabs.components.length-1].name
+  },
+  initTabs (state) {
+    state.tabs.components = state.tabs.components.slice(0, 1);
   },
   setTabsActive (state, active) {
     state.tabs.active = active
   },
   setTabsHeight (state, height) {
-    state.tabs.height = height
+    state.tabs.height = height;
     state.tabs.contentHeight = height - 50
   },
   setMenuRoot (state, menuRoot) {
     state.menuRoot = menuRoot
   }
-}
+};
 
 export default {
   // 定义变量

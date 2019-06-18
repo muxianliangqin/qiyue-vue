@@ -176,9 +176,18 @@
           url: 'user/menu/restartBatch'
         },
         url: {
+          menu: {
+            findAll: 'user/menu/findAll',
+            add: 'user/menu/add',
+            modify: 'user/menu/modify',
+            del: 'user/menu/delBatch',
+            stop: 'user/menu/stopBatch',
+            restart: 'user/menu/restartBatch'
+          },
           setUserMenus: 'user/user/setUserMenus',
           findUserMenus: 'user/user/findUserMenus',
-          findAllUser: 'user/user/findAll'
+          findAllUser: 'user/user/findAll',
+          menuLoanAddBatch: 'user/menuLoan/addBatch'
         }
       }
     },
@@ -191,25 +200,29 @@
       }
     },
     methods: {
-      init () {
-        let param = {
-          userId: this.params.userId
-        }
-        this.$axios.ajax(this.url.findUserMenus, param).then((response) => {
-          let codes = response.data.content;
-          codes = codes.map(v => {
+      async init () {
+        let edit = this.params.edit;
+        let checked = undefined;
+        if (!edit) {
+          let param = {
+            userId: this.params.userId
+          };
+          let response = await this.$axios.ajax(this.url.findUserMenus, param);
+          checked = response.data.content;
+          checked = checked.map(v => {
             return v.menuCode
-          })
-          this.$axios.ajax(this.menuFindAll).then((response) => {
-            this.menuRoot = response.data.content;
-            let nodeTree = this.menuNodeToTreeNode(this.menuRoot.children,
-              codes,
-              this.params.edit)
-            this.data[0].checked = false
-            this.data[0].children = nodeTree
-            this.initTreeData = JSON.parse(JSON.stringify(this.data));
-          })
-        })
+          });
+        }
+        this.$axios.ajax(this.menuFindAll).then((response) => {
+          this.menuRoot = response.data.content;
+          let nodeTree = this.menuNodeToTreeNode(this.menuRoot.children,
+            checked,
+            edit
+            );
+          this.data[0].checked = false;
+          this.data[0].children = nodeTree;
+          this.initTreeData = JSON.parse(JSON.stringify(this.data));
+        });
         this.$axios.ajax(this.url.findAllUser).then((response) => {
           this.menuLoan.users = response.data.content.filter(v => { return v.id !== this.params.userId })
         });
@@ -254,8 +267,7 @@
               for (let i=0;i<root.length;i++) {
                 root[i].node.selected = false;
               }
-              data.expand = !data.expand
-              data.selected = true
+              data.selected = true;
               if (data.edit) {
                 self.form.title = '【' + data.name + '】修改';
                 self.form.url = self.modify.url;
@@ -279,13 +291,14 @@
                   })
                 }
               } else {
+                data.expand = !data.expand;
                 if (data.children) {
                   self.menuLoan.show = false
                 } else {
-                  self.menuLoan.menuName = data.name
-                  self.menuLoan.menuCode = data.code
+                  self.menuLoan.menuName = data.name;
+                  self.menuLoan.menuCode = data.code;
                   self.menuLoan.loanUserIds = data.menuLoan.filter(v => {return v.userId === self.params.userId})
-                    .map(v => { return v.loanUserId })
+                    .map(v => { return v.loanUserId });
                   self.menuLoan.show = true
                 }
               }
@@ -458,7 +471,7 @@
       },
       checked (datas) {
         this.userMenus.checkedBoxes = this.$refs.menuTree.getCheckedAndIndeterminateNodes();
-        this.userMenus.edit = true;
+        this.userMenus.show = true;
       },
       userMenusSubmit () {
         let data = this.userMenus.checkedBoxes;
@@ -467,29 +480,42 @@
             menuCode: v.code,
             userId: this.params.userId
           }
-        })
+        });
         let params = {
           userMenuEntities: JSON.stringify(userMenus)
-        }
+        };
         this.$axios.reloadAfterRequest(this, this.url.setUserMenus, params);
+        this.getCheckedBoxes();
+      },
+      getCheckedBoxes () {
         let param = {
           userId: this.params.userId
-        }
+        };
         this.$axios.ajax(this.url.findUserMenus, param).then((response) => {
           let codes = response.data.content;
           codes = codes.map(v => {
             return v.menuCode
-          })
-          this.userMenus.checked = codes
+          });
+          this.userMenus.checkedBoxes = codes
         });
       },
       userMenusReset () {
-        let initData = JSON.parse(JSON.stringify(this.initTreeData))
+        let initData = JSON.parse(JSON.stringify(this.initTreeData));
         this.$set(this, 'data', initData);
         this.userMenus.show = false;
       },
       menuLoanSubmit () {
-
+        let menuLoanEntities = this.menuLoan.loanUserIds.map(v => {
+          return {
+            userId: this.menuLoan.userId,
+            menuCode: this.menuLoan.menuCode,
+            loanUserId: v
+          }
+        });
+        let params = {
+          menuLoanEntities: JSON.stringify(menuLoanEntities)
+        };
+        this.$axios.reloadAfterRequest(this, this.url.menuLoanAddBatch, params);
       },
       reload () {
         this.init();

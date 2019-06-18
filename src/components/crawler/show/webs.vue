@@ -58,18 +58,14 @@
     </div>
     <!--展示区-->
     <!--网站处理区-->
-    <Modal v-model="web.form.modal">
-      <p slot="header" style="text-align:center">
-        <template v-if="web.form.action === 'add'">
-          <Icon type="md-add-circle" />
-          <span>新增记录</span>
-        </template>
-        <template v-if="web.form.action === 'modify'">
-          <Icon type="md-analytics" />
-          <span>修改记录</span>
-        </template>
-      </p>
-      <Form ref="web" :model="web.form.items" :rules="web.form.rules" :label-width="150">
+    <SelfModalForm v-model="web.form.modal"
+                   :title="web.form.title"
+                   :url="web.form.url"
+                   :items="web.form.items"
+                   :rules="web.form.rules"
+                   :extraParams="web.form.extraParams"
+                   @self-done="reload">
+      <div slot="fields">
         <Input type="text" style="display: none;" v-model="web.form.items.userId"></Input>
         <FormItem :label="web.form.labels.title" prop="title">
           <Row>
@@ -87,36 +83,26 @@
             </Col>
           </Row>
         </FormItem>
-        <FormItem :label-width="0" style="text-align: center;margin-bottom: 0px;">
-          <Button type="primary" @click="handleSubmit('web')">提交</Button>
-          <Button @click="handleReset('web')" style="margin-left: 8px">重置</Button>
-        </FormItem>
-      </Form>
-      <div slot="footer" style="display: none">
       </div>
-    </Modal>
+    </SelfModalForm>
     <SelfModalState v-model="web.del.modal"
                   :url="web.del.url"
                   :params="web.del.params"
-                  @self-cancel="del_cancel">
+                  @self-done="reload">
       <div slot="msg" style="text-align: center">
         <p>{{web.del.msg}}</p>
       </div>
     </SelfModalState>
     <!--网站处理区-->
     <!--分类处理区-->
-    <Modal v-model="category.form.modal">
-      <p slot="header" style="text-align:center">
-        <template v-if="category.form.action === 'add'">
-          <Icon type="md-add-circle" />
-          <span>新增记录</span>
-        </template>
-        <template v-if="category.form.action === 'modify'">
-          <Icon type="md-analytics" />
-          <span>修改记录</span>
-        </template>
-      </p>
-      <Form ref="category" :model="category.form.items" :rules="category.form.rules" :label-width="150">
+    <SelfModalForm v-model="category.form.modal"
+                   :title="category.form.title"
+                   :url="category.form.url"
+                   :items="category.form.items"
+                   :rules="category.form.rules"
+                   :extraParams="category.form.extraParams"
+                   @self-done="reload">
+      <div slot="fields">
         <Input type="text" style="display: none" v-model="category.form.items.webId"></Input>
         <FormItem :label="category.form.labels.title" prop="title">
           <Row>
@@ -142,18 +128,12 @@
             </Col>
           </Row>
         </FormItem>
-        <FormItem :label-width="0" style="text-align: center;margin-bottom: 0px;">
-          <Button type="primary" @click="handleSubmit('category')">提交</Button>
-          <Button @click="handleReset('category')" style="margin-left: 8px">重置</Button>
-        </FormItem>
-      </Form>
-      <div slot="footer" style="display: none">
       </div>
-    </Modal>
+    </SelfModalForm>
     <SelfModalState v-model="category.del.modal"
                   :url="category.del.url"
                   :params="category.del.params"
-                  @self-cancel="del_cancel">
+                  @self-done="reload">
       <div slot="msg" style="text-align: center">
         <p>{{category.del.msg}}</p>
       </div>
@@ -170,15 +150,26 @@
   </div>
 </template>
 <script>
-import ajaxUtil from '@/assets/util/ajaxUtil'
 export default {
   props: ['params'],
   data () {
     return {
+      url: {
+        web: {
+          query: '/crawler/findWebs',
+          add: '/crawler/addWeb',
+          modify: '/crawler/modifyWeb',
+          del: '/crawler/deleteWeb',
+          hasRead: '/crawler/categoryHasRead',
+        },
+        category: {
+          add: '/crawler/addCategory',
+          modify: '/crawler/modifyCategory',
+          del: '/crawler/deleteCategory'
+        }
+      },
       unfold: 'p_0',
       panelNamePrefix: 'p_',
-      findWebsUrl: '/crawler/findWebs',
-      hasRead: '/crawler/categoryHasRead',
       pageNumber: 0,
       pageSize: 10,
       page: {},
@@ -192,7 +183,8 @@ export default {
       web: {
         form: {
           modal: false,
-          action: 'add',
+          title: '',
+          url: '',
           labels: {
             url: '网站链接',
             title: '网站标题'
@@ -212,15 +204,9 @@ export default {
           },
           extraParams: {}
         },
-        add: {
-          url: '/crawler/addWeb'
-        },
-        modify: {
-          url: '/crawler/modifyWeb'
-        },
         del: {
           modal: false,
-          url: '/crawler/deleteWeb',
+          url: '',
           msg: '',
           params: null
         },
@@ -228,7 +214,8 @@ export default {
       category: {
         form: {
           modal: false,
-          action: 'add',
+          title: '',
+          url: '',
           labels: {
             webId: '网站ID',
             title: '分类标题',
@@ -257,15 +244,9 @@ export default {
           },
           extraParams: {}
         },
-        add: {
-          url: '/crawler/addCategory'
-        },
-        modify: {
-          url: '/crawler/modifyCategory'
-        },
         del: {
           modal: false,
-          url: '/crawler/deleteCategory',
+          url: '',
           msg: '',
           params: null
         },
@@ -297,12 +278,12 @@ export default {
                   self.$store.dispatch('addComponent', component)
                   let param = {
                     categoryId: params.row.id
-                  }
-                  ajaxUtil.ajax(self.hasRead, param).done(function (response) {
-                    if (response.errorCode === '0000') {
+                  };
+                  self.$axios.ajax(self.url.web.hasRead, param).then(function (response) {
+                    if (response.data.errorCode === '0000') {
                       self.reload()
                     }
-                  })
+                  });
                 }
               }
             }, params.row.title)
@@ -339,7 +320,8 @@ export default {
               on: {
                 click: function () {
                   self.category.form.modal = true;
-                  self.category.form.action = 'modify';
+                  self.category.form.title = '修改分类';
+                  self.category.form.url = self.url.category.modify;
                   self.category.form.items.webId = params.row.webId;
                   self.category.form.items.title = params.row.title;
                   self.category.form.items.url = params.row.url;
@@ -354,6 +336,7 @@ export default {
               on: {
                 click: function () {
                   self.category.del.modal = true;
+                  self.category.del.url = self.url.category.del;
                   self.category.del.msg = '分类标题：' + params.row.title;
                   self.category.del.params = {
                     categoryId: params.row.id
@@ -381,15 +364,15 @@ export default {
       if (menuLoan.length === 0) {
         menuLoan = []
       } else {
-        menuLoan = menuLoan.map(v => {return v.id})
+        menuLoan = menuLoan.map(v => {return v.userId})
       }
       menuLoan.push(this.$store.getters.userInfo.id);
       let params = {
         userIds: menuLoan
       };
-      ajaxUtil.ajaxArr(this.findWebsUrl, params).done(function (response) {
-        self.page = response.content
-      })
+      this.$axios.ajax(this.url.web.query, params, {traditional: true}).then(function (response) {
+        self.page = response.data.content
+      });
     },
     pageChange (page) {
       this.pageNumber = page - 1;
@@ -397,9 +380,6 @@ export default {
     },
     pageSizeChange (pageSize) {
       this.pageSize = pageSize;
-      this.init()
-    },
-    del_cancel: function () {
       this.init()
     },
     collapseChange (keys) {
@@ -411,20 +391,25 @@ export default {
     },
     web_add () {
       this.web.form.modal = true;
-      this.web.form.action = 'add';
-      this.$refs['web'].resetFields();
+      this.web.form.title = '新增网站';
+      this.web.form.url = this.url.web.add;
+      this.web.form.items.url = '';
+      this.web.form.items.title = '';
+      this.web.form.extraParams = {}
     },
     web_modify (web) {
-      this.web.form.modal = true
-      this.web.form.action = 'modify';
-      this.web.form.items.url = web.url
-      this.web.form.items.title = web.title
+      this.web.form.modal = true;
+      this.web.form.title = '修改网站';
+      this.web.form.url = this.url.web.modify;
+      this.web.form.items.url = web.url;
+      this.web.form.items.title = web.title;
       this.web.form.extraParams = {
         id: web.id
       }
     },
     web_del (web) {
       this.web.del.modal = true;
+      this.web.del.url = this.url.web.del;
       this.web.del.msg = '网站：' + web.title + '，其下所属的分类也会一并删除';
       this.web.del.params = {
         webId: web.id
@@ -432,48 +417,14 @@ export default {
     },
     category_add (webId) {
       this.category.form.modal = true;
-      this.category.form.action = 'add';
-      this.category.form.items.webId = webId
-      this.$refs['category'].resetFields();
-    },
-    handleSubmit (name) {
-      let self = this;
-      this.$refs[name].validate((valid) => {
-        if (valid) {
-          self.handleForm(self[name]);
-        }
-      })
-    },
-    handleReset (name) {
-      this.$refs[name].resetFields();
-    },
-    handleForm (src) {
-      let url = null;
-      let msgSuccess = null;
-      let msgFail = null;
-      if (src.form.action === 'add') {
-        url = src.add.url;
-        msgSuccess = '新增记录成功';
-        msgFail = '新增记录失败，原因:'
-      } else if (src.form.action === 'modify') {
-        url = src.modify.url;
-        msgSuccess = '修改记录成功';
-        msgFail = '修改记录失败，原因:';
+      this.category.form.title = '新增分类';
+      this.category.form.url = this.url.category.add;
+      this.category.form.items.title = '';
+      this.category.form.items.url = '';
+      this.category.form.items.xpath = '';
+      this.category.form.extraParams = {
+        webId: webId
       }
-      let params = src.form.items;
-      params = Object.assign(params, src.form.extraParams);
-      let self = this;
-      ajaxUtil.ajax(url,params).done(function (response) {
-        if (response.errorCode === '0000') {
-          self.$Message.success(msgSuccess);
-          src.form.modal = false;
-          self.reload();
-        } else {
-          self.$Message.error(msgFail + response.errorMsg);
-        }
-      }).fail(function (response) {
-        self.$Message.info('网络异常:' + response.responseJSON.message);
-      })
     },
     computeCollapseStyle () {
       let divHeight = this.$refs[this.ref.rootDiv].clientHeight;
@@ -491,7 +442,7 @@ export default {
       let num = 0;
         web.categories.forEach((v) => {
           num += v.newNum;
-        })
+        });
       return num;
     },
     reload () {

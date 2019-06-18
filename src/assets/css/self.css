@@ -18,6 +18,11 @@
 .self-root-div{
   position: relative;
 }
+.self-user-info{
+  padding: 8px 0px;
+  font-size: 14px;
+  float: right;
+}
 .layout{
   border: 1px solid #d7dde4;
   background: #f5f7f9;
@@ -31,7 +36,7 @@
 }
 .layout-logo{
   width: 160px;
-  line-height: 64px;
+  line-height: 48px;
   color: white;
   border-radius: 3px;
   float: left;

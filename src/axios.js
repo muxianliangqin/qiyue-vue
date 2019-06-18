@@ -2,9 +2,9 @@ import axios from 'axios'
 import qs from 'qs'
 
 function ajax (url, data, config) {
-  url = url || 'http://localhost:7010/'
-  data = data || {}
-  config = config || {}
+  url = url || 'http://localhost:7010/';
+  data = data || {};
+  config = config || {};
   let requestConfig = {
     url: url,
     responseType: 'json',
@@ -16,7 +16,7 @@ function ajax (url, data, config) {
     },
     transformRequest: [function (data, headers) {
       if (config.traditional === true) {
-        return qs.stringify(data, {arrayFormat: 'brackets'})
+        return qs.stringify(data, {indices: false})
       } else {
         return qs.stringify(data);
       }
@@ -38,8 +38,7 @@ function ajax (url, data, config) {
 function reloadAfterRequest (self, url, data, config) {
   let msgSuccess = '操作成功';
   let msgFail = '操作失败，原因:';
-  ajaxCallback (url, data, config,
-    (response) => {
+  ajax (url, data, config).then((response) => {
       if (response.data.errorCode === '0000') {
         self.reload();
         self.$Notice.success({
@@ -47,24 +46,23 @@ function reloadAfterRequest (self, url, data, config) {
         });
       } else {
         self.$Notice.error({
-            title: msgFail,
-            desc: response.errorMsg
+          title: msgFail,
+          desc: response.errorMsg
         });
       }
-    },
-    (error) => {
+    }).catch((error) => {
       if (error.response) {
-        self.$Notice.info({
+        self.$Notice.error({
           title: '网络异常:',
           desc: error.response.data
         });
       } else if (error.request) {
-        self.$Notice.info({
+        self.$Notice.error({
           title: '请求异常:',
           desc: error.request
         });
       } else {
-        self.$Notice.info({
+        self.$Notice.error({
           title: '未知异常:',
           desc: error.message
         });
