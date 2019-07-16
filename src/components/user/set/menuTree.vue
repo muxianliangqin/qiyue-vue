@@ -53,7 +53,9 @@
         <Divider>确定更改用户菜单权限吗？</Divider>
         <h3 style="text-align: left;">已选择菜单</h3>
         <row>
-          <Col span="6" v-for="v in userMenus.checkedBoxes" style="text-align: left;padding: 8px 0px">
+          <Col span="6" v-for="v in userMenus.checkedBoxes"
+               :key="v.id"
+               style="text-align: left;padding: 8px 0px">
             {{v.name}}
           </Col>
         </row>

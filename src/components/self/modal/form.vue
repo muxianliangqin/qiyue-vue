@@ -6,7 +6,7 @@
         <span>{{title?title:'新增记录'}}</span>
       </template>
     </p>
-    <Form ref="form" :model="items" :rules="rules" :label-width="150">
+    <Form ref="form" :model="items" :rules="rules" :label-width="100">
       <slot name="fields">
         无input属性
       </slot>

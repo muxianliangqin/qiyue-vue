@@ -15,6 +15,7 @@
                 :ref="ref.collapse"
                 accordion
                 @on-change="collapseChange"
+                :key="index"
                 v-for="(web, index) of page.content">
         <Panel style="text-align: left;"
                :name="panelNamePrefix + index"
@@ -69,7 +70,7 @@
         <Input type="text" style="display: none;" v-model="web.form.items.userId"></Input>
         <FormItem :label="web.form.labels.title" prop="title">
           <Row>
-            <Col span="15">
+            <Col span="20">
               <Input type="text" clearable v-model="web.form.items.title"
                      :placeholder="web.form.labels.title"></Input>
             </Col>
@@ -77,7 +78,7 @@
         </FormItem>
         <FormItem :label="web.form.labels.url" prop="url">
           <Row>
-            <Col span="15">
+            <Col span="20">
               <Input type="text" clearable v-model="web.form.items.url"
                      :placeholder="web.form.labels.url"></Input>
             </Col>
@@ -106,7 +107,7 @@
         <Input type="text" style="display: none" v-model="category.form.items.webId"></Input>
         <FormItem :label="category.form.labels.title" prop="title">
           <Row>
-            <Col span="15">
+            <Col span="20">
               <Input type="text" clearable v-model="category.form.items.title"
                      :placeholder="category.form.labels.title"></Input>
             </Col>
@@ -114,17 +115,33 @@
         </FormItem>
         <FormItem :label="category.form.labels.url" prop="url">
           <Row>
-            <Col span="15">
+            <Col span="20">
               <Input type="text" clearable v-model="category.form.items.url"
                      :placeholder="category.form.labels.url"></Input>
             </Col>
           </Row>
         </FormItem>
-        <FormItem :label="category.form.labels.xpath" prop="xpath">
+        <FormItem :label="category.form.labels.xpathTitle" prop="xpath">
           <Row>
-            <Col span="15">
-              <Input type="text" clearable v-model="category.form.items.xpath"
-                     :placeholder="category.form.labels.xpath"></Input>
+            <Col span="20">
+              <Input type="text" clearable v-model="category.form.items.xpathTitle"
+                     :placeholder="category.form.labels.xpathTitle"></Input>
+            </Col>
+          </Row>
+        </FormItem>
+        <FormItem :label="category.form.labels.xpathText" prop="xpath">
+          <Row>
+            <Col span="20">
+              <Input type="text" clearable v-model="category.form.items.xpathText"
+                     :placeholder="category.form.labels.xpathText"></Input>
+            </Col>
+          </Row>
+        </FormItem>
+        <FormItem :label="category.form.labels.charset" prop="xpath">
+          <Row>
+            <Col span="20">
+              <Input type="text" clearable v-model="category.form.items.charset"
+                     :placeholder="category.form.labels.charset"></Input>
             </Col>
           </Row>
         </FormItem>
@@ -220,13 +237,17 @@ export default {
             webId: '网站ID',
             title: '分类标题',
             url: '分类链接',
-            xpath: '抓取路径'
+            xpathTitle: '标题路径',
+            xpathText: '正文路径',
+            charset: '编码'
           },
           items: {
             webId: 0,
             title: '',
             url: '',
-            xpath: ''
+            xpathTitle: '',
+            xpathText: '',
+            charset: ''
           },
           rules: {
             webId: [
@@ -238,8 +259,14 @@ export default {
             url: [
               {required: true, message: '请输入链接', trigger: 'blur'}
             ],
-            xpath: [
-              {required: true, message: '请输入抓取路径', trigger: 'blur'}
+            xpathTitle: [
+              {required: true, message: '请输入标题路径', trigger: 'blur'}
+            ],
+            xpathText: [
+              {required: true, message: '请输入正文路径', trigger: 'blur'}
+            ],
+            charset: [
+              {required: true, message: '请输入编码', trigger: 'blur'}
             ]
           },
           extraParams: {}
@@ -304,8 +331,16 @@ export default {
           key: 'url'
         },
         {
-          title: '抓取路径:xpath',
-          key: 'xpath'
+          title: '标题路径',
+          key: 'xpathTitle'
+        },
+        {
+          title: '正文路径',
+          key: 'xpathText'
+        },
+        {
+          title: '编码',
+          key: 'charset'
         },
         {
           title: '操作',
@@ -325,7 +360,9 @@ export default {
                   self.category.form.items.webId = params.row.webId;
                   self.category.form.items.title = params.row.title;
                   self.category.form.items.url = params.row.url;
-                  self.category.form.items.xpath = params.row.xpath;
+                  self.category.form.items.xpathTitle = params.row.xpathTitle;
+                  self.category.form.items.xpathText = params.row.xpathText;
+                  self.category.form.items.charset = params.row.charset;
                   self.category.form.extraParams = {
                     id: params.row.id,
                   }
@@ -421,7 +458,9 @@ export default {
       this.category.form.url = this.url.category.add;
       this.category.form.items.title = '';
       this.category.form.items.url = '';
-      this.category.form.items.xpath = '';
+      this.category.form.items.xpathTitle = '';
+      this.category.form.items.xpathText = '';
+      this.category.form.items.charset = '';
       this.category.form.extraParams = {
         webId: webId
       }
