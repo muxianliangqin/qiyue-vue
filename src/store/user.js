@@ -80,7 +80,9 @@ const mutations = {
     state.tabs.components = state.tabs.components.filter(function (value) {
       return value.name !== name
     });
-    state.tabs.active = state.tabs.components[state.tabs.components.length-1].name
+    if (state.tabs.components.length > 0) {
+      state.tabs.active = state.tabs.components[state.tabs.components.length-1].name
+    }
   },
   initTabs (state) {
     state.tabs.components = state.tabs.components.slice(0, 1);

@@ -87,6 +87,7 @@
                   <TabPane :label="comp.desc"
                            v-if="comp.show"
                            :key="comp.name"
+                           :style="layout.content.tabPaneStyle"
                            :name="comp.name">
                     <keep-alive>
                       <component :is="comp.name" :params="comp.params"> </component>
@@ -141,6 +142,9 @@ export default {
             padding: '0 8px',
             height: '300px',
             background: '#fff'
+          },
+          tabPaneStyle: {
+            height: '300px'
           }
         },
         foot: {
@@ -276,6 +280,7 @@ export default {
       let footHeight = this.$refs[this.layout.foot.ref].$el.clientHeight;
       let contentHeight = clientHeight - moduleHeight - breadcrumbHeight - footHeight - 25;
       this.layout.content.style.height = contentHeight + 'px';
+      this.layout.content.tabPaneStyle.height = contentHeight - 48 + 'px';
       this.$store.dispatch('setTabsHeight', contentHeight);
     },
     getMenuByName (menus, name) {
