@@ -8,11 +8,11 @@ import iView from 'iview'
 import 'iview/dist/styles/iview.css'
 import '@/assets/css/self.css'
 
-Vue.use(iView)
+Vue.use(iView);
 // Vue.config.productionTip = false
 
-import axios from './axios.js'
-Vue.prototype.$axios = axios
+import http from './http.js'
+Vue.prototype.$http = http;
 
 /* eslint-disable no-new */
 new Vue({
@@ -21,4 +21,4 @@ new Vue({
   store,
   components: { App },
   template: '<App/>'
-})
+});

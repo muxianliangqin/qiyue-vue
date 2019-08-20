@@ -1,6 +1,6 @@
 <template>
   <div>
-    <SelfPage :url="page.url"
+    <TablePage :url="page.url"
               :columns="page.columns"
               :pageParams="page.params"
               :ref="page.ref"
@@ -11,7 +11,7 @@
         <Button type="primary" style="margin-right: 80px" @click="addGroup">新增</Button>
         <Divider style="margin: 4px 0px 0px 0px"></Divider>
       </div>
-    </SelfPage>
+    </TablePage>
     <Modal v-model="form.modal">
       <p slot="header" style="text-align:center">
         <template v-if="form.action === 'add'">
@@ -42,14 +42,14 @@
       <div slot="footer" style="display: none">
       </div>
     </Modal>
-    <SelfModalState v-model="del.modal"
+    <ModalState v-model="del.modal"
                   :url="del.url"
                   :params="del.params"
                   @self-cancel="del_cancel">
       <div slot="msg" style="text-align: center">
         <p>群组: {{del.msg}}</p>
       </div>
-    </SelfModalState>
+    </ModalState>
   </div>
 </template>
 
@@ -88,7 +88,7 @@
           params: null
         },
         page: {
-          ref: 'selfPage',
+          ref: 'Page',
           url: '/weChat/findGroups',
           params: {
             userId: this.$store.getters.userInfo.id

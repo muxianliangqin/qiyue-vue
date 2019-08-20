@@ -1,6 +1,6 @@
 <template>
   <div>
-    <SelfPage :url="page.url"
+    <TablePage :url="page.url"
               :columns="page.columns"
               :ref="page.ref"
               v-bind="$attrs"
@@ -8,10 +8,10 @@
       <div slot="buttons"
            class="self-buttons">
         <Button type="primary" size="small" style="margin-right: 80px" @click="addItem">新增</Button>
-        <Divider style="margin: 4px 0px 0px 0px"></Divider>
+        <divider style="margin: 4px 0px 0px 0px"></divider>
       </div>
-    </SelfPage>
-    <SelfModalForm v-model="form.modal"
+    </TablePage>
+    <ModalForm v-model="form.modal"
                    :title="form.title"
                    :url="form.url"
                    :items="form.items"
@@ -19,60 +19,39 @@
                    :extraParams="form.extraParams"
                    @self-done="reload">
       <div slot="fields">
-        <FormItem :label="form.labels.username" prop="username">
+        <FormItem :label="form.labels.code" prop="code">
           <Row>
             <Col span="15">
               <Input type="text"
                      clearable
-                     v-model="form.items.username"
-                     :placeholder="form.labels.username"></Input>
+                     v-model="form.items.code"
+                     :placeholder="form.labels.code"></Input>
             </Col>
           </Row>
         </FormItem>
-        <FormItem :label="form.labels.mobile" prop="mobile">
+        <FormItem :label="form.labels.name" prop="name">
           <Row>
             <Col span="15">
               <Input type="text"
                      clearable
-                     v-model="form.items.mobile"
-                     :placeholder="form.labels.mobile"></Input>
+                     v-model="form.items.name"
+                     :placeholder="form.labels.name"></Input>
             </Col>
           </Row>
         </FormItem>
-        <FormItem :label="form.labels.password" prop="password" v-if="form.action === 'add'">
+        <FormItem :label="form.labels.desc" prop="desc">
           <Row>
             <Col span="15">
               <Input type="text"
                      clearable
-                     v-model="form.items.password"
-                     :placeholder="form.labels.password"></Input>
-            </Col>
-          </Row>
-        </FormItem>
-        <FormItem :label="form.labels.alias" prop="alias">
-          <Row>
-            <Col span="15">
-              <Input type="text"
-                     clearable
-                     v-model="form.items.alias"
-                     :placeholder="form.labels.alias"></Input>
-            </Col>
-          </Row>
-        </FormItem>
-        <FormItem :label="form.labels.gender" prop="gender">
-          <Row>
-            <Col span="15">
-              <Select v-model="form.items.gender">
-                <Option v-for="option in form.options.gender" :value="option.value" :key="option.value">
-                  {{ option.label }}
-                </Option>
-              </Select>
+                     v-model="form.items.desc"
+                     :placeholder="form.labels.desc"></Input>
             </Col>
           </Row>
         </FormItem>
       </div>
-    </SelfModalForm>
-    <SelfModalState v-model="state.modal"
+    </ModalForm>
+    <ModalState v-model="state.modal"
                     :url="state.url"
                     :params="state.params"
                     :title="state.title"
@@ -80,13 +59,16 @@
       <div slot="msg" style="text-align: center">
         <p>{{state.msg}}</p>
       </div>
-    </SelfModalState>
+    </ModalState>
+    <SelfTree v-model="tree.modal">
+
+    </SelfTree>
   </div>
 </template>
 
 <script>
   export default {
-    name: "users",
+    name: 'rights',
     data () {
       return {
         form: {
@@ -94,83 +76,57 @@
           title: '',
           url: '',
           labels: {
-            username: '用户名称',
-            mobile: '手机号码',
-            alias: '昵称',
-            gender: '性别',
-            password: '密码'
+            code: '权限编码',
+            name: '权限名称',
+            desc: '权限描述'
           },
           items: {
-            username: '',
-            mobile: '',
-            alias: '',
-            gender: '',
-            password: ''
+            code: '',
+            name: '',
+            desc: ''
           },
           rules: {
-            username: [
-              {required: true, message: '请输入用户名称', trigger: 'blur'}
+            code: [
+              {required: true, message: '请输入权限编码', trigger: 'blur'}
             ],
-            mobile: [
-              {required: true, message: '请输入手机号码', trigger: 'blur'}
+            name: [
+              {required: true, message: '请输入权限名称', trigger: 'blur'}
             ],
-            alias: [
-              {required: false, message: '请输入昵称', trigger: 'blur'}
-            ],
-            gender: [
-              {required: true, message: '请选择性别', trigger: 'blur'}
-            ],
-            password: [
-              {required: true, message: '请选择性别', trigger: 'blur'}
+            desc: [
+              {required: false, message: '请输入权限描述', trigger: 'blur'}
             ]
           },
-          extraParams: {},
-          options: {
-            gender: [
-              {
-                value: 'm',
-                label: '男'
-              },
-              {
-                value: 'f',
-                label: '女'
-              }
-            ]
-          }
+          extraParams: {}
         },
         add: {
-          url: 'user/user/add'
+          url: 'user/right/add'
         },
         modify: {
-          url: 'user/user/modify'
+          url: 'user/right/modify'
         },
         del: {
-          url: 'user/user/del'
+          url: 'user/right/del'
         },
         stop: {
-          url: 'user/user/stop'
+          url: 'user/right/stop'
         },
         restart: {
-          url: 'user/user/restart'
-        },
-        url: {
-          add: 'user/user/add',
-          modify: 'user/user/modify',
-          del: 'user/user/del',
-          stop: 'user/user/stop',
-          restart: 'user/user/restart',
-          findUserMenus: 'user/user/findUserMenus'
+          url: 'user/right/restart'
         },
         state: {
           modal: false,
-          title: undefined,
-          url: '',
-          msg: '',
-          params: null
+            title: undefined,
+            url: '',
+            msg: '',
+            params: null
+        },
+        tree: {
+          modal: false,
+          url: 'user/right/menu'
         },
         page: {
-          url:　'user/user/findAllPage',
-          ref: 'selfPage',
+          url:　'user/right/findAll',
+          ref: 'Page',
           columns: [
             {
               title: '序号',
@@ -178,32 +134,16 @@
               width: 100
             },
             {
-              title: '用户名',
-              key: 'username'
+              title: '权限代码',
+              key: 'code'
             },
             {
-              title: '手机',
-              key: 'mobile'
+              title: '权限名称',
+              key: 'name'
             },
             {
-              title: '昵称',
-              key: 'alias'
-            },
-            {
-              title: '性别',
-              key: 'gender',
-              render: (h,params) => {
-                let gender = params.row.gender
-                let genderCn = ''
-                if (gender === 'm') {
-                  genderCn = '男'
-                } else if (gender === 'f') {
-                  genderCn = '女'
-                } else {
-                  genderCn = '未知'
-                }
-                return h('span',genderCn)
-              }
+              title: '权限描述',
+              key: 'desc'
             },
             {
               title: '状态',
@@ -214,7 +154,7 @@
                 if (state === '0') {
                   stateCn = '正常'
                 } else if (state === '1') {
-                  stateCn = '冻结'
+                  stateCn = '删除'
                 } else {
                   stateCn = '未知'
                 }
@@ -222,32 +162,22 @@
               }
             },
             {
-              title: '菜单权限',
+              title: '菜单权限设置',
               render: (h, params) => {
-                const self = this
-                let menus = h('Button', {
+                let self = this
+                let set = h('Button', {
                   attrs: {
                     type: 'primary',
                     size: 'small',
                     style: 'margin: 0 1em;'
                   },
                   on: {
-                    click () {
-                      let component = {
-                        name: 'UserSetMenuTree',
-                        desc: '菜单树【' + params.row.username + '】',
-                        show: true,
-                        new: true,
-                        params: {
-                          userId: params.row.id,
-                          edit: false
-                        }
-                      }
-                      self.$store.dispatch('addComponent', component)
+                    click: function () {
+                      self.tree.modal = true
                     }
                   }
-                }, '菜单权限')
-                return [menus]
+                }, '菜单权限设置')
+                return [set]
               }
             },
             {
@@ -267,10 +197,9 @@
                       self.form.modal = true;
                       self.form.title = '修改记录';
                       self.form.url = self.modify.url;
-                      self.form.items.username = params.row.username;
-                      self.form.items.mobile = params.row.mobile;
-                      self.form.items.alias = params.row.alias;
-                      self.form.items.gender = params.row.gender;
+                      self.form.items.code = params.row.code;
+                      self.form.items.name = params.row.name;
+                      self.form.items.desc = params.row.desc;
                       self.form.extraParams = {
                         id: params.row.id
                       }
@@ -287,7 +216,7 @@
                     click: function () {
                       self.state.modal = true;
                       self.state.url = self.stop.url;
-                      self.state.msg = '用户：' + params.row.username;
+                      self.state.msg = '用户：' + params.row.name;
                       self.state.title = '确定要停用以下记录吗？';
                       self.state.params = {
                         id: params.row.id
@@ -304,7 +233,7 @@
                   on: {
                     click: function () {
                       self.state.modal = true;
-                      self.state.msg = '用户：' + params.row.username;
+                      self.state.msg = '用户：' + params.row.name;
                       self.state.url = self.restart.url;
                       self.state.title = '确定要启用以下记录吗？';
                       self.state.params = {
@@ -322,7 +251,7 @@
                   on: {
                     click: function () {
                       self.state.modal = true;
-                      self.state.msg = '用户：' + params.row.username;
+                      self.state.msg = '用户：' + params.row.name;
                       self.state.url = self.del.url;
                       self.state.params = {
                         id: params.row.id
@@ -348,12 +277,9 @@
         this.form.modal = true;
         this.form.title = '新增记录';
         this.form.url = this.add.url;
-        this.form.items.username = '';
-        this.form.items.mobile = '';
-        this.form.items.alias = '';
-        this.form.items.gender = '';
-        this.form.items.password = '';
-
+        this.form.items.code = '';
+        this.form.items.name = '';
+        this.form.items.desc = '';
       },
       reload (value) {
         if (value) {

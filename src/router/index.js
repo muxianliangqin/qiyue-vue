@@ -1,10 +1,10 @@
 import Vue from 'vue'
 import Router from 'vue-router'
-import login from '@/components/home/login'
-import index from '@/components/layout/index'
+import login from '@/html/home/login'
+import index from '@/html/layout/index'
 import components from '@/component.js'
 
-Vue.use(Router)
+Vue.use(Router);
 
 export default new Router({
   // mode: 'history',

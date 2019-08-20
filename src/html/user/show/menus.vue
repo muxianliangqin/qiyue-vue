@@ -1,6 +1,6 @@
 <template>
   <div>
-    <SelfPage :url="page.url"
+    <Page :url="page.url"
               :columns="page.columns"
               :ref="page.ref"
               v-bind="$attrs"
@@ -11,8 +11,8 @@
         <Button type="primary" size="small" style="margin-right: 80px" @click="addItem">新增</Button>
         <divider style="margin: 4px 0px 0px 0px"></divider>
       </div>
-    </SelfPage>
-    <SelfModalForm v-model="form.modal"
+    </Page>
+    <ModalForm v-model="form.modal"
                    :title="form.title"
                    :url="form.url"
                    :items="form.items"
@@ -51,8 +51,8 @@
           </Row>
         </FormItem>
       </div>
-    </SelfModalForm>
-    <SelfModalState v-model="state.modal"
+    </ModalForm>
+    <ModalState v-model="state.modal"
                   :url="state.url"
                   :params="state.params"
                   :title="state.title"
@@ -60,7 +60,7 @@
       <div slot="msg" style="text-align: center">
         <p>{{state.msg}}</p>
       </div>
-    </SelfModalState>
+    </ModalState>
   </div>
 </template>
 
@@ -120,7 +120,7 @@
         },
         page: {
           url:　'user/menu/findAllPage',
-          ref: 'selfPage',
+          ref: 'Page',
           columns: [
             {
               title: '序号',

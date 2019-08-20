@@ -15,7 +15,13 @@ function ajax (url, data, config) {
       'Content-Type':'application/x-www-form-urlencoded'
     },
     transformRequest: [function (data, headers) {
-      if (config.traditional === true) {
+      let traditional = false;
+      for (let k in data) {
+        if (data[k] instanceof Array) {
+          traditional = true
+        }
+      }
+      if (traditional === true) {
         return qs.stringify(data, {indices: false})
       } else {
         return qs.stringify(data);

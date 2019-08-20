@@ -1,10 +1,10 @@
 <template>
-  <SelfPage :url="findNews"
+  <TablePage :url="findNews"
             :columns="columns"
-            ref="selfPage"
+            ref="TablePage"
             v-bind="$attrs"
             v-on="$listeners">
-  </SelfPage>
+  </TablePage>
 </template>
 
 <script>
@@ -25,7 +25,7 @@
             title: '标题',
             key: 'title',
             render: (h, params) => {
-              let self = this
+              let self = this;
               let a = h('a', {
                 attrs: {
                   href: params.row.url,
@@ -35,24 +35,24 @@
                   click () {
                     let param = {
                       newsId: params.row.id
-                    }
+                    };
                     ajaxUtil.ajax(self.hasRead, param).done(function (response) {
                       if (response.errorCode === '0000') {
-                        self.$refs.selfPage.reload()
+                        self.$refs.TablePage.reload();
                       }
                     })
                   }
                 }
-              }, params.row.title)
+              }, params.row.title);
               let span = h('span', {
                 style: {
                   marginLeft: '8px'
                 }
-              }, '未读')
+              }, '未读');
               if (params.row.unread === '0') {
-                return [a,span]
+                return [a,span];
               } else {
-                return [a]
+                return [a];
               }
             }
           }

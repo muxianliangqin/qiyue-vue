@@ -67,7 +67,7 @@
     },
     methods: {
       init () {
-        this.$axios.ajax(this.url).then((response) => {
+        this.$http.ajax(this.url).then((response) => {
           let regexps = response.data.content;
           let classify = regexps.filter( (v) => {
             return v.superCls === '00';

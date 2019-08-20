@@ -11,7 +11,7 @@
       <Divider style="margin: 4px 0px 0px 0px"></Divider>
     </div>
     <div :style="collapseStyle">
-      <Collapse v-model="unfold"
+      <!--<Collapse v-model="unfold"
                 :ref="ref.collapse"
                 accordion
                 @on-change="collapseChange"
@@ -55,11 +55,18 @@
             </Table>
           </div>
         </Panel>
-      </Collapse>
+      </Collapse>-->
+      <TablePage :url="url.web.query"
+                 :columns="columns"
+                 :stripe="false"
+                 :ref="ref.TablePage"
+                 :extraParams="extraParams">
+      </TablePage>
+
     </div>
     <!--展示区-->
     <!--网站处理区-->
-    <SelfModalForm v-model="web.form.modal"
+    <ModalForm v-model="web.form.modal"
                    :title="web.form.title"
                    :url="web.form.url"
                    :items="web.form.items"
@@ -85,18 +92,18 @@
           </Row>
         </FormItem>
       </div>
-    </SelfModalForm>
-    <SelfModalState v-model="web.del.modal"
+    </ModalForm>
+    <ModalState v-model="web.del.modal"
                   :url="web.del.url"
                   :params="web.del.params"
                   @self-done="reload">
       <div slot="msg" style="text-align: center">
         <p>{{web.del.msg}}</p>
       </div>
-    </SelfModalState>
+    </ModalState>
     <!--网站处理区-->
     <!--分类处理区-->
-    <SelfModalForm v-model="category.form.modal"
+    <ModalForm v-model="category.form.modal"
                    :title="category.form.title"
                    :url="category.form.url"
                    :items="category.form.items"
@@ -146,23 +153,23 @@
           </Row>
         </FormItem>
       </div>
-    </SelfModalForm>
-    <SelfModalState v-model="category.del.modal"
+    </ModalForm>
+    <ModalState v-model="category.del.modal"
                   :url="category.del.url"
                   :params="category.del.params"
                   @self-done="reload">
       <div slot="msg" style="text-align: center">
         <p>{{category.del.msg}}</p>
       </div>
-    </SelfModalState>
+    </ModalState>
     <!--分类处理区-->
     <!--分页区-->
-    <Page :total='page.totalElements'
-          :ref="ref.page"
-          class="self-page"
-          show-sizer
-          @on-change="pageChange"
-          @on-page-size-change="pageSizeChange"/>
+    <!--<TablePage :total='page.totalElements'-->
+          <!--:ref="ref.TablePage"-->
+          <!--class="self-page"-->
+          <!--show-sizer-->
+          <!--@on-change="pageChange"-->
+          <!--@on-page-size-change="pageSizeChange"/>-->
     <!--分页区-->
   </div>
 </template>
@@ -193,7 +200,7 @@ export default {
       collapseStyle: {},
       ref: {
         rootDiv: 'rootDiv',
-        page: 'page',
+        TablePage: 'page',
         buttons: 'buttons',
         collapse: 'collapse'
       },
@@ -278,75 +285,24 @@ export default {
           params: null
         },
       },
+      extraParams: {},
       columns: [
-        {
-          type: 'index',
-          title: '序号',
-          align: 'center',
-          width: 70
-        },
-        {
-          title: '标题',
-          key: 'title',
-          render: (h, params) => {
-            let self = this;
-            let a  = h('a', {
-              on: {
-                click: function () {
-                  let component = {
-                    name: 'CrawlerShowNews',
-                    desc: '新闻列表[' + params.row.title + ']',
-                    show: true,
-                    new: true,
-                    params: {
-                      categoryId: params.row.id
-                    }
-                  };
-                  self.$store.dispatch('addComponent', component)
-                  let param = {
-                    categoryId: params.row.id
-                  };
-                  self.$axios.ajax(self.url.web.hasRead, param).then(function (response) {
-                    if (response.data.errorCode === '0000') {
-                      self.reload()
-                    }
-                  });
-                }
-              }
-            }, params.row.title)
-            let badge = h('Badge', {
-              attrs: {
-                count: params.row.newNum,
-                type: 'success'
+        {type: 'expand', width: 50, render: (h, params) => {
+            return h('CrawlerShowWebsExpand', {
+              props: {
+                row: params.row
               },
-              style:{
-                marginLeft: '8px'
+              style: {
+                marginTop: '5px',
+                marginBottom: '5px',
               }
             })
-            return [a, badge]
           }
         },
-        {
-          title: '网址链接',
-          key: 'url'
-        },
-        {
-          title: '标题路径',
-          key: 'xpathTitle'
-        },
-        {
-          title: '正文路径',
-          key: 'xpathText'
-        },
-        {
-          title: '编码',
-          key: 'charset'
-        },
-        {
-          title: '操作',
-          align: 'center',
-          width: 150,
-          render: (h, params) => {
+        {type: 'index', title: '序号', align: 'center', width: 70},
+        {title: '网站名称', key: 'title'},
+        {title: '网站链接', key: 'url'},
+        {title: '操作', align: 'center', width: 150, render: (h, params) => {
             let self = this;
             let modify = h('a', {
               attrs: {
@@ -407,9 +363,7 @@ export default {
       let params = {
         userIds: menuLoan
       };
-      this.$axios.ajax(this.url.web.query, params, {traditional: true}).then(function (response) {
-        self.page = response.data.content
-      });
+      this.extraParams = params
     },
     pageChange (page) {
       this.pageNumber = page - 1;
@@ -468,7 +422,7 @@ export default {
     computeCollapseStyle () {
       let divHeight = this.$refs[this.ref.rootDiv].clientHeight;
       let buttonsHeight = this.$refs[this.ref.buttons].clientHeight;
-      let pageHeight = this.$refs[this.ref.page].$el.clientHeight;
+      let pageHeight = this.$refs[this.ref.TablePage].$el.clientHeight;
       let contentHeight = divHeight - pageHeight - buttonsHeight;
       contentHeight = (contentHeight - 16) + 'px';
       this.collapseStyle = {
@@ -496,12 +450,14 @@ export default {
   },
   watch: {
     'params': function () {
-      this.init()
+      // this.init()
     }
   }
 }
 </script>
 
 <style scoped>
-
+  /deep/ td.ivu-table-expanded-cell {
+    padding: 10px 5px 10px 25px
+  }
 </style>

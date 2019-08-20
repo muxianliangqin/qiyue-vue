@@ -1,9 +1,9 @@
 <template>
-  <SelfPage :url="findRecords"
+  <TablePage :url="findRecords"
             :columns="columns"
             v-bind="$attrs"
             v-on="$listeners">
-  </SelfPage>
+  </TablePage>
 </template>
 
 <script>
