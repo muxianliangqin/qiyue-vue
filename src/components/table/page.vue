@@ -80,8 +80,8 @@
         if (!params.size) {
           params.size = this.pageSize;
         }
-        this.$http.ajax(this.url, params).then((response) => {
-          this.page = response.data.content;
+        this.$http.post(this.url, params, (response) => {
+          this.page = response.content;
         });
       },
       pageChange (page) {

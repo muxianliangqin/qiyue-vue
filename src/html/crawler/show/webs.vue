@@ -57,16 +57,25 @@
         </Panel>
       </Collapse>-->
       <TablePage :url="url.web.query"
-                 :columns="columns"
+                 :columns="web.columns"
                  :stripe="false"
                  :ref="ref.TablePage"
                  :extraParams="extraParams">
       </TablePage>
-
+      <ModalForm v-model="web.form.modal"
+                 :url="web.form.url"
+                 :fields="web.form.fields"
+                 fieldLabel="title"
+                 :title="web.form.title"
+                 :extraParams="web.form.extraParams"
+                 :footerHide="true"
+                 :span="24"
+                 @modal-ok="reload">
+      </ModalForm>
     </div>
     <!--展示区-->
     <!--网站处理区-->
-    <ModalForm v-model="web.form.modal"
+    <!--<ModalForm v-model="web.form.modal"
                    :title="web.form.title"
                    :url="web.form.url"
                    :items="web.form.items"
@@ -92,7 +101,7 @@
           </Row>
         </FormItem>
       </div>
-    </ModalForm>
+    </ModalForm>-->
     <ModalState v-model="web.del.modal"
                   :url="web.del.url"
                   :params="web.del.params"
@@ -205,27 +214,63 @@ export default {
         collapse: 'collapse'
       },
       web: {
+        columns: [
+          {type: 'expand', width: 50, render: (h, params) => {
+              return h('CrawlerShowWebsExpand', {
+                props: {
+                  row: params.row
+                },
+                style: {
+                  marginTop: '5px',
+                  marginBottom: '5px',
+                }
+              })
+            }
+          },
+          {type: 'index', title: '序号', align: 'center', width: 70},
+          {title: '网站名称', key: 'title'},
+          {title: '网站链接', key: 'url'},
+          {title: '操作', align: 'center', width: 150, render: (h, params) => {
+              let modify = h('a', {
+                attrs: {
+                  style: 'margin-right: 2em;'
+                },
+                on: {
+                  click: () => {
+                    this.web.form.modal = true;
+                    this.web.form.title = '修改网站';
+                    this.web.form.url = this.url.web.modify;
+                    this.web.form.fields.forEach((v) => {v['value'] = params.row[v['key']]});
+                    this.web.form.extraParams = {
+                      id: params.row.id
+                    };
+                  }
+                }
+              }, '修改');
+              let del = h('a', {
+                on: {
+                  click: function () {
+                    self.category.del.modal = true;
+                    self.category.del.url = self.url.category.del;
+                    self.category.del.msg = '分类标题：' + params.row.title;
+                    self.category.del.params = {
+                      categoryId: params.row.id
+                    }
+                  }
+                }
+              }, '删除');
+              return [modify, del]
+            }
+          }
+        ],
         form: {
           modal: false,
           title: '',
           url: '',
-          labels: {
-            url: '网站链接',
-            title: '网站标题'
-          },
-          items: {
-            userId: this.$store.getters.userInfo.id,
-            url: '',
-            title: ''
-          },
-          rules: {
-            url: [
-              {required: true, message: '请输入链接', trigger: 'blur'}
-            ],
-            title: [
-              {required: true, message: '请输入标题', trigger: 'blur'}
-            ]
-          },
+          fields: [
+            {title: '网站名称', key: 'title', value: ''},
+            {title: '网站链接', key: 'url', value: ''},
+          ],
           extraParams: {}
         },
         del: {
@@ -286,61 +331,7 @@ export default {
         },
       },
       extraParams: {},
-      columns: [
-        {type: 'expand', width: 50, render: (h, params) => {
-            return h('CrawlerShowWebsExpand', {
-              props: {
-                row: params.row
-              },
-              style: {
-                marginTop: '5px',
-                marginBottom: '5px',
-              }
-            })
-          }
-        },
-        {type: 'index', title: '序号', align: 'center', width: 70},
-        {title: '网站名称', key: 'title'},
-        {title: '网站链接', key: 'url'},
-        {title: '操作', align: 'center', width: 150, render: (h, params) => {
-            let self = this;
-            let modify = h('a', {
-              attrs: {
-                style: 'margin-right: 2em;'
-              },
-              on: {
-                click: function () {
-                  self.category.form.modal = true;
-                  self.category.form.title = '修改分类';
-                  self.category.form.url = self.url.category.modify;
-                  self.category.form.items.webId = params.row.webId;
-                  self.category.form.items.title = params.row.title;
-                  self.category.form.items.url = params.row.url;
-                  self.category.form.items.xpathTitle = params.row.xpathTitle;
-                  self.category.form.items.xpathText = params.row.xpathText;
-                  self.category.form.items.charset = params.row.charset;
-                  self.category.form.extraParams = {
-                    id: params.row.id,
-                  }
-                }
-              }
-            }, '修改');
-            let del = h('a', {
-              on: {
-                click: function () {
-                  self.category.del.modal = true;
-                  self.category.del.url = self.url.category.del;
-                  self.category.del.msg = '分类标题：' + params.row.title;
-                  self.category.del.params = {
-                    categoryId: params.row.id
-                  }
-                }
-              }
-            }, '删除');
-            return [modify, del]
-          }
-        }
-      ]
+
     }
   },
   computed: {
@@ -384,16 +375,16 @@ export default {
       this.web.form.modal = true;
       this.web.form.title = '新增网站';
       this.web.form.url = this.url.web.add;
-      this.web.form.items.url = '';
-      this.web.form.items.title = '';
-      this.web.form.extraParams = {}
+      this.web.form.fields.forEach((v) => {v['value'] = ''});
+      this.web.form.extraParams = {
+        userId: this.$store.getters.userInfo.id
+      }
     },
     web_modify (web) {
       this.web.form.modal = true;
       this.web.form.title = '修改网站';
       this.web.form.url = this.url.web.modify;
-      this.web.form.items.url = web.url;
-      this.web.form.items.title = web.title;
+      this.web.form.fields.forEach((v) => {v['value'] = web[v['key']]});
       this.web.form.extraParams = {
         id: web.id
       }
@@ -439,7 +430,7 @@ export default {
       return num;
     },
     reload () {
-      this.init()
+      this.$refs[this.ref.TablePage].reload()
     }
   },
   created () {

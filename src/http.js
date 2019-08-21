@@ -1,20 +1,20 @@
 import axios from 'axios'
 import qs from 'qs'
 
-function ajax (url, data, config) {
-  url = url || 'http://localhost:7010/';
-  data = data || {};
-  config = config || {};
-  let requestConfig = {
-    url: url,
-    responseType: 'json',
-    responseEncoding: 'utf8',
-    method: 'post',
-    headers: {
-      'X-Requested-With': 'XMLHttpRequest',
-      'Content-Type':'application/x-www-form-urlencoded'
-    },
-    transformRequest: [function (data, headers) {
+const instance = axios.create({
+  baseURL: 'http://localhost:7000/',
+  responseType: 'json',
+  responseEncoding: 'utf8',
+  headers: {
+    'X-Requested-With': 'XMLHttpRequest',
+    'Content-Type':'application/x-www-form-urlencoded'
+  },
+  timeout: 3000,
+});
+
+instance.interceptors.request.use(
+  (config) => {
+    config.transformRequest = [(data) => {
       let traditional = false;
       for (let k in data) {
         if (data[k] instanceof Array) {
@@ -26,59 +26,112 @@ function ajax (url, data, config) {
       } else {
         return qs.stringify(data);
       }
-    }],
-  };
-  if (data === {}) {
-    requestConfig.method = 'get';
-  } else {
-    if (config.method === 'get') {
-      requestConfig.method = 'get';
-      requestConfig.params = data
-    } else {
-      requestConfig.data = data
+    }];
+    return config;
+  },
+  (error) => {
+    // 对请求错误做些什么
+    return Promise.reject(error);
+  }
+);
+
+instance.interceptors.response.use(
+  (response) =>{
+    return response.data;
+  },
+  (error) => {
+    if (error && error.response) {
+      switch (error.response.status) {
+        case 400:
+          error.message = '请求错误';
+          break;
+        case 401:
+          error.message = '未授权，请登录';
+          break;
+        case 403:
+          error.message = '拒绝访问';
+          break;
+        case 404:
+          error.message = `请求地址出错: ${error.response.config.url}`;
+          break;
+        case 408:
+          error.message = '请求超时';
+          break;
+        case 500:
+          error.message = `服务器内部错误: ${error.response.data}`;
+          break;
+        case 501:
+          error.message = '服务未实现';
+          break;
+        case 502:
+          error.message = '网关错误';
+          break;
+        case 503:
+          error.message = '服务不可用';
+          break;
+        case 504:
+          error.message = '网关超时';
+          break;
+        case 505:
+          error.message = 'HTTP版本不受支持';
+          break;
+        default:
+          error.message = '未知异常';
+      }
+      return Promise.reject(error);
     }
   }
-  return axios(requestConfig)
+);
+
+function post(url, data, success, except) {
+  instance.post(url, data)
+          .then((response) => success(response))
+          .catch((error) => except === undefined?{}:except(error))
 }
 
-function reloadAfterRequest (self, url, data, config) {
-  let msgSuccess = '操作成功';
-  let msgFail = '操作失败，原因:';
-  ajax (url, data, config).then((response) => {
-      if (response.data.errorCode === '0000') {
-        self.reload();
-        self.$Notice.success({
-          title: msgSuccess
-        });
-      } else {
-        self.$Notice.error({
-          title: msgFail,
-          desc: response.errorMsg
-        });
-      }
-    }).catch((error) => {
-      if (error.response) {
-        self.$Notice.error({
-          title: '网络异常:',
-          desc: error.response.data
-        });
-      } else if (error.request) {
-        self.$Notice.error({
-          title: '请求异常:',
-          desc: error.request
-        });
-      } else {
-        self.$Notice.error({
-          title: '未知异常:',
-          desc: error.message
-        });
-      }
-    })
+/*
+发送请求后处理成功和错误情况
+ */
+function postWithFull(url, data, _this) {
+  let success = (response) => {
+    if (response.errorCode === '0000') {
+      _this.$Notice.success({
+        title: '操作成功'
+      });
+    } else {
+      _this.$Notice.error({
+        title: '操作失败',
+        desc: `errorCode: ${response.errorCode} \n errorMsg: ${response.errorMsg}`
+      });
+    }
+  };
+  let error = (error) => {
+    if (error.message) {
+      _this.$Notice.error({
+        title: '网络异常:',
+        desc: error.message
+      });
+    }
+  };
+  post(url, data, success, error)
+}
+
+function postWithError(url, data, _this, success) {
+  let error = (error) => {
+    if (error.message) {
+      _this.$Notice.error({
+        title: '网络异常:',
+        desc: error.message
+      });
+    }
+  };
+  post(url, data, success, error)
 }
 
 export default {
-  axios,
+  instance,
   qs,
-  ajax,
-  reloadAfterRequest
+  post,
+  postWithFull,
+  postWithError
 }

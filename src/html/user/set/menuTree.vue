@@ -486,7 +486,8 @@
         let params = {
           userMenuEntities: JSON.stringify(userMenus)
         };
-        this.$axios.reloadAfterRequest(this, this.url.setUserMenus, params);
+        this.$http.postWithFull(this.url.setUserMenus, params, this);
+        this.reload();
         this.getCheckedBoxes();
       },
       getCheckedBoxes () {
@@ -517,7 +518,8 @@
         let params = {
           menuLoanEntities: JSON.stringify(menuLoanEntities)
         };
-        this.$axios.reloadAfterRequest(this, this.url.menuLoanAddBatch, params);
+        this.$http.postWithFull(this.url.menuLoanAddBatch, params, this);
+        this.reload()
       },
       reload () {
         this.init();
