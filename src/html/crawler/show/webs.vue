@@ -230,7 +230,8 @@ export default {
           {type: 'index', title: '序号', align: 'center', width: 70},
           {title: '网站名称', key: 'title'},
           {title: '网站链接', key: 'url'},
-          {title: '操作', align: 'center', width: 150, render: (h, params) => {
+          {title: '操作', align: 'center', width: 150,
+            render: (h, params) => {
               let modify = h('a', {
                 attrs: {
                   style: 'margin-right: 2em;'
@@ -249,12 +250,12 @@ export default {
               }, '修改');
               let del = h('a', {
                 on: {
-                  click: function () {
-                    self.category.del.modal = true;
-                    self.category.del.url = self.url.category.del;
-                    self.category.del.msg = '分类标题：' + params.row.title;
-                    self.category.del.params = {
-                      categoryId: params.row.id
+                  click: () => {
+                    this.category.del.modal = true;
+                    this.category.del.url = this.url.web.del;
+                    this.category.del.msg = '网站：' + params.row.title + '，其下所属的分类也会一并删除';
+                    this.category.del.params = {
+                      webId: params.row.id
                     }
                   }
                 }
@@ -378,23 +379,6 @@ export default {
       this.web.form.fields.forEach((v) => {v['value'] = ''});
       this.web.form.extraParams = {
         userId: this.$store.getters.userInfo.id
-      }
-    },
-    web_modify (web) {
-      this.web.form.modal = true;
-      this.web.form.title = '修改网站';
-      this.web.form.url = this.url.web.modify;
-      this.web.form.fields.forEach((v) => {v['value'] = web[v['key']]});
-      this.web.form.extraParams = {
-        id: web.id
-      }
-    },
-    web_del (web) {
-      this.web.del.modal = true;
-      this.web.del.url = this.url.web.del;
-      this.web.del.msg = '网站：' + web.title + '，其下所属的分类也会一并删除';
-      this.web.del.params = {
-        webId: web.id
       }
     },
     category_add (webId) {

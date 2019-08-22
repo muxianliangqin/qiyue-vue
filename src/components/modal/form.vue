@@ -3,8 +3,8 @@
          :mask-closable="maskClosable" :footer-hide="footerHide">
     <p slot="header" style="text-align:center">
       <template>
-        <Icon type="md-add-circle" />
-        <span>{{title}}</span>
+        <Icon :type="icon" />
+        <span>{{ title }}</span>
       </template>
     </p>
     <Form ref="form" :model="items" :rules="rules" :label-width="100" v-if="formBuild">
@@ -31,22 +31,23 @@
 
 <script>
   export default {
-    name: "self-form",
+    name: "modal-form",
     props: {
-      show: {type: Boolean, required: true, default: false},
-      url: {type: String, required: true},
-      fields: {type: Array},
-      title: {type: String, default: '新增记录'},
-      fieldKey: {type: String, default: 'key'},
-      fieldValue: {type: String, default: 'value'},
-      fieldLabel: {type: String, default: 'label'},
-      fieldSelect: {type: String, default: 'select'},
-      fieldSelectValue: {type: String, default: 'value'},
-      fieldSelectLabel: {type: String, default: 'label'},
-      extraParams: {type: Object, default: {}},
-      maskClosable: {type: Boolean, default: false},
-      footerHide: {type: Boolean, default: false},
-      span: {type: Number, default: 24},
+      show: {type: Boolean, required: true, default: false}, //d对话框是否显示
+      url: {type: String, required: true},// form表单提交的url
+      fields: {type: Array},// form表单的属性，标准格式:[{key:'',value:'',label:''...}...]
+      title: {type: String, default: '新增记录'},//对话框标题
+      icon: {type: String, default: 'md-add-circle'},//标题图标
+      fieldKey: {type: String, default: 'key'},//获取属性key时的关键字
+      fieldValue: {type: String, default: 'value'},//获取属性value时的关键字
+      fieldLabel: {type: String, default: 'label'},//获取属性label时的关键字
+      fieldSelect: {type: String, default: 'select'},//如果有下拉选，获取属性select时的关键字
+      fieldSelectValue: {type: String, default: 'value'},//如果有下拉选，获取select的value时的关键字
+      fieldSelectLabel: {type: String, default: 'label'},//如果有下拉选，获取select的label时的关键字
+      extraParams: {type: Object, default: {}},//form提交时所需的额外参数
+      maskClosable: {type: Boolean, default: false},//是否允许点击遮罩层关闭
+      footerHide: {type: Boolean, default: false},//不显示底部
+      span: {type: Number, default: 24}//24栅格系统,input框的栅格占用
     },
     model: {
       prop: 'show',
@@ -63,6 +64,7 @@
       }
     },
     computed: {
+      // 在组件上实现v-model功能
       modalShow:{
         get () {
           return this.show
