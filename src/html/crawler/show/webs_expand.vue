@@ -29,10 +29,9 @@
             title: '标题',
             key: 'title',
             render: (h, params) => {
-              let self = this;
               let a  = h('a', {
                 on: {
-                  click: function () {
+                  click: () => {
                     let component = {
                       name: 'CrawlerShowNews',
                       desc: '新闻列表[' + params.row.title + ']',
@@ -42,14 +41,8 @@
                         categoryId: params.row.id
                       }
                     };
-                    self.$store.dispatch('addComponent', component);
-                    let param = {
-                      categoryId: params.row.id
-                    };
-                    self.$axios.ajax(self.url.web.hasRead, param).then(function (response) {
-                      if (response.data.errorCode === '0000') {
-                        self.reload();
-                      }
+                    this.$store.dispatch('addComponent', component).then(() => {
+                      this.$emit('read', params.row);
                     });
                   }
                 }
@@ -95,31 +88,15 @@
                   style: 'margin-right: 2em;'
                 },
                 on: {
-                  click: function () {
-                    self.category.form.modal = true;
-                    self.category.form.title = '修改分类';
-                    self.category.form.url = self.url.category.modify;
-                    self.category.form.items.webId = params.row.webId;
-                    self.category.form.items.title = params.row.title;
-                    self.category.form.items.url = params.row.url;
-                    self.category.form.items.xpathTitle = params.row.xpathTitle;
-                    self.category.form.items.xpathText = params.row.xpathText;
-                    self.category.form.items.charset = params.row.charset;
-                    self.category.form.extraParams = {
-                      id: params.row.id,
-                    }
+                  click: () => {
+                    this.$emit('modify', params.row);
                   }
                 }
               }, '修改');
               let del = h('a', {
                 on: {
-                  click: function () {
-                    self.category.del.modal = true;
-                    self.category.del.url = self.url.category.del;
-                    self.category.del.msg = '分类标题：' + params.row.title;
-                    self.category.del.params = {
-                      categoryId: params.row.id
-                    }
+                  click: () => {
+                    this.$emit('del', params.row);
                   }
                 }
               }, '删除');

@@ -3,6 +3,7 @@
        :ref="ref.rootDiv"
        :style="divStyle">
     <slot :name="slot.buttons"></slot>
+    <Divider style="margin: 0px"></Divider>
     <Table :border="true"
            :columns="columns"
            :data="page.content"

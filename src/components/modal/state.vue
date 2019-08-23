@@ -17,8 +17,8 @@ self-model:
   <Modal v-model="modalShow"
          @on-cancel="cancel">
     <p slot="header" style="text-align:center">
-      <Icon type="ios-information-circle" style="color: red"></Icon>
-      <span>{{title?title:'您确定要删除以下记录吗？'}}</span>
+      <Icon :type="icon" style="color: red"></Icon>
+      <span>{{ title }}</span>
     </p>
     <slot name="msg">
     </slot>
@@ -33,14 +33,15 @@ self-model:
   export default {
     name: 'add',
     props: {
-      show: Boolean,  // 是否显示
-      url: String,    // 删除的url
-      title: String,
-      params: Object  // 参数
+      show: {type: Boolean, required: true, default: false},  // 是否显示
+      url: {type: String, required: true, default: '/'},    // 删除的url
+      title: {type: String, default: '您确定要删除以下记录吗？'},
+      icon: {type: String, default: 'ios-information-circle'},
+      params: {type: Object, default: {}}  // 参数
     },
     model: {
       prop: 'show',
-      event: 'self-model'
+      event: 'modal-cancel'
     },
     data () {
       return {
@@ -56,26 +57,34 @@ self-model:
           this.modal = value
         }
       }
-
     },
     methods: {
       ok () {
-        let self = this
-        ajaxUtil.ajax(self.url, self.params).done(function (response) {
-          if (response.errorCode === "0000") {
-            self.$Message.success('操作成功');
-            self.$emit('self-done', true)
-            self.$emit('self-model', false)
+        this.$http.post(this.url, this.params, (response) => {
+          if (response.errorCode === '0000') {
+            this.$Notice.success({
+              title: '操作成功'
+            });
+            this.$emit('modal-cancel',false);
+            this.$emit('modal-ok',true);
           } else {
-            self.$Message.error('操作失败，原因：' + response.errorMsg);
+            this.$Notice.error({
+              title: `操作失败,errorCode: ${response.errorCode}`,
+              desc: `errorMsg: ${response.errorMsg}`
+            });
           }
-        }).fail(function (response) {
-          self.$Message.error('网络异常:' + response.responseJSON.message);
+        }, (error) => {
+          if (error.message) {
+            this.$Notice.error({
+              title: `网络异常,status: ${error.status}`,
+              desc: `errorMsg: ${error.message}`
+            });
+          }
         })
       },
       cancel () {
-        this.$emit('self-done', false)
-        this.$emit('self-model', false)
+        this.$emit('modal-cancel',false);
+        this.$emit('modal-ok',false);
       }
     }
   }

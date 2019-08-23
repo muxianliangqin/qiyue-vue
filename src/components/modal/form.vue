@@ -9,10 +9,11 @@
     </p>
     <Form ref="form" :model="items" :rules="rules" :label-width="100" v-if="formBuild">
       <Row style="margin-right: 40px">
-        <Col :span="span" v-for="field in fields">
+        <Col :span="span" v-for="field in fields" :key="field[fieldKey]">
           <FormItem :label="labels[field[fieldKey]]" :prop="field[fieldKey]">
             <Select v-model="items[field[fieldKey]]" v-if="field[fieldSelect] !== undefined">
-              <Option v-for="select in field[fieldSelect]" :value="select[fieldSelectValue]">
+              <Option v-for="select in field[fieldSelect]" :value="select[fieldSelectValue]"
+                      :key="select[fieldSelectValue]">
                 {{ select[fieldSelectLabel] }}
               </Option>
             </Select>
@@ -33,7 +34,7 @@
   export default {
     name: "modal-form",
     props: {
-      show: {type: Boolean, required: true, default: false}, //d对话框是否显示
+      show: {type: Boolean, required: true, default: false}, //对话框是否显示
       url: {type: String, required: true},// form表单提交的url
       fields: {type: Array},// form表单的属性，标准格式:[{key:'',value:'',label:''...}...]
       title: {type: String, default: '新增记录'},//对话框标题
@@ -115,15 +116,15 @@
                 this.$emit('modal-ok',true);
               } else {
                 this.$Notice.error({
-                  title: '操作失败',
-                  desc: `errorCode: ${response.errorCode} \n errorMsg: ${response.errorMsg}`
+                  title: `操作失败,errorCode: ${response.errorCode}`,
+                  desc: `errorMsg: ${response.errorMsg}`
                 });
               }
             }, (error) => {
               if (error.message) {
                 this.$Notice.error({
-                  title: '网络异常:',
-                  desc: error.message
+                  title: `网络异常,status: ${error.status}`,
+                  desc: `errorMsg: ${error.message}`
                 });
               }
             })
