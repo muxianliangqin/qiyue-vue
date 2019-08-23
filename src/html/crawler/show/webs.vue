@@ -59,7 +59,8 @@ export default {
       },
       tablePage: {
         columns: [
-          {type: 'expand', width: 50, render: (h, params) => {
+          {type: 'expand', width: 50,
+            render: (h, params) => {
               return h('CrawlerShowWebsExpand', {
                 props: {
                   row: params.row
