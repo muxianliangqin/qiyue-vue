@@ -29,7 +29,6 @@ self-model:
 </template>
 
 <script>
-  import ajaxUtil from '@/assets/util/ajaxUtil'
   export default {
     name: 'add',
     props: {
