@@ -2,7 +2,7 @@
   <Table :border="true"
          :columns="columns"
          :data="getData"
-         :show-header="false"
+         :show-header="true"
          :stripe="true"
          :highlight-row="true"
          :style="{border: 'none'}"
@@ -19,15 +19,8 @@
     data () {
       return {
         columns: [
-          {
-            title: '序号',
-            type: 'index',
-            width: 70
-          },
-          {
-            title: '正则表达式',
-            key: 'regexp',
-            width: 150,
+          {title: '序号', type: 'index', width: 70},
+          {title: '正则表达式', key: 'regexp', width: 150,
             render: (h,params) => {
               return h('span',{
                 style:{
@@ -36,10 +29,8 @@
               },params.row.regexp)
             }
           },
-          {
-            title: '说明',
-            key: 'desc'
-          }
+          { title: '标签', key: 'label'},
+          { title: '说明', key: 'desc'}
         ]
       }
     },

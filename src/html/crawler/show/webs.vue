@@ -110,7 +110,7 @@ export default {
           {type: 'index', title: '序号', align: 'center', width: 70},
           {title: '网站名称', key: 'title',
             render: (h, params) => {
-              let span = h('span',{},'网站名称');
+              let span = h('span', {}, params.row.title);
               let num = 0;
               params.row.categories.forEach((v) => {
                 num += v.newNum;

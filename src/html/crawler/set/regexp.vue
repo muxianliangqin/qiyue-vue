@@ -45,12 +45,12 @@
             title: '正则表达式',
             key: 'regexp',
             width: 150,
-            render: (h,params) => {
+            render: (h, params) => {
               return h('span',{
                 style:{
                   fontWeight:'bolder'
                 }
-              },params.row.regexp)
+              }, params.row.regexp)
             }
           },
           {
@@ -67,8 +67,8 @@
     },
     methods: {
       init () {
-        this.$http.ajax(this.url).then((response) => {
-          let regexps = response.data.content;
+        this.$http.get(this.url, (response) => {
+          let regexps = response.content;
           let classify = regexps.filter( (v) => {
             return v.superCls === '00';
           });

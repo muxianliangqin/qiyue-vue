@@ -90,6 +90,12 @@ function post(url, data, success, except) {
           .catch((error) => except === undefined?{}:except(error))
 }
 
+function get(url, success, except) {
+  instance.get(url)
+          .then((response) => success(response))
+          .catch((error) => except === undefined?{}:except(error))
+}
+
 /*
 发送请求后处理成功和错误情况
  */
@@ -133,6 +139,7 @@ export default {
   instance,
   qs,
   post,
+  get,
   postWithFull,
   postWithError
 }
