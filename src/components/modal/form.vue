@@ -31,7 +31,7 @@
       title: {type: String, default: '新增记录'},//对话框标题
       icon: {type: String, default: 'md-add-circle'},//标题图标
       maskClosable: {type: Boolean, default: false},//是否允许点击遮罩层关闭
-      footerHide: {type: Boolean, default: false},//不显示底部
+      footerHide: {type: Boolean, default: true},//不显示底部
       url: {type: String, required: true},// form表单提交的url
       fields: {type: Array},// form表单的属性，标准格式:[{key:'',value:'',label:''...}...]
       fieldKey: {type: String, default: 'key'},//获取属性key时的关键字

@@ -3,18 +3,20 @@
 Params:
   show: 控制modal的显示和隐藏
   url: 后台接口链接
-  title: modal显示是的标题
+  title: modal显示的标题
   params: 传入的参数，一般为 {xxId:}
 
-self-done:
+modal-ok:
   自定义的完结事件，返回boolean值，
   true表示操作成功，需要更新数据
   false表示取消操作，不需要更新数据
-self-model:
+modal-cancel:
   自定义组件的v-model
 -->
 <template>
   <Modal v-model="modalShow"
+         :maskClosable="maskClosable"
+         :footerHide="footerHide"
          @on-cancel="cancel">
     <p slot="header" style="text-align:center">
       <Icon :type="icon" style="color: red"></Icon>
@@ -36,7 +38,9 @@ self-model:
       url: {type: String, required: true, default: '/'},    // 删除的url
       title: {type: String, default: '您确定要删除以下记录吗？'},
       icon: {type: String, default: 'ios-information-circle'},
-      params: {type: Object, default: {}}  // 参数
+      params: {type: Object, default: {}}, // 参数
+      maskClosable: {type: Boolean, default: false},//是否允许点击遮罩层关闭
+      footerHide: {type: Boolean, default: false},//不显示底部
     },
     model: {
       prop: 'show',

@@ -1,8 +1,6 @@
 <template>
   <div style="text-align: left">
-
-
-    <div style="height: 400px">
+    <div :style="{height: splitHeight + 'px'}">
       <Split v-model="split1">
         <div slot="left">
           <div style="margin-bottom: 24px">
@@ -54,7 +52,7 @@
             </Tooltip>
           </div>
           <Divider></Divider>
-          <SelfForm :fields="fields"
+          <SelfForm :fields="form.fields" :extraParams="form.extraParams"
                     :url="url.addRegexp" :ref="ref.form">
           </SelfForm>
         </div>
@@ -83,9 +81,10 @@
     data () {
       return {
         split1: 0.5,
+        splitHeight: this.$store.getters.tabs.height,
         url: {
           findAll: '/crawler/regexp/findAll',
-          addRegexp: ''
+          addRegexp: '/crawler/regexp/addKeyword'
         },
         ref: {
           form: 'form'
@@ -99,10 +98,13 @@
           data: {},
           values: ['g']
         },
-        fields: [
-          {key: 'name', value: '正则表达式', label: '名称'},
-          {key: 'regexp', value: '', label: '正则表达式'},
-        ],
+        form: {
+          fields: [
+            {key: 'name', value: '正则表达式', label: '名称'},
+            {key: 'regexp', value: '', label: '正则表达式'},
+          ],
+          extraParams: {}
+        },
         test: {
           text: '',
           regexp: '',
@@ -258,6 +260,10 @@
             prefix = '?!';
             value = '';
             break;
+          case '0045':
+            value = '';
+            disabled = false;
+            break;
           default:
             break;
         }
@@ -278,7 +284,9 @@
       },
       generateRegexp () {
         let regexp = '/';
+        let regexp_codes = [];
         this.group.forEach((v) => {
+          regexp_codes.push(v.data.code);
           if (v.prefix) {
             regexp = regexp + v.prefix;
           }
@@ -294,6 +302,8 @@
         regexp = regexp + modifier;
         this.$refs[this.ref.form].updateField('regexp', regexp);
         this.test.regexp = regexp;
+        let codes = {regexp: regexp_codes, modifier: this.modifier.values};
+        this.form.extraParams = {codes: JSON.stringify(codes)};
       },
       regexpTest () {
         this.test.data = [];
