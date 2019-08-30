@@ -26,7 +26,7 @@ const actions = {
     let flag = true;
     for (let comp of components) {
       if (comp.name === component.name) {
-        if (comp.new) {
+        if (component.new) {
           commit('updateComponent', component)
         }
         flag = false
@@ -71,7 +71,7 @@ const mutations = {
   updateComponent (state, component) {
     state.tabs.components.forEach(function (value, index, array) {
       if (value.name === component.name) {
-        array[index] = component;
+        array.splice(index, 1, component);
         state.tabs.active = component.name
       }
     })

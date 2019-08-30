@@ -13,7 +13,8 @@
               <Tooltip :content="item['data']['__label']"
                        style="margin: 0"
                        placement="top" :key="index">
-                <Cascader :data="regexp.data" trigger="hover" :clearable="false"
+                <Cascader :data="regexp.data" trigger="hover"
+                          :clearable="false" :value="item.default"
                           @on-visible-change="locate(index)"
                           @on-change="handleChange"
                           style="display: inline-block;width: 100px">
@@ -78,13 +79,16 @@
 <script>
   export default {
     name: "keyword",
+    props: {
+      params: {type: Object, default: undefined}
+    },
     data () {
       return {
         split1: 0.5,
         splitHeight: this.$store.getters.tabs.height,
         url: {
-          findAll: '/crawler/regexp/findAll',
-          addRegexp: '/crawler/regexp/addKeyword'
+          findAll: '/crawler/regexp/regexpFindAll',
+          addRegexp: '/crawler/regexp/keywordAdd'
         },
         ref: {
           form: 'form'
@@ -168,7 +172,29 @@
           this.modifier.data = classify[idx];
           classify.splice(idx, 1);
           this.regexp.data = classify;
+          this.initCodes()
         })
+      },
+      initCodes () {
+        if (this.params.row) {
+          let codes = JSON.parse(this.params.row.codes);
+          let regexp = codes.regexp;
+          let modifier = codes.modifier;
+          this.group = [];
+          regexp.forEach((v) => {
+            this.group.push({
+              data: {
+                label: '',
+                value: '',
+                desc: '',
+                __label: '',
+                __value: ''
+              },
+              value: '',
+              default: v
+            })
+          });
+        }
       },
       handleChange (value, selectedData) {
         let lastData = selectedData.slice(-1)[0];
@@ -286,7 +312,8 @@
         let regexp = '/';
         let regexp_codes = [];
         this.group.forEach((v) => {
-          regexp_codes.push(v.data.code);
+          let arr = v.data.__value.split(',');
+          regexp_codes.push(arr);
           if (v.prefix) {
             regexp = regexp + v.prefix;
           }
@@ -303,7 +330,10 @@
         this.$refs[this.ref.form].updateField('regexp', regexp);
         this.test.regexp = regexp;
         let codes = {regexp: regexp_codes, modifier: this.modifier.values};
-        this.form.extraParams = {codes: JSON.stringify(codes)};
+        this.form.extraParams = {
+          codes: JSON.stringify(codes),
+          userId: this.$store.getters.userInfo.id
+        };
       },
       regexpTest () {
         this.test.data = [];

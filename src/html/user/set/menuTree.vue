@@ -11,43 +11,10 @@
       </Col>
       <Col span="8" v-if="form.operate">
         <Divider>{{form.title}}</Divider>
-        <Form ref="form"
-              :model="form.items"
-              :rules="form.rules"
-              :label-width="100">
-          <FormItem :label="form.labels.code" prop="code">
-            <Input type="text"
-                   :clearable="!form.disabled.code"
-                   :disabled="form.disabled.code"
-                   v-model="form.items.code"
-                   :placeholder="form.labels.code"></Input>
-          </FormItem>
-          <FormItem :label="form.labels.name" prop="name">
-            <Input type="text"
-                   :clearable="!form.disabled.name"
-                   :disabled="form.disabled.name"
-                   v-model="form.items.name"
-                   :placeholder="form.labels.name"></Input>
-          </FormItem>
-          <FormItem :label="form.labels.url" prop="url">
-            <Input type="text"
-                   :clearable="!form.disabled.url"
-                   :disabled="form.disabled.url"
-                   v-model="form.items.url"
-                   :placeholder="form.labels.url"></Input>
-          </FormItem>
-          <FormItem :label="form.labels.superCode" prop="superCode">
-            <Input type="text"
-                   :clearable="!form.disabled.superCode"
-                   :disabled="form.disabled.superCode"
-                   v-model="form.items.superCode"
-                   :placeholder="form.labels.superCode"></Input>
-          </FormItem>
-          <FormItem :label-width="0" style="text-align: center;margin-bottom: 0px;">
-            <Button type="primary" @click="handleSubmit('form')">确认</Button>
-            <Button @click="handleReset('form')" style="margin-left: 8px">重置</Button>
-          </FormItem>
-        </Form>
+        <SelfForm :url="form.url" :title="form.title" :ref="ref.form"
+                  :fields="form.fields" :extraParams="form.extraParams"
+                  @form-ok="reload">
+        </SelfForm>
       </Col>
       <Col span="8" v-if="userMenus.show">
         <Divider>确定更改用户菜单权限吗？</Divider>
@@ -84,7 +51,6 @@
 </template>
 
 <script>
-  import ajaxUtil from '@/assets/util/ajaxUtil'
   export default {
     name: "tree",
     props: {
@@ -92,7 +58,6 @@
     },
     data () {
       return {
-        menuFindAll: '/user/menu/findAll',
         menuRoot: undefined,
         initTreeData: [],
         userMenus: {
@@ -128,54 +93,13 @@
           operate: false,
           title: '',
           url: '',
-          labels: {
-            code: '菜单编码',
-            name: '菜单名称',
-            url: '菜单目录',
-            superCode: '上级菜单'
-          },
-          disabled: {
-            code: false,
-            name: false,
-            url: false,
-            superCode: false
-          },
-          items: {
-            code: '',
-            name: '',
-            url: '',
-            superCode: ''
-          },
-          rules: {
-            code: [
-              {required: true, message: '请输入菜单编码', trigger: 'blur'}
-            ],
-            name: [
-              {required: true, message: '请输入菜单名称', trigger: 'blur'}
-            ],
-            url: [
-              {required: false, message: '请输入菜单目录', trigger: 'blur'}
-            ],
-            superCode: [
-              {required: false, message: '请输入上级菜单', trigger: 'blur'}
-            ]
-          },
+          fields: [
+            {key: 'code', value: '', label: '菜单编码', disabled: false},
+            {key: 'name', value: '', label: '菜单名称', disabled: false},
+            {key: 'url', value: '', label: '菜单目录', disabled: false},
+            {key: 'superCode', value: '', label: '上级菜单', disabled: false},
+          ],
           extraParams: {}
-        },
-        add: {
-          url: 'user/menu/add'
-        },
-        modify: {
-          url: 'user/menu/modify'
-        },
-        del: {
-          url: 'user/menu/delBatch'
-        },
-        stop: {
-          url: 'user/menu/stopBatch'
-        },
-        restart: {
-          url: 'user/menu/restartBatch'
         },
         url: {
           menu: {
@@ -190,6 +114,9 @@
           findUserMenus: 'user/user/findUserMenus',
           findAllUser: 'user/user/findAll',
           menuLoanAddBatch: 'user/menuLoan/addBatch'
+        },
+        ref: {
+          form: 'form'
         }
       }
     },
@@ -209,24 +136,24 @@
           let param = {
             userId: this.params.userId
           };
-          let response = await this.$axios.ajax(this.url.findUserMenus, param);
-          checked = response.data.content;
+          let response = await this.$http.axios.post(this.url.findUserMenus, param);
+          checked = response.content;
           checked = checked.map(v => {
             return v.menuCode
           });
         }
-        this.$axios.ajax(this.menuFindAll).then((response) => {
-          this.menuRoot = response.data.content;
+        this.$http.get(this.url.menu.findAll, (response) => {
+          this.menuRoot = response.content;
           let nodeTree = this.menuNodeToTreeNode(this.menuRoot.children,
             checked,
             edit
-            );
+          );
           this.data[0].checked = false;
           this.data[0].children = nodeTree;
           this.initTreeData = JSON.parse(JSON.stringify(this.data));
         });
-        this.$axios.ajax(this.url.findAllUser).then((response) => {
-          this.menuLoan.users = response.data.content.filter(v => { return v.id !== this.params.userId })
+        this.$http.get(this.url.findAllUser, (response) => {
+          this.menuLoan.users = response.content.filter(v => { return v.id !== this.params.userId })
         });
       },
       menuNodeToTreeNode (menuNodes, checked, edit) {
@@ -259,49 +186,47 @@
         return treeNode;
       },
       renderContent (h, { root, node, data }) {
-        let self = this;
         let name = h('span', {
           attrs: {
             class: 'ivu-tree-title ' + (data.selected?'ivu-tree-title-selected':'')
           },
           on: {
-            click (e) {
+            click: () => {
               for (let i=0;i<root.length;i++) {
                 root[i].node.selected = false;
               }
               data.selected = true;
               if (data.edit) {
-                self.form.title = '【' + data.name + '】修改';
-                self.form.url = self.modify.url;
+                this.form.title = '【' + data.name + '】修改';
+                this.form.url = this.url.menu.modify;
                 if (data.code !== 'root') {
-                  self.form.operate = true;
-                  self.form.items.code = data.code;
-                  self.form.items.name = data.name;
-                  self.form.items.superCode = data.superCode;
-                  self.form.items.url = data.url;
-                  self.form.disabled.code = true;
-                  self.form.disabled.superCode = true;
-                  self.form.disabled.name = false;
-                  self.form.disabled.url = false;
-                  self.form.extraParams = {
-                    id: data.id
+                  this.form.operate = true;
+                  this.form.fields.forEach((v) => {v.value = data[v.key]});
+                  this.form.fields[0].disabled = true;
+                  this.form.fields[1].disabled = false;
+                  this.form.fields[2].disabled = false;
+                  this.form.fields[3].disabled = false;
+                  if (this.$refs[this.ref.form]) {
+                    this.$refs[this.ref.form].updateFields();
                   }
+                  this.form.extraParams = {id: data.id};
                 } else {
-                  self.form.operate = false;
-                  self.$Notice.warning({
+                  this.form.operate = false;
+                  this.$Notice.warning({
                     title: '根目录不允许修改'
                   })
                 }
               } else {
                 data.expand = !data.expand;
                 if (data.children) {
-                  self.menuLoan.show = false
+                  this.menuLoan.show = false
                 } else {
-                  self.menuLoan.menuName = data.name;
-                  self.menuLoan.menuCode = data.code;
-                  self.menuLoan.loanUserIds = data.menuLoan.filter(v => {return v.userId === self.params.userId})
+                  this.menuLoan.menuName = data.name;
+                  this.menuLoan.menuCode = data.code;
+                  this.menuLoan.loanUserIds = data.menuLoan
+                    .filter(v => {return v.userId === this.params.userId})
                     .map(v => { return v.loanUserId });
-                  self.menuLoan.show = true
+                  this.menuLoan.show = true
                 }
               }
             }
@@ -390,18 +315,17 @@
         data.selected = true;
         this.form.operate = true;
         this.form.title = '【' + data.name + '】新增子菜单';
-        this.form.url = this.add.url;
-        this.form.operate = true;
-        this.form.items.code = '';
-        this.form.items.superCode = '';
-        this.form.items.name = '';
-        this.form.items.url = '';
-        this.form.disabled.code = false;
-        this.form.disabled.superCode = true;
-        this.form.disabled.name = false;
-        this.form.disabled.url = false;
-        this.form.items.code = this.generateCode(root, data.code);
-        this.form.items.superCode = data.code;
+        this.form.url = this.url.menu.add;
+        this.form.fields.forEach((v) => {v.value = data[v.key]});
+        this.form.fields[0].value = this.generateCode(root, data.code);
+        this.form.fields[3].value = data.code;
+        this.form.fields[0].disabled = false;
+        this.form.fields[1].disabled = false;
+        this.form.fields[2].disabled = false;
+        this.form.fields[3].disabled = true;
+        if (this.$refs[this.ref.form]) {
+          this.$refs[this.ref.form].updateFields();
+        }
       },
       swap (data) {
         let params = {
@@ -413,7 +337,7 @@
         } else {
           url = this.restart.url;
         }
-        ajaxUtil.initAfterAjax(this, url, params, {traditional: true});
+        this.$http.postWithFull(url, params, this);
       },
       remove (root, node, data) {
         const parentKey = root.find(el => el === node).parent;
@@ -424,7 +348,7 @@
         };
         let url = this.del.url;
         if (confirm('确认删除菜单【' + data.name + '】' + (data.children?'及其子菜单':'') + '吗？')) {
-          ajaxUtil.initAfterAjax(this, url, params, {traditional: true});
+          this.$http.postWithFull(url, params, this);
         }
       },
       generateCode (root, code) {
@@ -460,7 +384,7 @@
             let url = this.form.url;
             let params = this.form.items;
             params = Object.assign(params, this.form.extraParams);
-            ajaxUtil.initAfterAjax(this, url, params);
+            this.$http.postWithFull(url, params, this);
           } else {
             this.$Notice.error({
               title: '校验不通过，请重新填写'
@@ -494,8 +418,8 @@
         let param = {
           userId: this.params.userId
         };
-        this.$axios.ajax(this.url.findUserMenus, param).then((response) => {
-          let codes = response.data.content;
+        this.$http.post(this.url.findUserMenus, param, (response) => {
+          let codes = response.content;
           codes = codes.map(v => {
             return v.menuCode
           });

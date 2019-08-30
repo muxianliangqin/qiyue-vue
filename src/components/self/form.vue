@@ -3,13 +3,15 @@
     <Row style="margin-right: 40px">
       <Col :span="span" v-for="field in fields" :key="field[fieldKey]">
         <FormItem :label="labels[field[fieldKey]]" :prop="field[fieldKey]">
-          <Select v-model="items[field[fieldKey]]" v-if="field[fieldSelect] !== undefined">
+          <Select v-model="items[field[fieldKey]]" :disabled="field['disabled']"
+                  v-if="field[fieldSelect] !== undefined">
             <Option v-for="select in field[fieldSelect]" :value="select[fieldSelectValue]"
                     :key="select[fieldSelectValue]">
               {{ select[fieldSelectLabel] }}
             </Option>
           </Select>
           <Input v-model="items[field[fieldKey]]" :placeholder="labels[field[fieldKey]]"
+                 :disabled="field['disabled']"
                  v-else/>
         </FormItem>
       </Col>
@@ -107,6 +109,19 @@
       },
       updateField (fieldName, fieldValue) {
         this.items[fieldName] = fieldValue;
+      },
+      updateFields () {
+        this.fields.forEach((v) => {this.items[v[this.fieldKey]] = v[this.fieldValue]})
+      },
+      fillField (fieldName, fieldValue) {
+        for (let i=0;i<this.fields.length;i++) {
+          let field = this.fields[i];
+          if (field[this.fieldKey] === fieldName) {
+            field[this.fieldValue] = fieldValue;
+            this.fields.splice(i, 1 , field);
+            break;
+          }
+        }
       }
     },
     created () {

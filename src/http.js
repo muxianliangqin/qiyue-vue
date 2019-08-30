@@ -136,7 +136,7 @@ function postWithError(url, data, _this, success) {
 }
 
 export default {
-  instance,
+  axios: instance,
   qs,
   post,
   get,

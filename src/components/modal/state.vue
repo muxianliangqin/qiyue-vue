@@ -25,7 +25,8 @@ modal-cancel:
     <slot name="msg">
     </slot>
     <div slot="footer" style="text-align:center">
-      <Button type="error" size="large" @click="ok">确定</Button>
+      <Button type="error" size="small" @click="ok">确定</Button>
+      <Button size="small" @click="cancel">取消</Button>
     </div>
   </Modal>
 </template>
