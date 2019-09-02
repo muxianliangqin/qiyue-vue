@@ -1,52 +1,66 @@
 <template>
-  <div>
-    <Row>
-      <Col span="10">
+  <div :style="{height: splitHeight + 'px'}">
+    <Split v-model="split1">
+      <div slot="left">
         <Tree :data="data"
               ref="menuTree"
               :show-checkbox="showCheckbox"
               :render="renderContent"
               @on-check-change="checked"
               style="text-align: left"></Tree>
-      </Col>
-      <Col span="8" v-if="form.operate">
-        <Divider>{{form.title}}</Divider>
-        <SelfForm :url="form.url" :title="form.title" :ref="ref.form"
-                  :fields="form.fields" :extraParams="form.extraParams"
-                  @form-ok="reload">
-        </SelfForm>
-      </Col>
-      <Col span="8" v-if="userMenus.show">
-        <Divider>确定更改用户菜单权限吗？</Divider>
-        <h3 style="text-align: left;">已选择菜单</h3>
-        <row>
-          <Col span="6" v-for="v in userMenus.checkedBoxes"
-               :key="v.id"
-               style="text-align: left;padding: 8px 0px">
-            {{v.name}}
-          </Col>
-        </row>
-        <p style="padding-top: 20px">
-          <Button type="primary" @click="userMenusSubmit()">确认</Button>
-          <Button @click="userMenusReset()" style="margin-left: 8px">重置</Button>
-        </p>
-      </Col>
-      <Col span="8" v-if="menuLoan.show">
-        <Divider>确定更改用户菜单权限吗？</Divider>
-        <h3 style="text-align: left;">你的菜单【{{menuLoan.menuCode + '-' + menuLoan.menuName}}】</h3>
-        <h3 style="text-align: left;">租借权限给用户{{menuLoan.loanUserIds}}</h3>
-        <Row>
-          <Col span="6" style="text-align: left;padding: 8px 0px">
-            <Select v-model="menuLoan.loanUserIds" multiple style="width:200px">
-              <Option v-for="item in menuLoan.users" :value="item.id" :key="item.id">{{ item.username }}</Option>
-            </Select>
-          </Col>
-        </Row>
-        <p style="padding-top: 20px">
-          <Button type="primary" @click="menuLoanSubmit()">确认</Button>
-        </p>
-      </Col>
-    </Row>
+      </div>
+      <div slot="right" style="padding-left: 20px">
+        <div v-if="form.operate">
+          <Divider>{{form.title}}</Divider>
+          <SelfForm :url="form.url" :title="form.title" :ref="ref.form"
+                    :fields="form.fields" :extraParams="form.extraParams"
+                    @form-ok="reload">
+          </SelfForm>
+        </div>
+        <div v-if="userMenus.show">
+          <Divider>确定更改用户菜单权限吗？</Divider>
+          <div v-if="userMenus.addChecked.length > 0">
+            <h3 style="text-align: left;">添加菜单</h3>
+            <row>
+              <Col span="6" v-for="v in userMenus.addChecked"
+                   :key="v.id"
+                   style="text-align: left;padding: 8px 0px">
+                {{v.name}}
+              </Col>
+            </row>
+          </div>
+          <div v-if="userMenus.subtractChecked.length > 0">
+            <h3 style="text-align: left;">删除菜单</h3>
+            <row>
+              <Col span="6" v-for="v in userMenus.subtractChecked"
+                   :key="v.id"
+                   style="text-align: left;padding: 8px 0px">
+                {{v.name}}
+              </Col>
+            </row>
+          </div>
+          <p style="padding-top: 20px">
+            <Button type="primary" @click="userMenusSubmit()">确认</Button>
+            <Button @click="userMenusReset()" style="margin-left: 8px">重置</Button>
+          </p>
+        </div>
+        <div v-if="menuLoan.show">
+          <Divider>确定更改用户菜单权限吗？</Divider>
+          <h3 style="text-align: left;">你的菜单【{{menuLoan.menuCode + '-' + menuLoan.menuName}}】</h3>
+          <h3 style="text-align: left;">租借权限给用户{{menuLoan.loanUserIds}}</h3>
+          <Row>
+            <Col span="6" style="text-align: left;padding: 8px 0px">
+              <Select v-model="menuLoan.loanUserIds" multiple style="width:200px">
+                <Option v-for="item in menuLoan.users" :value="item.id" :key="item.id">{{ item.username }}</Option>
+              </Select>
+            </Col>
+          </Row>
+          <p style="padding-top: 20px">
+            <Button type="primary" @click="menuLoanSubmit()">确认</Button>
+          </p>
+        </div>
+      </div>
+    </Split>
   </div>
 </template>
 
@@ -58,12 +72,16 @@
     },
     data () {
       return {
+        split1: 0.5,
+        splitHeight: this.$store.getters.tabs.height,
         menuRoot: undefined,
         initTreeData: [],
         userMenus: {
           show: false,
-          checkedBoxes: [],
           initChecked: [],
+          // checkedBoxes: [],
+          addChecked: [],
+          subtractChecked: [],
         },
         menuLoan: {
           show: false,
@@ -129,8 +147,11 @@
       }
     },
     methods: {
+      // 异步改为同步，配合await使用
       async init () {
+        // 是否可编辑标志，true表示对菜单新增修改删除等操作
         let edit = this.params.edit;
+        // 是否选中，表示用户拥有菜单的权限
         let checked = undefined;
         if (!edit) {
           let param = {
@@ -141,14 +162,11 @@
           checked = checked.map(v => {
             return v.menuCode
           });
+          this.userMenus.initChecked = checked;
         }
         this.$http.get(this.url.menu.findAll, (response) => {
           this.menuRoot = response.content;
-          let nodeTree = this.menuNodeToTreeNode(this.menuRoot.children,
-            checked,
-            edit
-          );
-          this.data[0].checked = false;
+          let nodeTree = this.menuNodeToTreeNode(this.menuRoot.children, checked, edit);
           this.data[0].children = nodeTree;
           this.initTreeData = JSON.parse(JSON.stringify(this.data));
         });
@@ -378,53 +396,65 @@
         }
         return ids;
       },
-      handleSubmit (name) {
-        this.$refs[name].validate((valid) => {
-          if (valid) {
-            let url = this.form.url;
-            let params = this.form.items;
-            params = Object.assign(params, this.form.extraParams);
-            this.$http.postWithFull(url, params, this);
-          } else {
-            this.$Notice.error({
-              title: '校验不通过，请重新填写'
-            });
+      getNodeFromTreeByCode (treeData, code) {
+        let node = undefined;
+        for (let i=0;i<treeData.length;i++) {
+          if (treeData[i].code === code) {
+            node = treeData[i];
+          } else if (treeData[i].children) {
+            node = this.getNodeFromTreeByCode(treeData[i].children, code);
           }
-        })
+          if (node) {
+            return node;
+          } else {
+            continue;
+          }
+        }
       },
-      handleReset (name) {
-        this.$refs[name].resetFields();
-      },
-      checked (datas) {
-        this.userMenus.checkedBoxes = this.$refs.menuTree.getCheckedAndIndeterminateNodes();
+      checked (data) {
+        // 点击复选框
+        let checkedBoxes = this.$refs.menuTree.getCheckedAndIndeterminateNodes();
+        checkedBoxes = checkedBoxes.map((v) => {return v.code});
+        let initChecked = this.userMenus.initChecked;
+        let subtractChecked = [];
+        let addChecked = [];
+        for (let i=0;i<initChecked.length;i++) {
+          let x = initChecked[i];
+          if (!checkedBoxes.includes(x)) {
+            subtractChecked.push(x);
+          }
+        }
+        for (let j=0;j<checkedBoxes.length;j++) {
+          let y = checkedBoxes[j];
+          if (y!=='root' && !initChecked.includes(y)) {
+            addChecked.push(y);
+          }
+        }
+        this.userMenus.subtractChecked = subtractChecked.map((v) => {
+          return this.getNodeFromTreeByCode(this.initTreeData, v);
+        });
+        this.userMenus.addChecked = addChecked.map((v) => {
+          return this.getNodeFromTreeByCode(this.initTreeData, v);
+        });
         this.userMenus.show = true;
       },
       userMenusSubmit () {
-        let data = this.userMenus.checkedBoxes;
-        let userMenus = data.map(v => {
-          return {
-            menuCode: v.code,
-            userId: this.params.userId
-          }
+        let addChecked = this.userMenus.addChecked;
+        let subtractChecked = this.userMenus.subtractChecked;
+        let addMenus = addChecked.map(v => {
+          return {menuCode: v.code, userId: this.params.userId};
+        });
+        let subtractMenu = subtractChecked.map(v => {
+          return v.code;
         });
         let params = {
-          userMenuEntities: JSON.stringify(userMenus)
+          menus: JSON.stringify({addMenus: addMenus, subtractMenus: subtractMenu})
         };
         this.$http.postWithFull(this.url.setUserMenus, params, this);
         this.reload();
-        this.getCheckedBoxes();
-      },
-      getCheckedBoxes () {
-        let param = {
-          userId: this.params.userId
-        };
-        this.$http.post(this.url.findUserMenus, param, (response) => {
-          let codes = response.content;
-          codes = codes.map(v => {
-            return v.menuCode
-          });
-          this.userMenus.checkedBoxes = codes
-        });
+        this.userMenus.show = false;
+        this.userMenus.addChecked = [];
+        this.userMenus.subtractChecked = [];
       },
       userMenusReset () {
         let initData = JSON.parse(JSON.stringify(this.initTreeData));
@@ -451,6 +481,9 @@
     },
     created () {
       this.init();
+    },
+    mounted () {
+
     },
     watch: {
       'params' () {
