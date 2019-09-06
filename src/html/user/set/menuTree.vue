@@ -426,7 +426,7 @@
         }
         for (let j=0;j<checkedBoxes.length;j++) {
           let y = checkedBoxes[j];
-          if (y!=='root' && !initChecked.includes(y)) {
+          if (y !== 'root' && !initChecked.includes(y)) {
             addChecked.push(y);
           }
         }

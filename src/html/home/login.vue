@@ -44,26 +44,25 @@ export default {
       let style = {
         'max-width': '300px',
         'margin': '0 auto'
-      }
+      };
       return style
     }
   },
   methods: {
     handleSubmit (name) {
       this.$refs[name].validate((valid) => {
-        let self = this
         if (valid) {
-          ajaxUtil.ajax('/user/login', self.formInline).done(function (response) {
+          this.$http.post('/user/login', this.formInline, (response) => {
             if (response.errorCode === '0000') {
-              self.$Message.success('Success!')
-              self.$store.dispatch('setUserInfo', response.content)
-              self.$router.push({name: 'index'})
+              this.$Message.success('Success!');
+              this.$store.dispatch('setUserInfo', response.content);
+              this.$router.push({name: 'index'});
             } else {
-              self.$Message.error('用户名或密码错误')
+              this.$Message.error('用户名或密码错误');
             }
+          }, (response) => {
+            this.$Message.error('Fail!')
           })
-        } else {
-          self.$Message.error('Fail!')
         }
       })
 
