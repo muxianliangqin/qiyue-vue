@@ -1,6 +1,6 @@
 import axios from 'axios'
 import qs from 'qs'
-import router from './router'
+import router from './router/index'
 
 const instance = axios.create({
   baseURL: 'http://localhost:7000/',
@@ -78,9 +78,7 @@ instance.interceptors.response.use(
           error.message = 'HTTP版本不受支持';
           break;
         case 700:
-          router.replace({
-            path: "login",
-          });
+          router.replace({path: "login"});
           break;
         default:
           error.message = '未知异常';

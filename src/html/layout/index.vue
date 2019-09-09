@@ -23,11 +23,10 @@
         </Menu>
       </Header>
       <Layout :style="{padding: '0 32px'}">
-        <Row>
+        <Row :ref="layout.breadcrumb.ref">
           <Col span="12">
             <!-- 导航区 -->
-            <Breadcrumb :ref="layout.breadcrumb.ref"
-                        :style="{padding: '8px 0', 'text-align': 'left'}">
+            <Breadcrumb :style="{padding: '8px 0', 'text-align': 'left'}">
               <template v-for="breadcrumb in getBreadcrumbs">
                 <BreadcrumbItem :key="'breadcrumb_' + breadcrumb.code">
                   <span>
@@ -42,6 +41,15 @@
             <div class="self-user-info">
               <span style="margin-right: 8px">欢迎登陆:</span>
               <span>{{userInfo.username}}</span>
+              <Dropdown style="margin-left: 8px" @on-click="logout">
+                <a href="javascript:void(0)">
+                  用户设置
+                  <Icon type="ios-arrow-down"></Icon>
+                </a>
+                <DropdownMenu slot="list">
+                  <DropdownItem name="logout">退出登录</DropdownItem>
+                </DropdownMenu>
+              </Dropdown>
             </div>
           </Col>
         </Row>
@@ -116,7 +124,10 @@ export default {
     return {
       menuNamePrefix: 'm',
       menuNameSeparator: '-',
-      getMenuNode: '/user/getMenuNode',
+      url: {
+        getMenuNode: '/user/getMenuNode',
+        logout: "/user/logout",
+      },
       layout: {               // 页面总体布局
         root: null,           // 总菜单树
         module: {             // 顶部模块区
@@ -186,11 +197,20 @@ export default {
   methods: {
     initLayout () {
       /* 初始化页面布局 */
+      this.getMenuNode();
+      this.$store.dispatch('setMenuRoot', this.layout.root).then(()=>{
+        this.initModule();
+        this.initSide();
+      });
+    },
+    getMenuNode () {
+      /*
+      async + await 实现的同步，此方法等待，其他方法异步运行，并不是剩下的所有程序都等待
+      */
       let params = {userId: this.$store.getters.userInfo.id};
-      this.layout.root = ajaxUtil.ajaxSync(this.getMenuNode, params).content;
-      this.$store.dispatch('setMenuRoot', this.layout.root);
-      this.initModule();
-      this.initSide();
+      let response = ajaxUtil.ajaxSync(this.url.getMenuNode, params);
+      // let response = await this.$http.axios.post(this.url.getMenuNode, params);
+      this.layout.root = response.content;
     },
     initModule () {
       /* 初始化模块区 */
@@ -305,6 +325,11 @@ export default {
       // 更新活动标签
       let tabsActive = baseUtil.generateCompName(selectedMenu.element.url);
       this.$store.dispatch('setTabsActive',tabsActive);
+    },
+    logout (name) {
+      this.$http.get(this.url.logout, () => {
+        this.$router.replace({path: "login"});
+      })
     }
   },
   mounted () {
