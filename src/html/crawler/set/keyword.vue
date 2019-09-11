@@ -2,7 +2,7 @@
   <div style="text-align: left">
     <div :style="{height: splitHeight + 'px'}">
       <Split v-model="split1">
-        <div slot="left">
+        <div slot="left" :style="splitStyle">
           <div style="margin-bottom: 24px">
             <ButtonGroup>
               <Button icon="md-add" @click="leftAdd()"></Button>
@@ -54,7 +54,7 @@
           </div>
           <Divider></Divider>
           <SelfForm :fields="form.fields" :extraParams="form.extraParams"
-                    :url="url.addRegexp" :ref="ref.form">
+                    :url="url.keywordAdd" :ref="ref.form">
           </SelfForm>
         </div>
         <div slot="right" style="padding-left: 10px;text-align: center;">
@@ -88,7 +88,7 @@
         splitHeight: this.$store.getters.tabs.height,
         url: {
           findAll: '/crawler/regexp/regexpFindAll',
-          addRegexp: '/crawler/regexp/keywordAdd'
+          keywordAdd: '/crawler/regexp/keywordAdd'
         },
         ref: {
           form: 'form'
@@ -133,6 +133,12 @@
           }
         }
         return flag;
+      },
+      splitStyle () {
+        return {
+          maxHeight: this.$store.getters.tabs.height - 50 + 'px',
+          overflowY: 'auto'
+        }
       }
     },
     methods: {
@@ -332,7 +338,6 @@
         let codes = {regexp: regexp_codes, modifier: this.modifier.values};
         this.form.extraParams = {
           codes: JSON.stringify(codes),
-          userId: this.$store.getters.userInfo.id
         };
       },
       regexpTest () {

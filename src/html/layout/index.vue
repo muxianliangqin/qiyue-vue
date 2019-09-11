@@ -41,7 +41,7 @@
             <div class="self-user-info">
               <span style="margin-right: 8px">欢迎登陆:</span>
               <span>{{userInfo.username}}</span>
-              <Dropdown style="margin-left: 8px" @on-click="logout">
+              <Dropdown style="margin-left: 8px" @on-click="userSet">
                 <a href="javascript:void(0)">
                   用户设置
                   <Icon type="ios-arrow-down"></Icon>
@@ -201,6 +201,7 @@ export default {
       this.$store.dispatch('setMenuRoot', this.layout.root).then(()=>{
         this.initModule();
         this.initSide();
+        this.initMenus();
       });
     },
     getMenuNode () {
@@ -326,14 +327,15 @@ export default {
       let tabsActive = baseUtil.generateCompName(selectedMenu.element.url);
       this.$store.dispatch('setTabsActive',tabsActive);
     },
-    logout (name) {
-      this.$http.get(this.url.logout, () => {
-        this.$router.replace({path: "login"});
-      })
+    userSet (name) {
+      if (name === 'logout'){
+        this.$http.get(this.url.logout, () => {
+          this.$router.replace({path: "login"});
+        })
+      }
     }
   },
   mounted () {
-    this.initMenus();
     this.contentHeight();
   },
   watch: {

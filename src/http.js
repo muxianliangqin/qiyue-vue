@@ -78,7 +78,7 @@ instance.interceptors.response.use(
           error.message = 'HTTP版本不受支持';
           break;
         case 700:
-          router.replace({path: "login"});
+          router.replace({path: "login", params: {logout: true}});
           break;
         default:
           error.message = '未知异常';
