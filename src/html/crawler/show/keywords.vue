@@ -1,6 +1,6 @@
 <template>
   <div>
-    <TablePage :url="url.keywordFindAll" :columns="columns"
+    <TablePage :url="url.keywordFindPage" :columns="columns"
                :extraParams="extraParams" :ref="ref.tablePage">
     </TablePage>
     <ModalState v-model="modalState.modal"
@@ -21,7 +21,7 @@
     data () {
       return {
         url: {
-          keywordFindAll: '/crawler/regexp/keywordFindAll',
+          keywordFindPage: '/crawler/regexp/keywordFindPage',
           del: '/crawler/regexp/keywordDel',
         },
         ref: {

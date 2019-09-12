@@ -4,10 +4,12 @@
       <Col :span="span" v-for="field in fields" :key="field[fieldKey]">
         <FormItem :label="labels[field[fieldKey]]" :prop="field[fieldKey]">
           <Select v-model="items[field[fieldKey]]" :disabled="field['disabled']"
-                  v-if="field[fieldSelect] !== undefined">
-            <Option v-for="select in field[fieldSelect]" :value="select[fieldSelectValue]"
-                    :key="select[fieldSelectValue]">
-              {{ select[fieldSelectLabel] }}
+                  :multiple="field['select']['multiple']"
+                  v-if="field['type'] === 'select'">
+            <Option v-for="select in field['select']['data']"
+                    :value="select[field['select']['value']]"
+                    :key="select[field['select']['value']]">
+              {{ select[field['select']['label']] }}
             </Option>
           </Select>
           <Input v-model="items[field[fieldKey]]" :placeholder="labels[field[fieldKey]]"
@@ -32,15 +34,21 @@
       fieldKey: {type: String, default: 'key'},//获取属性key时的关键字
       fieldValue: {type: String, default: 'value'},//获取属性value时的关键字
       fieldLabel: {type: String, default: 'label'},//获取属性label时的关键字
-      fieldSelect: {type: String, default: 'select'},//如果有下拉选，获取属性select时的关键字
-      fieldSelectValue: {type: String, default: 'value'},//如果有下拉选，获取select的value时的关键字
-      fieldSelectLabel: {type: String, default: 'label'},//如果有下拉选，获取select的label时的关键字
       extraParams: {type: Object,
         default: () => {
           return {}
         }
       },//form提交时所需的额外参数
       span: {type: Number, default: 24}//24栅格系统,input框的栅格占用
+      /*
+      * 一些隐藏设置：
+      * 每个field都有type属性，如未填默认为:input
+      * 如type=select，field有select属性，select结构如下：
+      * {...type: 'select',
+      *   select: {value: 'id', label: 'title', data: [{id: '', title: '',...},...]}
+      * }
+      * select中的value和label分别表示从data中获取option的value和label属性关键字
+      */
     },
     data () {
       return {

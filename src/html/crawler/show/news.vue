@@ -16,14 +16,8 @@
         findNews: '/crawler/findNews',
         hasRead: '/crawler/newsHasRead',
         columns: [
-          {
-            title: '序号',
-            type: 'index',
-            width: 70
-          },
-          {
-            title: '标题',
-            key: 'title',
+          {title: '序号', type: 'index', width: 70},
+          {title: '标题', key: 'title',
             render: (h, params) => {
               let self = this;
               let a = h('a', {
@@ -55,7 +49,8 @@
                 return [a];
               }
             }
-          }
+          },
+          {title: '关键字匹配结果', },
         ]
       }
     }
