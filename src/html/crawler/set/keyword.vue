@@ -342,7 +342,7 @@
       },
       regexpTest () {
         this.test.data = [];
-        let re = eval(this.test.regexp);
+        let re = eval(this.$refs[this.ref.form].items.regexp);
         let result = this.test.text.match(re);
         if (result) {
           result.forEach((v) => {

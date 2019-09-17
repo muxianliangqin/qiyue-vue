@@ -26,7 +26,7 @@
       return {
         url: {
           keywordFindAll: '/crawler/regexp/keywordFindAll',
-          keywordWebSet: ''
+          keywordWebSet: '/crawler/regexp/keywordWebSet'
         },
         keywords: [],
         modalForm: {
@@ -39,7 +39,7 @@
                 data: []
               },
               rule: [
-                {required: true, message: '请选择匹配关键字', trigger: 'blur', type: 'number'}
+                {required: true, message: '请选择匹配关键字', trigger: 'blur', type: 'array'}
               ]
             },
             {key: 'categories', value: [], label: '网站分类', type:'select',
@@ -47,7 +47,7 @@
                 data: this.row.categories
               },
               rule: [
-                {required: true, message: '请选择匹配网站分类', trigger: 'blur', type: 'number'}
+                {required: true, message: '请选择匹配网站分类', trigger: 'blur', type: 'array'}
               ]
             }
           ],

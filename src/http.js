@@ -16,14 +16,16 @@ const instance = axios.create({
 instance.interceptors.request.use(
   (config) => {
     config.transformRequest = [(data) => {
-      let traditional = false;
+      let arrayNum = 0;
       for (let k in data) {
         if (data[k] instanceof Array) {
-          traditional = true
+          arrayNum ++;
         }
       }
-      if (traditional === true) {
+      if (arrayNum === 1) {
         return qs.stringify(data, {indices: false})
+      } else if (arrayNum > 1) {
+        return `request=${JSON.stringify(data)}`;
       } else {
         return qs.stringify(data);
       }

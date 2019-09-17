@@ -18,7 +18,7 @@
     name: "regexp",
     data () {
       return {
-        url: '/crawler/regexp/findAll',
+        url: '/crawler/regexp/regexpFindAll',
         data: [],
         columns: [
           {
