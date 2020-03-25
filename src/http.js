@@ -9,6 +9,7 @@ const instance = axios.create({
   headers: {
     'X-Requested-With': 'XMLHttpRequest',
     'Content-Type':'application/x-www-form-urlencoded'
+    // 'Content-Type':'application/json'
   },
   timeout: 3000,
 });
@@ -16,14 +17,20 @@ const instance = axios.create({
 instance.interceptors.request.use(
   (config) => {
     config.transformRequest = [(data) => {
-      let traditional = false;
-      for (let k in data) {
-        if (data[k] instanceof Array) {
-          traditional = true
-        }
-      }
-      if (traditional === true) {
+      if (data instanceof Array) {
         return qs.stringify(data, {indices: false})
+      } else if (data instanceof Object) {
+        let traditional = false;
+        for (let k in data) {
+          if (data[k] instanceof Array) {
+            traditional = true
+          }
+        }
+        if (traditional === true) {
+          return qs.stringify(data, {indices: false})
+        } else {
+          return qs.stringify(data);
+        }
       } else {
         return qs.stringify(data);
       }
@@ -101,9 +108,10 @@ function get(url, success, except) {
 }
 
 /*
-发送请求后处理成功和错误情况
+发送请求后自动处理成功和错误情况
+post4: postWithFull
  */
-function postWithFull(url, data, _this) {
+function post4(url, data, _this) {
   let success = (response) => {
     if (response.errorCode === '0000') {
       _this.$Notice.success({
@@ -127,7 +135,11 @@ function postWithFull(url, data, _this) {
   post(url, data, success, error)
 }
 
-function postWithError(url, data, _this, success) {
+/*
+发送请求后自动处理错误情况
+postE: postWithError
+ */
+function postE(url, data, _this, success) {
   let error = (error) => {
     if (error.message) {
       _this.$Notice.error({
@@ -144,6 +156,6 @@ export default {
   qs,
   post,
   get,
-  postWithFull,
-  postWithError
+  post4,
+  postE
 }

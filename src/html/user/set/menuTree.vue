@@ -114,7 +114,7 @@
           fields: [
             {key: 'code', value: '', label: '菜单编码', disabled: false},
             {key: 'name', value: '', label: '菜单名称', disabled: false},
-            {key: 'url', value: '', label: '菜单目录', disabled: false},
+            {key: 'url', value: '', label: '菜单目录', disabled: false, rule: {required: false}},
             {key: 'superCode', value: '', label: '上级菜单', disabled: false},
           ],
           extraParams: {}
@@ -355,7 +355,7 @@
         } else {
           url = this.restart.url;
         }
-        this.$http.postWithFull(url, params, this);
+        this.$http.post4(url, params, this);
       },
       remove (root, node, data) {
         const parentKey = root.find(el => el === node).parent;
@@ -366,7 +366,7 @@
         };
         let url = this.del.url;
         if (confirm('确认删除菜单【' + data.name + '】' + (data.children?'及其子菜单':'') + '吗？')) {
-          this.$http.postWithFull(url, params, this);
+          this.$http.post4(url, params, this);
         }
       },
       generateCode (root, code) {
@@ -450,7 +450,7 @@
         let params = {
           menus: JSON.stringify({addMenus: addMenus, subtractMenus: subtractMenu})
         };
-        this.$http.postWithFull(this.url.setUserMenus, params, this);
+        this.$http.post4(this.url.setUserMenus, params, this);
         this.reload();
         this.userMenus.show = false;
         this.userMenus.addChecked = [];
@@ -472,7 +472,7 @@
         let params = {
           menuLoanEntities: JSON.stringify(menuLoanEntities)
         };
-        this.$http.postWithFull(this.url.menuLoanAddBatch, params, this);
+        this.$http.post4(this.url.menuLoanAddBatch, params, this);
         this.reload()
       },
       reload () {

@@ -131,22 +131,27 @@
             {
               title: '序号',
               type: 'index',
+              align: 'center',
               width: 100
             },
             {
               title: '权限代码',
+              align: 'center',
               key: 'code'
             },
             {
               title: '权限名称',
+              align: 'center',
               key: 'name'
             },
             {
               title: '权限描述',
+              align: 'center',
               key: 'desc'
             },
             {
               title: '状态',
+              align: 'center',
               key: 'state',
               render: (h, params) => {
                 let state = params.row.state
@@ -162,10 +167,11 @@
               }
             },
             {
-              title: '菜单权限设置',
+              title: '权限设置',
+              align: 'center',
               render: (h, params) => {
                 let self = this
-                let set = h('Button', {
+                let set = h('a', {
                   attrs: {
                     type: 'primary',
                     size: 'small',
@@ -186,7 +192,7 @@
               width: 250,
               render: (h, params) => {
                 let self = this
-                let modify = h('Button', {
+                let modify = h('a', {
                   attrs: {
                     type: 'primary',
                     size: 'small',
@@ -206,7 +212,7 @@
                     }
                   }
                 }, '修改')
-                let stop = h('Button', {
+                let stop = h('a', {
                   attrs: {
                     type: 'primary',
                     size: 'small',
@@ -224,7 +230,7 @@
                     }
                   }
                 }, '停用')
-                let restart = h('Button', {
+                let restart = h('a', {
                   attrs: {
                     type: 'primary',
                     size: 'small',
@@ -242,7 +248,7 @@
                     }
                   }
                 }, '启用')
-                let del = h('Button', {
+                let del = h('a', {
                   attrs: {
                     type: 'primary',
                     size: 'small',

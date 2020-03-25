@@ -60,8 +60,8 @@ export default {
             } else {
               this.$Message.error(response.errorMsg);
             }
-          }, (response) => {
-            this.$Message.error('Fail!')
+          }, (error) => {
+            this.$Message.error(error.errorMsg)
           })
         }
       })

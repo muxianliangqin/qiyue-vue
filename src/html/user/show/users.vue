@@ -175,22 +175,27 @@
             {
               title: '序号',
               type: 'index',
+              align: 'center',
               width: 100
             },
             {
               title: '用户名',
+              align: 'center',
               key: 'username'
             },
             {
               title: '手机',
+              align: 'center',
               key: 'mobile'
             },
             {
               title: '昵称',
+              align: 'center',
               key: 'alias'
             },
             {
               title: '性别',
+              align: 'center',
               key: 'gender',
               render: (h,params) => {
                 let gender = params.row.gender
@@ -207,6 +212,7 @@
             },
             {
               title: '状态',
+              align: 'center',
               key: 'state',
               render: (h, params) => {
                 let state = params.row.state
@@ -223,9 +229,10 @@
             },
             {
               title: '菜单权限',
+              align: 'center',
               render: (h, params) => {
                 const self = this
-                let menus = h('Button', {
+                let menus = h('a', {
                   attrs: {
                     type: 'primary',
                     size: 'small',
@@ -246,7 +253,7 @@
                       self.$store.dispatch('addComponent', component)
                     }
                   }
-                }, '菜单权限')
+                }, '权限')
                 return [menus]
               }
             },
@@ -256,7 +263,7 @@
               width: 250,
               render: (h, params) => {
                 let self = this
-                let modify = h('Button', {
+                let modify = h('a', {
                   attrs: {
                     type: 'primary',
                     size: 'small',
@@ -277,7 +284,7 @@
                     }
                   }
                 }, '修改')
-                let stop = h('Button', {
+                let stop = h('a', {
                   attrs: {
                     type: 'primary',
                     size: 'small',
@@ -295,7 +302,7 @@
                     }
                   }
                 }, '停用')
-                let restart = h('Button', {
+                let restart = h('a', {
                   attrs: {
                     type: 'primary',
                     size: 'small',
@@ -313,7 +320,7 @@
                     }
                   }
                 }, '启用')
-                let del = h('Button', {
+                let del = h('a', {
                   attrs: {
                     type: 'primary',
                     size: 'small',

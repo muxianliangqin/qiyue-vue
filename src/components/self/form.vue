@@ -63,6 +63,7 @@
         this.fields.forEach((v) => {
           items[v[this.fieldKey]] = v[this.fieldValue];
           labels[v[this.fieldKey]] = v[this.fieldLabel];
+          // 检验规则，如果未设置默认必输
           if (v['rule']) {
             rules[v[this.fieldKey]] = v['rule'];
           } else {

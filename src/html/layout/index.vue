@@ -8,56 +8,45 @@
               active-name="1"
               :ref="layout.module.ref"
               @on-select="changeModule">
-          <div class="layout-logo">
-            <span>心中所想，七月所AI</span>
-          </div>
-          <div class="layout-nav">
-            <template v-for="(module, index) in layout.module.menus">
-              <MenuItem :name="index"
-                        :key="module.element.code">
-                <Icon type="ios-navigate" :key="module.element.code"></Icon>
-                {{module.element.name}}
-              </MenuItem>
-            </template>
-          </div>
+          <Row>
+            <Col span="20">
+              <div style="float: left;">
+                <template v-for="(module, index) in layout.module.menus">
+                  <MenuItem :name="index"
+                            :key="module.element.code">
+                    <Icon type="ios-navigate" :key="module.element.code"></Icon>
+                    {{module.element.name}}
+                  </MenuItem>
+                </template>
+              </div>
+            </Col>
+            <!--<Col span="6" style="color: white;text-align: right;">-->
+              <!--<span>心中所想，七月所AI</span>-->
+            <!--</Col>-->
+            <Col span="4">
+              <div style="float: right">
+                <span style="color: white">欢迎登陆:</span>
+                <Dropdown style="margin-left: 8px" @on-click="logout">
+                  <a href="javascript:void(0)">
+                    {{userInfo.username}}
+                    <Icon type="ios-arrow-down"></Icon>
+                  </a>
+                  <DropdownMenu slot="list">
+                    <DropdownItem name="logout">退出登录</DropdownItem>
+                  </DropdownMenu>
+                </Dropdown>
+              </div>
+            </Col>
+          </Row>
         </Menu>
       </Header>
-      <Layout :style="{padding: '0 32px'}">
-        <Row :ref="layout.breadcrumb.ref">
-          <Col span="12">
-            <!-- 导航区 -->
-            <Breadcrumb :style="{padding: '8px 0', 'text-align': 'left'}">
-              <template v-for="breadcrumb in getBreadcrumbs">
-                <BreadcrumbItem :key="'breadcrumb_' + breadcrumb.code">
-                  <span>
-                    {{breadcrumb.name}}
-                  </span>
-                </BreadcrumbItem>
-              </template>
-            </Breadcrumb>
-          </Col>
-          <Col span="12">
-            <!-- 用户信息区 -->
-            <div class="self-user-info">
-              <span style="margin-right: 8px">欢迎登陆:</span>
-              <span>{{userInfo.username}}</span>
-              <Dropdown style="margin-left: 8px" @on-click="logout">
-                <a href="javascript:void(0)">
-                  用户设置
-                  <Icon type="ios-arrow-down"></Icon>
-                </a>
-                <DropdownMenu slot="list">
-                  <DropdownItem name="logout">退出登录</DropdownItem>
-                </DropdownMenu>
-              </Dropdown>
-            </div>
-          </Col>
-        </Row>
+      <Layout :style="{padding: '0 1rem'}">
         <Content :style="{padding: '8px 0', minHeight: '300px', background: '#fff'}">
           <Layout>
             <!-- 侧边栏菜单区 -->
-            <Sider hide-trigger
-                   :ref="layout.side.ref"
+            <Sider :ref="layout.side.ref"
+                   collapsible :collapsed-width="78"
+                   v-model="layout.side.isCollapsed"
                    :style="{background: '#fff', borderRight: '1px solid #dcdee2'}">
               <Menu :ref='layout.side.sideMenuRef'
                     :active-name="getSideActiveMenu"
@@ -65,6 +54,8 @@
                     @on-select="menuSelect"
                     theme="light"
                     width="auto"
+                    :class="['menu-item', layout.side.isCollapsed ? 'collapsed-menu' : '']"
+                    style="text-align: left"
                     accordion>
                 <template v-for="(menu, index) in layout.side.menus">
                   <Submenu :name="menuNamePrefix + index"
@@ -72,12 +63,12 @@
                            @click.native=''>
                     <template slot="title">
                       <Icon type="ios-keypad" ></Icon>
-                      {{menu.element.name}}
+                      <span>{{menu.element.name}}</span>
                     </template>
                     <template v-for="(menu2, index2) in menu.children">
                       <MenuItem :name="menuNamePrefix + index + '-' + index2"
                                 :key="menu2.element.code">
-                        {{menu2.element.name}}
+                        <span>{{menu2.element.name}}</span>
                       </MenuItem>
                     </template>
                   </Submenu>
@@ -140,6 +131,7 @@ export default {
           breadcrumbs: []     // 导航区
         },
         side: {               // 侧边菜单区
+          isCollapsed: false,
           ref: 'side',
           menus: [],
           activeMenus: [],    // 活动菜单
@@ -296,7 +288,7 @@ export default {
       /* 计算标签显示区的高度 */
       let clientHeight = document.documentElement.clientHeight;
       let moduleHeight = this.$refs[this.layout.module.ref].$el.clientHeight;
-      let breadcrumbHeight = this.$refs[this.layout.breadcrumb.ref].$el.clientHeight;
+      let breadcrumbHeight = 0;//this.$refs[this.layout.breadcrumb.ref].$el.clientHeight;
       let footHeight = this.$refs[this.layout.foot.ref].$el.clientHeight;
       let contentHeight = clientHeight - moduleHeight - breadcrumbHeight - footHeight - 25;
       this.layout.content.style.height = contentHeight + 'px';
@@ -352,5 +344,13 @@ export default {
 }
 </script>
 <style scoped>
-
+  /deep/ .collapsed-menu i.ivu-menu-submenu-title-icon{
+    display: none;
+  }
+  /deep/ .ivu-layout-sider-trigger{
+    position: absolute;
+    color: black;
+    background: white;
+    border-right: 1px solid rgb(220, 222, 226);
+  }
 </style>

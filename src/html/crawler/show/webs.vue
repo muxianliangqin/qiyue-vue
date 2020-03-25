@@ -146,7 +146,7 @@ export default {
                     };
                   }
                 }
-              }, '新增分类');
+              }, '新增');
               let modify = h('a', {
                 attrs: {
                   style: 'margin: 10px;'

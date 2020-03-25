@@ -69,10 +69,12 @@
           {
             title: '序号',
             type: 'index',
+            align: 'center',
             width: 100
           },
           {
             title: '菜单代码',
+            align: 'center',
             key: 'code'
           },
           {
@@ -81,10 +83,12 @@
           },
           {
             title: '上级菜单',
+            align: 'center',
             key: 'superCode'
           },
           {
             title: '状态',
+            align: 'center',
             key: 'state',
             render: (h, params) => {
               let state = params.row.state;
@@ -104,7 +108,7 @@
             align: 'center',
             width: 250,
             render: (h, params) => {
-              let modify = h('Button', {
+              let modify = h('a', {
                 attrs: {
                   type: 'primary',
                   size: 'small',
@@ -120,7 +124,7 @@
                   }
                 }
               }, '修改');
-              let stop = h('Button', {
+              let stop = h('a', {
                 attrs: {
                   type: 'primary',
                   size: 'small',
@@ -136,7 +140,7 @@
                   }
                 }
               }, '停用');
-              let restart = h('Button', {
+              let restart = h('a', {
                 attrs: {
                   type: 'primary',
                   size: 'small',
@@ -152,7 +156,7 @@
                   }
                 }
               }, '启用');
-              let del = h('Button', {
+              let del = h('a', {
                 attrs: {
                   type: 'primary',
                   size: 'small',
