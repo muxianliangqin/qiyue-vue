@@ -3,7 +3,7 @@ import qs from 'qs'
 import router from './router/index'
 
 const instance = axios.create({
-  baseURL: 'http://localhost:7000/',
+  baseURL: process.env.BABEL_ENV,
   responseType: 'json',
   responseEncoding: 'utf8',
   headers: {
