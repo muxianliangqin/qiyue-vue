@@ -8,39 +8,34 @@ const htmlRequire = require.context(
   true,
   // 匹配基础组件文件名的正则表达式
   /(\.\/).+\.(vue|js)$/
-);
-const componentsRequire = require.context('@/components', true, /(\.\/).+\.(vue|js)$/);
+)
+const componentsRequire = require.context('@/components', true, /(\.\/).+\.(vue|js)$/)
 
-function newComponents(requires) {
-  let components = [];
+function newComponents (requires, prefix) {
+  let components = []
   requires.keys().forEach(fileName => {
-    // 获取组件配置
-    const componentConfig = requires(fileName);
     // console.log(fileName)
     // 获取组件的 PascalCase 命名
-    const componentName = baseUtil.generateCompName(fileName);
-    // console.log(componentName)
-
-    let path = '/' + componentName + '/';
-    let name = componentName;
-    let component = componentConfig.default || componentConfig;
-    // if ($.inArray(componentName,suffix_id) != -1) {
-    //   path = path + ':id'
-    // }
-    Vue.component(name,component);
+    const componentName = baseUtil.generateCompName(fileName)
+    let path = '/' + componentName + '/'
+    let name = componentName
+    // 获取组件配置
+    const componentConfig = requires(fileName)
+    let component = componentConfig.default || componentConfig
+    Vue.component(name, component)
     components.push({
       path: path,
       name: name,
       component: component
     })
-  });
-  return components;
+  })
+  return components
 }
 
-let htmlComponents = newComponents(htmlRequire);
-let selfComponents = newComponents(componentsRequire);
-let components = htmlComponents.concat(selfComponents);
-console.log(components);
+let htmlComponents = newComponents(htmlRequire, '@/html')
+let selfComponents = newComponents(componentsRequire, '@/components')
+let components = htmlComponents.concat(selfComponents)
+// console.log(components)
 
 export default components
 
