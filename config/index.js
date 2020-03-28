@@ -11,20 +11,20 @@ module.exports = {
     assetsPublicPath: '/',
     proxyTable: {
       '/user': {
-        target: 'http://localhost:7010/', // 接口的域名
+        target: 'http://localhost:7101/', // 接口的域名
         changeOrigin: false, // 如果接口跨域，需要进行这个参数配置
         secure: false,  // 如果是https接口，需要配置这个参数
-        pathRewrite: {
-            '^/user': ''
-        }
+        // pathRewrite: {
+        //     '^/user': ''
+        // }
       },
       '/crawler': {
-        target: 'http://localhost:7020/',
+        target: 'http://localhost:7101/',
         changeOrigin: false, // 如果接口跨域，需要进行这个参数配置
         secure: false,  // 如果是https接口，需要配置这个参数
-        pathRewrite: {
-          '^/crawler': ''
-        }
+        // pathRewrite: {
+        //   '^/crawler': ''
+        // }
       }
     },
 

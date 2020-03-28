@@ -187,21 +187,20 @@ export default {
     this.initLayout();
   },
   methods: {
-    initLayout () {
+    async initLayout () {
       /* 初始化页面布局 */
-      this.getMenuNode();
+      await this.getMenuNode();
       this.$store.dispatch('setMenuRoot', this.layout.root).then(()=>{
         this.initModule();
         this.initSide();
       });
     },
-    getMenuNode () {
+    async getMenuNode () {
       /*
       async + await 实现的同步，此方法等待，其他方法异步运行，并不是剩下的所有程序都等待
       */
       let params = {userId: this.$store.getters.userInfo.id};
-      let response = ajaxUtil.ajaxSync(this.url.getMenuNode, params);
-      // let response = await this.$http.axios.post(this.url.getMenuNode, params);
+      let response = await this.$http.axios.post(this.url.getMenuNode, params);
       this.layout.root = response.content;
     },
     initModule () {
@@ -320,6 +319,7 @@ export default {
     },
     logout (name) {
       this.$http.get(this.url.logout, () => {
+        alert('退出登录')
         this.$router.replace({path: "login"});
       })
     }
