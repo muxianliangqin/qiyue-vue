@@ -108,16 +108,24 @@ instance.interceptors.response.use(
   }
 )
 
-function post (url, data, success, except) {
-  instance.post(url, data)
+function postConfig (url, data, config, success, except) {
+  instance.post(url, data, config)
     .then((response) => success(response))
     .catch((error) => except === undefined ? {} : except(error))
 }
 
-function get (url, success, except) {
+function getConfig (url, data, config, success, except) {
   instance.get(url)
     .then((response) => success(response))
     .catch((error) => except === undefined ? {} : except(error))
+}
+
+function post (url, data, success, except) {
+  postConfig(url, data, {}, success, except)
+}
+
+function get (url, success, except) {
+  getConfig(url, {}, success, except)
 }
 
 /*
@@ -164,11 +172,40 @@ function postE (url, data, _this, success) {
   post(url, data, success, error)
 }
 
+function download (url, data, fileName, _this) {
+  let config = {responseType: 'blob'}
+  postConfig(url, data, config, (response) => {
+    const blob = new Blob([response]) // 构造一个blob对象来处理数据
+    // 对于<a>标签，只有 Firefox 和 Chrome（内核） 支持 download 属性
+    // IE10以上支持blob但是依然不支持download
+    const link = document.createElement('a') // 创建a标签
+    if ('download' in link) { // 支持a标签download的浏览器
+      link.download = fileName // a标签添加属性
+      link.style.display = 'none'
+      link.href = URL.createObjectURL(blob)
+      document.body.appendChild(link)
+      link.click() // 执行下载
+      URL.revokeObjectURL(link.href) // 释放url
+      document.body.removeChild(link) // 释放标签
+    } else { // 其他浏览器
+      navigator.msSaveBlob(blob, fileName)
+    }
+  }, (error) => {
+    if (error.message) {
+      _this.$Notice.error({
+        title: '网络异常:',
+        desc: error.message
+      })
+    }
+  })
+}
+
 export default {
   axios: instance,
   qs,
   post,
   get,
   post4,
-  postE
+  postE,
+  download
 }
