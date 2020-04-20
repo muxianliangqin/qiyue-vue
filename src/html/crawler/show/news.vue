@@ -25,7 +25,6 @@
           <Row v-for="(item, index) in modal.attachment.content" :key="item.id">
             <Col span="4">附件: {{index + 1}}</Col>
             <Col span="20" style="text-align: left">
-              <!--<a :href="url.download + '?id=' + item.id" target="_blank">{{ item.name }}</a>-->
               <a @click="download(item)">{{ item.name }}</a>
             </Col>
           </Row>
@@ -46,7 +45,6 @@
 </template>
 
 <script>
-  import baseUtil from '@/assets/util/baseUtil'
   export default {
     name: 'news',
     data () {
@@ -54,7 +52,6 @@
         url: {
           findNews: '/crawler/findNews',
           hasRead: '/crawler/newsHasRead',
-          // download: "http://localhost:7000/crawler/file/download"
           download: "/crawler/file/download"
         },
         ref: {
@@ -132,20 +129,7 @@
           {
             title: '操作', width: 200, align: 'center',
             render: (h, params) => {
-              // let text = h('a', {
-              //   style: {
-              //     marginLeft: '8px',
-              //     marginRight: '8px'
-              //   },
-              //   on: {
-              //     click: () => {
-              //       this.modal.text.show = true
-              //       this.modal.text.title = params.row.title
-              //       this.modal.text.content = params.row.texts[0].text
-              //     }
-              //   }
-              // }, '正文')
-              let text = baseUtil.self_a(h, 'a', '正文', {
+              let text = h('a', {
                 style: {
                   marginLeft: '8px',
                   marginRight: '8px'
@@ -157,7 +141,7 @@
                     this.modal.text.content = params.row.texts[0].text
                   }
                 }
-              })
+              }, '正文')
               let attachment = h('a', {
                 style: {
                   marginLeft: '8px',
