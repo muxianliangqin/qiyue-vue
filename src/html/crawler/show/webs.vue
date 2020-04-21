@@ -89,19 +89,21 @@ export default {
                     }
                   },
                   read: (row) => {
-                    let param = {
-                      categoryId: row.id
-                    };
-                    this.$http.post(this.url.web.hasRead, param, (response) => {
-                      if (response.errorCode === '0000') {
-                        this.reload()
-                      } else {
-                        this.$Notice.error({
-                          title: `操作失败,errorCode: ${response.errorCode}`,
-                          desc: `errorMsg: ${response.errorMsg}`
-                        });
-                      }
-                    })
+                    if (row.newNum !== 0) {
+                      let param = {
+                        categoryId: row.id
+                      };
+                      this.$http.post(this.url.web.hasRead, param, (response) => {
+                        if (response.errorCode === '0000') {
+                          this.reload()
+                        } else {
+                          this.$Notice.error({
+                            title: `操作失败,errorCode: ${response.errorCode}`,
+                            desc: `errorMsg: ${response.errorMsg}`
+                          });
+                        }
+                      })
+                    }
                   }
                 }
               })
