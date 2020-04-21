@@ -202,9 +202,16 @@
                     }
                     this.$http.postE(this.url.crawlerTest, data, this,
                       (response) => {
-                        this.modal.title_result = response.data
-                        this.modal.text_result = response.data['news'][0]
-                        this.modal.show = true
+                        if (response.data) {
+                          this.modal.title_result = response.data
+                          this.modal.text_result = response.data['news'][0]
+                          this.modal.show = true
+                        } else {
+                          this.$Notice.error({
+                            title: '爬取网页失败',
+                            desc: `errorMsg: ${response.errorMsg}`
+                          })
+                        }
                       })
                   }
                 }
