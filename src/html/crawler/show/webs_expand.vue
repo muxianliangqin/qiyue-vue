@@ -30,6 +30,7 @@
         <Table :border="true"
                :columns="modal.title_table.columns"
                :data="getTitleResult"
+               v-if="modal.title_result"
                size="small"
                >
         </Table>
@@ -41,6 +42,7 @@
         <Table :border="true"
                :columns="modal.attachment_table.columns"
                :data="getAttachments"
+               v-if="modal.text_result"
                size="small"
                >
         </Table>
