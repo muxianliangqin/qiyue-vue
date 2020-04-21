@@ -70,8 +70,8 @@
           title: '抓取结果',
           category_title: '',
           width: 60,
-          title_result: {},
-          text_result: {},
+          title_result: null,
+          text_result: null,
           title_table: {
             columns: [
               {type: 'index', title: '序号', align: 'center', width: 70},
@@ -277,16 +277,24 @@
         return this.modal.category_title
       },
       getTitleResult () {
-        return this.modal.title_result.news
+        if (this.modal.title_result) {
+          return this.modal.title_result.news
+        }
       },
       getNews () {
-        return this.modal.text_result.title
+        if (this.modal.text_result) {
+          return this.modal.text_result.title
+        }
       },
       getText () {
-        return this.modal.text_result.text
+        if (this.modal.text_result) {
+          return this.modal.text_result.text
+        }
       },
       getAttachments () {
-        return this.modal.text_result.attachments
+        if (this.modal.text_result) {
+          return this.modal.text_result.attachments
+        }
       }
     },
     methods: {
