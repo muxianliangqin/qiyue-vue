@@ -1,5 +1,5 @@
 import Vue from 'vue'
-import baseUtil from '@/assets/util/baseUtil.js'
+import baseUtil from '@/assets/utils/baseUtil.js'
 
 const htmlRequire = require.context(
   // 其组件目录的相对路径

@@ -1,12 +1,13 @@
 import Vue from 'vue'
 import Router from 'vue-router'
 import login from '@/html/home/login'
+import sign from '@/html/home/sign'
 import index from '@/html/layout/index'
 import components from '@/component.js'
 
 Vue.use(Router);
 
-export default new Router({
+const router = new Router({
   // mode: 'history',
   routes: [
     {
@@ -16,8 +17,14 @@ export default new Router({
       component: login
     },
     {
+      path: '/sign',
+      name: 'sign',
+      title: '注册',
+      component: sign
+    },
+    {
       path: '/',
-      redirect: '/login'
+      redirect: '/index'
     },
     {
       path: '/index',
@@ -27,3 +34,5 @@ export default new Router({
     }
   ]
 })
+
+export default router

@@ -1,7 +1,7 @@
 <template>
   <div>
     <h2>welcome</h2>
-    <Collapse style="text-align: left">
+   <!-- <Collapse style="text-align: left">
       <Panel>
         关于系统的一些说明
         <div slot="content">
@@ -37,7 +37,7 @@
           </Collapse>
         </div>
       </Panel>
-    </Collapse>
+    </Collapse>-->
   </div>
 </template>
 

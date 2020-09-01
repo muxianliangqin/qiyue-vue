@@ -17,9 +17,10 @@ modal-cancel:
   <Modal v-model="modalShow"
          :maskClosable="maskClosable"
          :footerHide="footerHide"
+         :draggable="draggable"
          @on-cancel="cancel">
     <p slot="header" style="text-align:center">
-      <Icon :type="icon" style="color: red"></Icon>
+      <Icon :custom="titleIcon" :style="{color: titleColor}"></Icon>
       <span>{{ title }}</span>
     </p>
     <slot name="msg">
@@ -38,57 +39,45 @@ modal-cancel:
       show: {type: Boolean, required: true, default: false},  // 是否显示
       url: {type: String, required: true, default: '/'},    // 删除的url
       title: {type: String, default: '您确定要删除以下记录吗？'},
-      icon: {type: String, default: 'ios-information-circle'},
-      params: {type: Object, default: {}}, // 参数
+      titleIcon: {type: String, default: 'icon-font icon-warning'},
+      titleColor: {type: String, default: 'red'},
+      params: {type: Object | Array, default: {}}, // 参数
       maskClosable: {type: Boolean, default: false},//是否允许点击遮罩层关闭
       footerHide: {type: Boolean, default: false},//不显示底部
+      draggable: {type: Boolean, default: false} // 是否可以拖拽移动
     },
     model: {
       prop: 'show',
-      event: 'modal-cancel'
+      event: 'modal-show'
     },
     data () {
       return {
-        modal: this.show,
+        model: this.show,
       }
     },
     computed: {
-      modalShow:{
+      modalShow: {
         get () {
           return this.show
         },
         set (value) {
-          this.modal = value
+          this.model = value
         }
       }
     },
     methods: {
       ok () {
-        this.$http.post(this.url, this.params, (response) => {
-          if (response.errorCode === '0000') {
-            this.$Notice.success({
-              title: '操作成功'
-            });
-            this.$emit('modal-cancel',false);
-            this.$emit('modal-ok',true);
-          } else {
-            this.$Notice.error({
-              title: `操作失败,errorCode: ${response.errorCode}`,
-              desc: `errorMsg: ${response.errorMsg}`
-            });
-          }
-        }, (error) => {
-          if (error.message) {
-            this.$Notice.error({
-              title: `网络异常,status: ${error.status}`,
-              desc: `errorMsg: ${error.message}`
-            });
-          }
+        this.$http.post(this.url, this.params).then((response) => {
+          this.$Notice.success({
+            title: '操作成功'
+          })
+          this.$emit('modal-ok', true)
+          this.$emit('modal-show', false)
         })
       },
       cancel () {
-        this.$emit('modal-cancel',false);
-        this.$emit('modal-ok',false);
+        this.$emit('modal-cancel', false)
+        this.$emit('modal-show', false)
       }
     }
   }

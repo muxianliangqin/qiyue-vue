@@ -1,10 +1,10 @@
 <template>
   <div>
     <TablePage :url="page.url"
-              :columns="page.columns"
-              :ref="page.ref"
-              v-bind="$attrs"
-              v-on="$listeners">
+               :columns="page.columns"
+               :ref="page.ref"
+               v-bind="$attrs"
+               v-on="$listeners">
       <div slot="buttons"
            class="self-buttons">
         <Button type="primary" size="small" style="margin-right: 80px" @click="addItem">新增</Button>
@@ -12,12 +12,12 @@
       </div>
     </TablePage>
     <ModalForm v-model="form.modal"
-                   :title="form.title"
-                   :url="form.url"
-                   :items="form.items"
-                   :rules="form.rules"
-                   :extraParams="form.extraParams"
-                   @self-done="reload">
+               :title="form.title"
+               :url="form.url"
+               :items="form.items"
+               :rules="form.rules"
+               :extraParams="form.extraParams"
+               @self-done="reload">
       <div slot="fields">
         <FormItem :label="form.labels.code" prop="code">
           <Row>
@@ -52,17 +52,14 @@
       </div>
     </ModalForm>
     <ModalState v-model="state.modal"
-                    :url="state.url"
-                    :params="state.params"
-                    :title="state.title"
-                    @self-done="reload">
+                :url="state.url"
+                :params="state.params"
+                :title="state.title"
+                @self-done="reload">
       <div slot="msg" style="text-align: center">
         <p>{{state.msg}}</p>
       </div>
     </ModalState>
-    <SelfTree v-model="tree.modal">
-
-    </SelfTree>
   </div>
 </template>
 
@@ -99,33 +96,33 @@
           extraParams: {}
         },
         add: {
-          url: 'user/right/add'
+          url: 'user/role/add'
         },
         modify: {
-          url: 'user/right/modify'
+          url: 'user/role/modify'
         },
         del: {
-          url: 'user/right/del'
+          url: 'user/role/del'
         },
         stop: {
-          url: 'user/right/stop'
+          url: 'user/role/stop'
         },
         restart: {
-          url: 'user/right/restart'
+          url: 'user/role/restart'
         },
         state: {
           modal: false,
-            title: undefined,
-            url: '',
-            msg: '',
-            params: null
+          title: undefined,
+          url: '',
+          msg: '',
+          params: null
         },
         tree: {
           modal: false,
-          url: 'user/right/menu'
+          url: 'user/role/menu'
         },
         page: {
-          url:　'user/right/findAll',
+          url: 'user/role/findAll',
           ref: 'Page',
           columns: [
             {
@@ -163,7 +160,7 @@
                 } else {
                   stateCn = '未知'
                 }
-                return h('span',stateCn)
+                return h('span', stateCn)
               }
             },
             {
@@ -200,12 +197,12 @@
                   },
                   on: {
                     click: function () {
-                      self.form.modal = true;
-                      self.form.title = '修改记录';
-                      self.form.url = self.modify.url;
-                      self.form.items.code = params.row.code;
-                      self.form.items.name = params.row.name;
-                      self.form.items.desc = params.row.desc;
+                      self.form.modal = true
+                      self.form.title = '修改记录'
+                      self.form.url = self.modify.url
+                      self.form.items.code = params.row.code
+                      self.form.items.name = params.row.name
+                      self.form.items.desc = params.row.desc
                       self.form.extraParams = {
                         id: params.row.id
                       }
@@ -220,10 +217,10 @@
                   },
                   on: {
                     click: function () {
-                      self.state.modal = true;
-                      self.state.url = self.stop.url;
-                      self.state.msg = '用户：' + params.row.name;
-                      self.state.title = '确定要停用以下记录吗？';
+                      self.state.modal = true
+                      self.state.url = self.stop.url
+                      self.state.msg = '用户：' + params.row.name
+                      self.state.title = '确定要停用以下记录吗？'
                       self.state.params = {
                         id: params.row.id
                       }
@@ -238,10 +235,10 @@
                   },
                   on: {
                     click: function () {
-                      self.state.modal = true;
-                      self.state.msg = '用户：' + params.row.name;
-                      self.state.url = self.restart.url;
-                      self.state.title = '确定要启用以下记录吗？';
+                      self.state.modal = true
+                      self.state.msg = '用户：' + params.row.name
+                      self.state.url = self.restart.url
+                      self.state.title = '确定要启用以下记录吗？'
                       self.state.params = {
                         id: params.row.id
                       }
@@ -256,9 +253,9 @@
                   },
                   on: {
                     click: function () {
-                      self.state.modal = true;
-                      self.state.msg = '用户：' + params.row.name;
-                      self.state.url = self.del.url;
+                      self.state.modal = true
+                      self.state.msg = '用户：' + params.row.name
+                      self.state.url = self.del.url
                       self.state.params = {
                         id: params.row.id
                       }
@@ -280,12 +277,12 @@
     },
     methods: {
       addItem () {
-        this.form.modal = true;
-        this.form.title = '新增记录';
-        this.form.url = this.add.url;
-        this.form.items.code = '';
-        this.form.items.name = '';
-        this.form.items.desc = '';
+        this.form.modal = true
+        this.form.title = '新增记录'
+        this.form.url = this.add.url
+        this.form.items.code = ''
+        this.form.items.name = ''
+        this.form.items.desc = ''
       },
       reload (value) {
         if (value) {

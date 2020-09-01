@@ -1,6 +1,7 @@
 import axios from 'axios'
 import qs from 'qs'
 import router from './router/index'
+import store from './store/index'
 
 const AUTHENTICATION_TOKEN = 'token'
 
@@ -10,33 +11,48 @@ const instance = axios.create({
   responseEncoding: 'utf8',
   headers: {
     'X-Requested-With': 'XMLHttpRequest',
-    'Content-Type': 'application/x-www-form-urlencoded',
-    // 'Content-Type':'application/json'
+    // 默认json格式参数
+    'Content-Type': 'application/json'
   },
   timeout: 10000,
 })
 
+/**
+ * 请求参数模板
+ * {
+ *   params: {
+ *
+ *   },
+ *   page: {
+ *     size: 10,
+ *     page: 0
+ *   }
+ * }
+ *
+ * params 请求参数主体，
+ * page 分页参数
+ */
 instance.interceptors.request.use(
   (config) => {
-    config.transformRequest = [(data) => {
-      if (data instanceof Array) {
-        return qs.stringify(data, {indices: false})
-      } else if (data instanceof Object) {
-        let traditional = false
-        for (let k in data) {
-          if (data[k] instanceof Array) {
-            traditional = true
+    config.transformRequest = [
+      (data) => {
+        // 非对象类型，包装一层params
+        if (!(data instanceof Object)) {
+          data = {
+            params: data
           }
         }
-        if (traditional === true) {
-          return qs.stringify(data, {indices: false})
-        } else {
-          return qs.stringify(data)
+        // 无params属性，包装一层params
+        if (!data.hasOwnProperty('params')) {
+          data = {
+            params: data
+          }
         }
-      } else {
-        return qs.stringify(data)
+        // 如果已包装成{params:...}样式的参数，就不处理。
+        // 将参数转为json字符串
+        return JSON.stringify(data)
       }
-    }]
+    ]
     let token = config.headers.common[AUTHENTICATION_TOKEN]
     if (token) {
       config.headers[AUTHENTICATION_TOKEN] = token
@@ -54,6 +70,12 @@ instance.interceptors.response.use(
     let token = response.headers[AUTHENTICATION_TOKEN]
     if (token) {
       instance.defaults.headers.common[AUTHENTICATION_TOKEN] = token
+    }
+    if (response.data.code !== '00000') {
+      store.dispatch('alerts', {
+        code: response.data.code,
+        message: response.data.message
+      })
     }
     return response.data
   },
@@ -95,84 +117,45 @@ instance.interceptors.response.use(
           error.message = 'HTTP版本不受支持'
           break
         case 511:
-          get("/user/logout", () => {
-            alert('退出登录')
+          // 用户没有权限 Network Authentication Required
+          get('/user/logout', () => {
+            store.dispatch('alerts', {
+              status: error.status,
+              message: error.message
+            })
+            sessionStorage.removeItem('userInfo')
             router.replace({path: 'login'})
           })
           break
+        case 700:
+          // 主动登出
+          sessionStorage.removeItem('userInfo')
+          router.replace({path: 'login'})
+          break
         default:
           error.message = '未知异常'
+      }
+      if (error.status !== 700) {
+        store.dispatch('alerts', {
+          type: 'error',
+          status: error.status,
+          message: error.message
+        })
       }
       return Promise.reject(error)
     }
   }
 )
 
-function postConfig (url, data, config, success, except) {
-  instance.post(url, data, config)
-    .then((response) => success(response))
-    .catch((error) => except === undefined ? {} : except(error))
+function post (url, data) {
+  return instance.post(url, data)
 }
 
-function getConfig (url, data, config, success, except) {
-  instance.get(url)
-    .then((response) => success(response))
-    .catch((error) => except === undefined ? {} : except(error))
+function get (url) {
+  return instance.get(url)
 }
 
-function post (url, data, success, except) {
-  postConfig(url, data, {}, success, except)
-}
-
-function get (url, success, except) {
-  getConfig(url, {}, success, except)
-}
-
-/*
-发送请求后自动处理成功和错误情况
-post4: postWithFull
- */
-function post4 (url, data, _this) {
-  let success = (response) => {
-    if (response.errorCode === '0000') {
-      _this.$Notice.success({
-        title: '操作成功'
-      })
-    } else {
-      _this.$Notice.error({
-        title: '操作失败',
-        desc: `errorCode: ${response.errorCode} \n errorMsg: ${response.errorMsg}`
-      })
-    }
-  }
-  let error = (error) => {
-    if (error.message) {
-      _this.$Notice.error({
-        title: '网络异常:',
-        desc: error.message
-      })
-    }
-  }
-  post(url, data, success, error)
-}
-
-/*
-发送请求后自动处理错误情况
-postE: postWithError
- */
-function postE (url, data, _this, success) {
-  let error = (error) => {
-    if (error.message) {
-      _this.$Notice.error({
-        title: '网络异常:',
-        desc: error.message
-      })
-    }
-  }
-  post(url, data, success, error)
-}
-
-function download (url, data, fileName, _this) {
+function download (url, data, fileName) {
   let config = {responseType: 'blob'}
   postConfig(url, data, config, (response) => {
     const blob = new Blob([response]) // 构造一个blob对象来处理数据
@@ -190,22 +173,12 @@ function download (url, data, fileName, _this) {
     } else { // 其他浏览器
       navigator.msSaveBlob(blob, fileName)
     }
-  }, (error) => {
-    if (error.message) {
-      _this.$Notice.error({
-        title: '网络异常:',
-        desc: error.message
-      })
-    }
   })
 }
 
 export default {
-  axios: instance,
-  qs,
+  instance,
   post,
   get,
-  post4,
-  postE,
   download
 }

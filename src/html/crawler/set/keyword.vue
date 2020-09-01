@@ -53,9 +53,9 @@
             </Tooltip>
           </div>
           <Divider></Divider>
-          <SelfForm :fields="form.fields" :extraParams="form.extraParams"
+          <SystemForm :fields="form.fields" :extraParams="form.extraParams"
                     :url="url.keywordAdd" :ref="ref.form">
-          </SelfForm>
+          </SystemForm>
         </div>
         <div slot="right" style="padding-left: 10px;text-align: center;">
           <Input v-model="test.text" type="textarea"
