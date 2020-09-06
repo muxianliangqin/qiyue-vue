@@ -10,7 +10,9 @@
 - 支持初始化、重置等功能
 - 支持表单提交时添加额外的参数
 - 统一校验、提交数据
+
 详情可见：src/components/system/form.vue
+
 主要属性说明：
 ```
 url: {type: String, required: true},// form表单提交的url
