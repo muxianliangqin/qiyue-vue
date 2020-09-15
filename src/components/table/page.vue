@@ -1,9 +1,9 @@
 <template>
   <div class="self-root-div"
        :ref="ref.rootDiv"
-       :style="divStyle">
+       :style="{height: contentHeight + 'px'}">
     <slot :name="slot.buttons"></slot>
-    <Divider style="margin: 0px"></Divider>
+    <Divider style="margin: 0"></Divider>
     <Table :border="true"
            :columns="columns"
            :data="page.content"
@@ -11,7 +11,7 @@
            :stripe="stripe"
            :highlight-row="highlightRow"
            :ref="ref.table"
-           :height="tableHeight"
+           :max-height="tableHeight"
            :style="{border: 'none'}"
            :size="size">
     </Table>
@@ -32,10 +32,7 @@
       columns: Array,
       /*自定义参数，默认由this.$attrs.params传递参数，若extraParams存在则优先使用*/
       extraParams: {
-        type: Object,
-        default: () => {
-          return {}
-        }
+        type: Object | String | Number | Array
       },
       showHeader: {type: Boolean, default: true},
       stripe: {type: Boolean, default: true},
@@ -60,25 +57,29 @@
         slot: {
           buttons: 'buttons'
         },
-        contentHeight: this.$store.getters.tabs.contentHeight,
-        tableHeight: null
+        tableHeight: 0
       }
     },
     computed: {
-      divStyle () {
-        return {
-          height: this.contentHeight + 'px'
-        }
-      }
+      contentHeight () {
+        return this.$store.getters.tabs.contentHeight
+      },
+      // tableHeight () {
+      //   return this.computeTableHeight()
+      // }
     },
     methods: {
       init: function () {
         let params = {}
-        if (this.extraParams) {
-          params = Object.assign(params, this.extraParams)
-        }
         if (this.$attrs.params) {
           params = Object.assign(params, this.$attrs.params)
+        }
+        if (this.extraParams) {
+          if (this.extraParams instanceof Object) {
+            params = Object.assign(params, this.extraParams)
+          } else {
+            params = this.extraParams
+          }
         }
         const page = {}
         if (!params.page) {
@@ -110,17 +111,20 @@
        * 计算table区域的高度
        */
       computeTableHeight () {
-        let divHeight = this.contentHeight
-        let pageHeight = this.$refs[this.ref.page].$el.clientHeight
+        let divHeight = this.$store.getters.tabs.contentHeight
+        let pageHeight = 0
+        if (this.$refs[this.ref.page]) {
+          pageHeight = this.$refs[this.ref.page].$el.clientHeight
+        }
         let buttonSlots = this.$slots[this.slot.buttons]
         let contentHeight = 0
-        if (buttonSlots) {
+        if (buttonSlots && this.$slots[this.slot.buttons][0].elm) {
           let slotHeight = this.$slots[this.slot.buttons][0].elm.clientHeight
           contentHeight = divHeight - pageHeight - slotHeight - 16
         } else {
           contentHeight = divHeight - pageHeight - 16
         }
-        this.tableHeight = contentHeight
+        return contentHeight
       },
       reload () {
         this.init()
@@ -130,30 +134,8 @@
       this.init()
     },
     mounted () {
-      this.computeTableHeight()
+      this.tableHeight = this.computeTableHeight();
     },
-    watch: {
-      '$attrs.params': function () {
-        let components = this.$store.getters.tabs.components
-        let active = this.$store.getters.tabs.active
-        let activeComponent = {}
-        for (let i = 0; i < components.length; i++) {
-          if (components[i].name === active) {
-            activeComponent = components[i]
-            break
-          }
-        }
-        /*
-        组件是新加入tab区的，并且TablePage组件的父组件与当前组件名相同
-        防止tab区存在其他使用TablePage组件的页面，因为新增的页面重复刷新数据
-        */
-        if (activeComponent.new && this.$options.parent.$options._componentTag === activeComponent.name) {
-          this.pageNumber = 0
-          this.pageSize = 10
-          this.init()
-        }
-      }
-    }
   }
 </script>
 

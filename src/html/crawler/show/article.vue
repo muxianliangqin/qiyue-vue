@@ -1,14 +1,14 @@
 <template>
   <div>
-    <TablePage :url="url.findNews"
+    <TablePage :url="url.findBySpecification"
                :columns="columns"
                :ref="ref.tablePage"
                v-bind="$attrs"
                v-on="$listeners">
     </TablePage>
     <!-- 新闻正文 -->
-    <Modal v-model="modal.text.show" :footer-hide="true">
-      <p slot="header" style="text-align:center">
+    <Modal v-model="modal.text.show" :footer-hide="true" :width="modalWidth">
+      <p slot="header" style="text-align:center;">
         <Icon type="ios-barcode-outline"/>
         <span>{{ modal.text.title }}</span>
       </p>
@@ -21,7 +21,7 @@
         <span>{{ modal.attachment.title }}</span>
       </p>
       <div style="text-align: center">
-        <div v-if="modal.attachment.content.length > 0">
+        <div v-if="modal.attachment.hasAttachment">
           <Row v-for="(item, index) in modal.attachment.content" :key="item.id">
             <Col span="4">附件: {{index + 1}}</Col>
             <Col span="20" style="text-align: left">
@@ -29,16 +29,10 @@
             </Col>
           </Row>
         </div>
-        <span v-else style="margin: 0 auto">没有附件</span>
+        <div v-else>
+          <span>{{ modal.attachment.placeholder }}</span>
+        </div>
       </div>
-    </Modal>
-    <!-- 新闻关键字 -->
-    <Modal v-model="modal.keyword.show" :footer-hide="true">
-      <p slot="header" style="text-align:center">
-        <Icon type="ios-barcode-outline"/>
-        <span>{{ modal.keyword.title }}</span>
-      </p>
-      <p>{{ modal.keyword.content }}</p>
     </Modal>
   </div>
 
@@ -50,9 +44,8 @@
     data () {
       return {
         url: {
-          findNews: '/crawler/findNews',
-          hasRead: '/crawler/newsHasRead',
-          download: "/crawler/file/download"
+          findBySpecification: '/crawler/article/findBySpecification',
+          download: '/crawler/file/download'
         },
         ref: {
           tablePage: 'tablePage'
@@ -66,21 +59,17 @@
           attachment: {
             show: false,
             title: '',
+            hasAttachment: false,
+            placeholder: '',
             content: [],
           },
-          keyword: {
-            show: false,
-            title: '',
-            content: '',
-          }
         },
         columns: [
           {title: '序号', type: 'index', width: 70, align: 'center'},
           {
             title: '标题', key: 'title',
             render: (h, params) => {
-              let _this = this
-              let a = h('a', {
+              return h('a', {
                 attrs: {
                   href: params.row.url,
                   target: '_blank'
@@ -90,44 +79,36 @@
                     let param = {
                       newsId: params.row.id
                     }
-                    _this.$http.postE(_this.url.hasRead, param, _this, () => {
-                      _this.reload()
+                    this.$http.post(this.url.hasRead, param).then((response) => {
+                      this.reload()
                     })
                   }
                 }
               }, params.row.title)
-              let span = h('span', {
-                style: {
-                  marginLeft: '8px'
-                }
-              }, '未读')
-              if (params.row.unread === '0') {
-                return [a, span]
-              } else {
-                return [a]
-              }
             }
           },
-          {title: '获取正文', width: 100, align: 'center',
+          {
+            title: '获取正文', align: 'center', width: 150,
             render: (h, params) => {
               let msg = '失败'
-              if (params.row.textState === '1') {
-                msg = '成功'
-              }
-              return h('span', msg)
-            }
-          },
-          {title: '获取附件', width: 100, align: 'center',
-            render: (h, params) => {
-              let msg = '失败'
-              if (params.row.attachmentState === '1') {
+              if (params.row.crawledContent === 1) {
                 msg = '成功'
               }
               return h('span', msg)
             }
           },
           {
-            title: '操作', width: 200, align: 'center',
+            title: '获取附件', align: 'center', width: 150,
+            render: (h, params) => {
+              let msg = '失败'
+              if (params.row.crawledAttachment === 1) {
+                msg = '成功'
+              }
+              return h('span', msg)
+            }
+          },
+          {
+            title: '操作', align: 'center', width: 150,
             render: (h, params) => {
               let text = h('a', {
                 style: {
@@ -138,7 +119,7 @@
                   click: () => {
                     this.modal.text.show = true
                     this.modal.text.title = params.row.title
-                    this.modal.text.content = params.row.texts[0].text
+                    this.modal.text.content = params.row.text
                   }
                 }
               }, '正文')
@@ -151,34 +132,32 @@
                   click: () => {
                     this.modal.attachment.show = true
                     this.modal.attachment.title = params.row.title
-                    this.modal.attachment.content = params.row.attachments
+                    const attachmentStr = params.row.attachments
+                    if (attachmentStr) {
+                      this.modal.attachment.hasAttachment = true
+                      this.modal.attachment.content = JSON.parse(attachmentStr)
+                    } else {
+                      this.modal.attachment.hasAttachment = false
+                      this.modal.attachment.placeholder = '公文无附件'
+                    }
                   }
                 }
               }, '附件')
-              let keyword = h('a', {
-                style: {
-                  marginLeft: '8px',
-                  marginRight: '8px'
-                },
-                on: {
-                  click: () => {
-                    this.modal.keyword.show = true
-                    this.modal.keyword.title = params.row.title
-                    this.modal.keyword.content = params.row.matchResult
-                  }
-                }
-              }, '匹配结果')
-              return [text, attachment, keyword]
+              return [text, attachment]
             }
           }
         ]
       }
     },
+    computed: {
+      modalWidth () {
+        let clientWidth = document.documentElement.clientWidth
+        return clientWidth * 0.7
+      }
+    },
     methods: {
       download (item) {
-        let data = {id: item.id}
-        let fileName = item.name + '.' + item.format
-        this.$http.download(this.url.download, data, fileName, this)
+        this.$http.download(this.url.download, item.fileId, item.name)
       },
       reload () {
         this.$refs[this.ref.tablePage].reload()

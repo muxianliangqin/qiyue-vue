@@ -16,10 +16,12 @@ import http from './http.js'
 import md5 from 'js-md5'
 import auth from './auth.js'
 import constant from '@/assets/constant/constant.js'
-Vue.prototype.$http = http;
-Vue.prototype.$md5 = md5;
-Vue.prototype.$auth = auth.Auth;
-Vue.prototype.$const = constant;
+import utils from '@/assets/utils/index.js'
+Vue.prototype.$http = http
+Vue.prototype.$md5 = md5
+Vue.prototype.$auth = auth.Auth
+Vue.prototype.$const = constant
+Vue.prototype.$utils = utils
 
 /* eslint-disable no-new */
 new Vue({

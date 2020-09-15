@@ -276,7 +276,7 @@
       }
     },
     methods: {
-      addItem () {
+      add () {
         this.form.modal = true
         this.form.title = '新增记录'
         this.form.url = this.add.url

@@ -1,7 +1,8 @@
-import menuUtil from '@/assets/utils/menuUtil.js'
+import utils from '@/assets/utils/index.js'
 import http from '../http.js'
 
 const saveMenuUrl = 'user/menu/add'
+const userInfo = () => {return {}}
 const initTabs = () => {
   return {                       // 内容展示标签区
     height: 300,                // 标签区的高度
@@ -23,7 +24,7 @@ const initTabs = () => {
 }
 
 const state = {
-  userInfo: JSON.parse(sessionStorage.getItem('userInfo')) || {}, // 用户信息
+  userInfo: userInfo(), // 用户信息
   tabs: initTabs(),
   menuTree: {},
   // 新增鉴权组件时，标记已经保存到数据库，以免重复保存
@@ -35,7 +36,7 @@ const actions = {
     commit('setUserInfo', userInfo)
     commit('refreshTabs')
   },
-  addComponent ({commit, dispatch, state, rootState}, component) {
+  addComponent ({commit, state}, component) {
     // 组件默认显示
     if (undefined === component.show) {
       component.show = true
@@ -48,13 +49,10 @@ const actions = {
     if (undefined === component.new) {
       component.new = true
     }
-    let components = state.tabs.components
-    for (let comp of components) {
-      if (comp.name === component.name) {
-        if (!component.new) {
-          commit('updateComponent', component)
-        }
-      }
+    if (component.new) {
+      commit('addComponent', component)
+    } else {
+      commit('updateComponent', component)
     }
     /**
      * 如果组件不是菜单，判定是从菜单页面进入的二级页面
@@ -62,12 +60,12 @@ const actions = {
      * 更新菜单数据
      */
     if (!component.isMenu) {
-      const superMenu = menuUtil.findByNodeId(state.menuTree, component.menuData.menuId)
+      const superMenu = utils.findByNodeId(state.menuTree, component.menuData.menuId)
       const menu = superMenu.children.find((k) => {
         return k.element.data.componentName === component.name
       })
       if (menu) {
-        component.menuData = menu.element.data
+        commit('updateMenuData', {component: component, menu: menu})
       } else {
         commit('saveComponent', component)
       }
@@ -80,6 +78,12 @@ const actions = {
       commit('addComponent', component)
     }
   },
+  updateComponent ({commit, state}, name) {
+    let component = state.tabs.components.find(k => name === k.name)
+    if (undefined !== component) {
+      commit('updateComponent', component)
+    }
+  },
   delComponent ({commit}, name) {
     commit('delComponent', name)
   },
@@ -89,8 +93,8 @@ const actions = {
   setTabsActive ({commit}, active) {
     commit('setTabsActive', active)
   },
-  setTabsHeight ({commit}, height) {
-    commit('setTabsHeight', height)
+  setViewHeight ({commit}, height) {
+    commit('setViewHeight', height)
   },
   setMenuTree ({commit}, menuNode) {
     commit('setMenuTree', menuNode)
@@ -109,7 +113,7 @@ const getters = {
   menuRoot: (state) => state.menuTree,
   activeMenu: (state) => state.tabs.activeMenu,
   findMenuByMenuId: (state) => (menuId) => {
-    return menuUtil.findByNodeId(state.menuTree, menuId)
+    return utils.findByNodeId(state.menuTree, menuId)
   },
   newAuthHasSave: (state) => (menuId, name) => {
     if (state.newAuthMenus[menuId]) {
@@ -121,24 +125,28 @@ const getters = {
 
 const mutations = {
   setUserInfo (state, userInfo) {
-    sessionStorage.setItem('userInfo', JSON.stringify(userInfo))
     state.userInfo = userInfo
   },
   addComponent (state, component) {
     if (state.tabs.active === component.name) {
       return
     }
+    state.tabs.components = state.tabs.components.filter(k => k.name !== component.name)
+    state.tabs.components.push(component)
     state.tabs.active = component.name
     state.tabs.activeMenu = component
-    state.tabs.components.push(component)
   },
   updateComponent (state, component) {
     state.tabs.components.forEach(function (value, index, array) {
       if (value.name === component.name) {
         array.splice(index, 1, component)
         state.tabs.active = component.name
+        state.tabs.activeMenu = component
       }
     })
+  },
+  updateMenuData (state, param) {
+    param.component.menuData = param.menu.element.data
   },
   /**
    * 判断是否需要保存新组件信息到数据库
@@ -186,11 +194,10 @@ const mutations = {
     })
   },
   delComponent (state, name) {
-    state.tabs.components = state.tabs.components.filter(function (value) {
-      return value.name !== name
-    })
+    state.tabs.components = state.tabs.components.filter(k => k.name !== name)
     if (state.tabs.components.length > 0) {
-      state.tabs.active = state.tabs.components[state.tabs.components.length - 1].name
+      state.tabs.activeMenu = state.tabs.components[state.tabs.components.length - 1]
+      state.tabs.active = state.tabs.activeMenu.name
     }
   },
   initTabs (state) {
@@ -199,9 +206,9 @@ const mutations = {
   setTabsActive (state, active) {
     state.tabs.active = active
   },
-  setTabsHeight (state, height) {
+  setViewHeight (state, height) {
     state.tabs.height = height
-    state.tabs.contentHeight = height - 50
+    state.tabs.contentHeight = height
   },
   setMenuTree (state, menuTree) {
     state.menuTree = menuTree

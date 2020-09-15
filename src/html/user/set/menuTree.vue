@@ -90,9 +90,8 @@
           <Divider>确定更改用户菜单权限吗？</Divider>
           <div>
             <h3 style="text-align: left;">添加菜单</h3>
-            <row v-for="value in userMenus.addChecked">
+            <row v-for="value in userMenus.addChecked" :key="value.menuId">
               <Col span="8"
-                   :key="value.menuId"
                    style="text-align: left;padding: 8px 0">
                 {{value.name}}
               </Col>
@@ -119,14 +118,13 @@
           </div>
           <div>
             <h3 style="text-align: left;">删除菜单</h3>
-            <row v-for="value in userMenus.removeChecked">
+            <row v-for="value in userMenus.removeChecked" :key="value.menuId">
               <Col span="8"
-                   :key="value.menuId"
                    style="text-align: left;padding: 8px">
                 {{value.name}}
               </Col>
               <Col span="16">
-                <RadioGroup v-model="phone">
+                <RadioGroup v-model="userMenus.roleMenuPermission[value.menuId]">
                   <Tooltip content="展示">
                     <Radio label="show">
                       <Icon custom="icon-font icon-show"></Icon>
@@ -166,12 +164,14 @@
           <Col span="12"
                v-if="modalState.menus.length > 1"
                v-for="menu in modalState.menus"
+               :key="menu.element.data.menuId"
                style="text-align: center">
             {{menu.element.data.name}}
           </Col>
           <Col span="24"
                v-else
                v-for="menu in modalState.menus"
+               :key="menu.element.data.menuId"
                style="text-align: center">
             {{menu.element.data.name}}
           </Col>
@@ -182,12 +182,8 @@
 </template>
 
 <script>
-  import baseUtil from '@/assets/utils/baseUtil.js'
-  import SystemAuth from '../../../components/system/auth'
-
   export default {
     name: 'tree',
-    components: {SystemAuth},
     props: {
       // 菜单数据
       menuData: Object,
@@ -438,9 +434,9 @@
           if (node.nodeId === '0') {
             continue
           }
-          if (i === 0) {
-            this.$set(node, 'expand', true)
-          }
+          // if (i === 0) {
+          //   this.$set(node, 'expand', true)
+          // }
           let menu = menus.find((v) => {
             return v.menuId === node.element.nodeId
           })
@@ -611,10 +607,10 @@
           }
         })])
         const auth = this.$auth.createAuth(h, this.menuData.menuId)
-        const authAdd = auth.config('新增子菜单', '新增子菜单', 'insert', 'button').setSlot(add).build()
-        const authEdit = auth.config('编辑', '编辑菜单', 'update', 'button').setSlot(edit).build()
-        const authSwap = auth.config('切换', '切换菜单状态', 'update', 'button').setSlot(swap).build()
-        const authRemove = auth.config('删除', '删除菜单', 'delete', 'button').setSlot(remove).build()
+        const authAdd = auth.button('新增子菜单', '新增子菜单', this.$auth.OPERATE.INSERT).build(add)
+        const authEdit = auth.button('编辑', '编辑菜单', this.$auth.OPERATE.UPDATE).build(edit)
+        const authSwap = auth.button('切换', '切换菜单状态', this.$auth.OPERATE.UPDATE).build(swap)
+        const authRemove = auth.button('删除', '删除菜单', this.$auth.OPERATE.DELETE).build(remove)
         let buttons = []
         if (data.element.nodeId === '0') {
           buttons = [authAdd]
@@ -637,11 +633,7 @@
       edit (root, node, data) {
         this.systemForm.title = `编辑${data.hasChild ? '菜单目录' : '菜单'} 【${data.element.data.name}】`
         this.systemForm.url = this.url.menu.modify
-        let keys = Object.keys(this.systemForm.fields)
-        // 为每个field赋值
-        keys.forEach(k => {
-          this.systemForm.fields[k]['value'] = data.element.data[k]
-        })
+        this.$utils.initModalFields(this.systemForm.fields, data.element.data)
         // 获取所有的菜单目录
         let menuDir = []
         root.forEach(k => {
@@ -688,11 +680,7 @@
       append (root, node, data) {
         this.systemForm.url = this.url.menu.add
         this.systemForm.title = `新增子菜单 【${data.element.data.name}】`
-        let keys = Object.keys(this.systemForm.fields)
-        keys.forEach(k => {
-          let field = this.systemForm.fields[k]
-          field.value = ''
-        })
+        this.$utils.resetModalFields(this.systemForm.fields, data.element.data)
         // 上级菜单为当前菜单，不可改
         this.systemForm.fields.superMenuId.select.data = [
           {
@@ -709,6 +697,7 @@
           this.$refs[this.ref.systemForm].init()
         }
         this.systemForm.extraParams = {
+          operateCode: 'select',
           rankNo: data.depth + 1,
           sortNo: data.children.length
         }
@@ -755,7 +744,7 @@
        * 异常加载子节点数据
        */
       loadData (item, callback) {
-        let htmlComponentName = baseUtil.generateCompName(item.element.data.url)
+        let htmlComponentName = this.$utils.generateComponentName(item.element.data.url)
         this.$http.post(this.url.component.findByHtmlComponentName, htmlComponentName).then((response) => {
           callback(response.content.children)
         })
@@ -840,7 +829,7 @@
         let removeMenus = []
         const removeKeys = Object.keys(removeChecked)
         removeKeys.forEach(k => {
-          let v = addChecked[k]
+          let v = removeChecked[k]
           removeMenus.push({
             menuId: v.menuId,
             permissionCode: this.userMenus.roleMenuPermission[v.menuId]

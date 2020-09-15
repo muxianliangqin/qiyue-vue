@@ -6,7 +6,7 @@
         <Menu mode="horizontal"
               theme="dark"
               active-name="1"
-              :ref="layout.module.ref"
+              :ref="ref.module"
               @on-select="changeModule">
           <Row>
             <Col span="20">
@@ -14,7 +14,8 @@
                 <template v-for="(module, index) in modules">
                   <MenuItem :name="index"
                             :key="module.element.data.menuId">
-                    <Icon :custom="'icon-font icon-' + module.element.data.icon" :key="module.element.data.menuId"></Icon>
+                    <Icon :custom="'icon-font icon-' + module.element.data.icon"
+                          :key="module.element.data.menuId"></Icon>
                     {{module.element.data.name}}
                   </MenuItem>
                 </template>
@@ -44,11 +45,11 @@
         <Content :style="{padding: '8px 0', minHeight: '300px', background: '#fff'}">
           <Layout>
             <!-- 侧边栏菜单区 -->
-            <Sider :ref="layout.side.ref"
+            <Sider :ref="ref.side"
                    collapsible :collapsed-width="78"
                    v-model="layout.side.isCollapsed"
                    :style="{background: '#fff', borderRight: '1px solid #dcdee2'}">
-              <Menu :ref='layout.side.sideMenuRef'
+              <Menu :ref='ref.sideMenu'
                     :active-name="activeName"
                     :open-names="openNames"
                     @on-select="menuSelect"
@@ -61,13 +62,13 @@
                   <Submenu :name="menu.element.data.menuId"
                            :key="menu.element.data.menuId">
                     <template slot="title">
-                      <Icon :custom="'icon-font icon-' + menu.element.data.icon" ></Icon>
+                      <Icon :custom="'icon-font icon-' + menu.element.data.icon"></Icon>
                       <span>{{menu.element.data.name}}</span>
                     </template>
                     <template v-for="(menu2, index2) in menu.children">
                       <MenuItem :name="menu2.element.data.menuId"
                                 :key="menu2.element.data.menuId">
-                        <Icon :custom="'icon-font icon-' + menu2.element.data.icon" ></Icon>
+                        <Icon :custom="'icon-font icon-' + menu2.element.data.icon"></Icon>
                         <span>{{menu2.element.data.name}}</span>
                       </MenuItem>
                     </template>
@@ -76,30 +77,37 @@
               </Menu>
             </Sider>
             <!-- 内容展示区 -->
-            <Content :ref="layout.content.ref"
-                     :style="layout.content.style">
-              <Tabs type="card"
-                    closable
-                    v-model="getActive"
-                    @on-tab-remove="handleTabRemove">
-                <template v-for="comp in getComponents">
-                  <TabPane :label="comp.label"
-                           v-if="comp.show"
-                           :key="comp.name"
-                           :style="layout.content.tabPaneStyle"
-                           :name="comp.name">
-                    <keep-alive>
-                      <router-view :is="comp.name" :params="comp.params" :menuData="comp.menuData"></router-view>
-                    </keep-alive>
-                  </TabPane>
-                </template>
-              </Tabs>
+            <Content :ref="ref.content">
+              <Layout>
+                <Header :ref="ref.tabs"
+                        style="padding: 0; background-color: white;">
+                  <Tabs type="card"
+                        closable
+                        v-model="getActive"
+                        @on-click="clickTab"
+                        @on-tab-remove="handleTabRemove">
+                    <template v-for="comp in getComponents">
+                      <TabPane :label="comp.label"
+                               v-if="comp.show"
+                               :key="comp.name"
+                               :name="comp.name">
+                      </TabPane>
+                    </template>
+                  </Tabs>
+                </Header>
+                <Content :ref="ref.view"
+                         :style="contentStyle">
+                  <keep-alive>
+                    <router-view :is="view.name" :params="view.params" :menuData="view.menuData"></router-view>
+                  </keep-alive>
+                </Content>
+              </Layout>
             </Content>
           </Layout>
         </Content>
       </Layout>
       <!-- 底部页脚区 -->
-      <Footer :ref="layout.foot.ref"
+      <Footer :ref="ref.foot"
               class="layout-footer-center">
         2019 &copy; AI-qiyue
       </Footer>
@@ -107,8 +115,6 @@
   </div>
 </template>
 <script>
-  import baseUtil from '@/assets/utils/baseUtil'
-
   export default {
     data () {
       return {
@@ -116,36 +122,27 @@
           getMenuNodeByUserId: '/user/menu/getMenuNodeByUserId',
           logout: '/user/logout',
         },
+        ref: {
+          module: 'module',
+          breadcrumb: 'breadcrumb',
+          side: 'side',
+          sideMenu: 'sideMenu',
+          tabs: 'tabs',
+          content: 'content',
+          foot: 'foot',
+        },
         layout: {               // 页面总体布局
           root: {},             // 总菜单树
           activeModule: 0,      // 活动模块,默认第一个
-          module: {             // 顶部模块区
-            ref: 'module',
-          },
-          breadcrumb: {
-            ref: 'breadcrumb',
-            breadcrumbs: []     // 导航区
-          },
+          breadcrumbs: [],       // 导航区
           side: {               // 侧边菜单区
             isCollapsed: false,
-            ref: 'side',
-            sideMenuRef: 'sideMenu'
           },
-          content: {
-            ref: 'content',
-            style: {
-              padding: '0 8px',
-              height: '300px',
-              background: '#fff'
-            },
-            tabPaneStyle: {
-              height: '300px'
-            }
-          },
-          foot: {
-            ref: 'foot'
-          }
         },
+        // 当前视图
+        view: {
+          name: 'HomeWelcome'
+        }
       }
     },
     computed: {
@@ -178,8 +175,19 @@
           this.$store.dispatch('setTabsActive', value)
         }
       },
+      activeMenu () {
+        return this.$store.getters.activeMenu
+      },
       userInfo () {
         return this.$store.getters.userInfo
+      },
+      contentStyle () {
+        let contentHeight = this.contentHeight()
+        return {
+          padding: '0 8px',
+          height: contentHeight + 'px',
+          backgroundColor: 'white'
+        }
       }
     },
     created () {
@@ -267,6 +275,9 @@
         /* 点击关闭标签时执行 */
         this.$store.dispatch('delComponent', name)
       },
+      clickTab (name) {
+        this.$store.dispatch('updateComponent', name)
+      },
       /**
        * 设置tab区打开的页面
        * @param menu
@@ -291,13 +302,22 @@
        */
       contentHeight () {
         let clientHeight = document.documentElement.clientHeight
-        let moduleHeight = this.$refs[this.layout.module.ref].$el.clientHeight
+        let moduleHeight = 0
+        if (this.$refs[this.ref.module] && this.$refs[this.ref.module].$el) {
+          moduleHeight = this.$refs[this.ref.module].$el.clientHeight
+        }
         let breadcrumbHeight = 0//this.$refs[this.layout.breadcrumb.ref].$el.clientHeight;
-        let footHeight = this.$refs[this.layout.foot.ref].$el.clientHeight
-        let contentHeight = clientHeight - moduleHeight - breadcrumbHeight - footHeight - 25
-        this.layout.content.style.height = contentHeight + 'px'
-        this.layout.content.tabPaneStyle.height = contentHeight - 48 + 'px'
-        this.$store.dispatch('setTabsHeight', contentHeight)
+        let footHeight = 0
+        if (this.$refs[this.ref.foot] && this.$refs[this.ref.foot].$el) {
+          footHeight = this.$refs[this.ref.foot].$el.clientHeight
+        }
+        let tabsHeight = 0
+        if (this.$refs[this.ref.tabs] && this.$refs[this.ref.tabs].$el) {
+          tabsHeight = this.$refs[this.ref.tabs].$el.clientHeight
+        }
+        let contentHeight = clientHeight - moduleHeight - breadcrumbHeight - tabsHeight - footHeight - 25
+        this.$store.dispatch('setViewHeight', contentHeight)
+        return contentHeight
       },
       /**
        * 根据menuId从menus数组中获得menu
@@ -337,10 +357,10 @@
       logout (name) {
         if (name === 'logout') {
           this.$http.instance.get(this.url.logout, () => {
-            this.$router.replace({path: 'login'})
+            this.$router.push({path: '/login'})
           })
         } else if (name === 'sign') {
-          this.$router.replace({path: 'sign'})
+          this.$router.push({path: '/sign'})
         }
       },
       isVisitor () {
@@ -355,17 +375,24 @@
       }
     },
     mounted () {
-      this.contentHeight()
     },
     watch: {
       // 监听 computed中sideMenus值的变化，重新执行以下方法，openNames和activeMenu才会生效
       sideMenus () {
         this.$nextTick(() => {
           this.toComponent(this.getActiveMenu())
-          this.$refs[this.layout.side.sideMenuRef].updateOpened()
-          this.$refs[this.layout.side.sideMenuRef].updateActiveName()
+          this.$refs[this.ref.sideMenu].updateOpened()
+          this.$refs[this.ref.sideMenu].updateActiveName()
         })
       },
+      activeMenu: {
+        deep: true,
+        handler: function (val, oldVal) {
+          if (val) {
+            this.view = val
+          }
+        }
+      }
     }
   }
 </script>

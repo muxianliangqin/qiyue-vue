@@ -70,8 +70,9 @@ instance.interceptors.response.use(
     let token = response.headers[AUTHENTICATION_TOKEN]
     if (token) {
       instance.defaults.headers.common[AUTHENTICATION_TOKEN] = token
+      window.postMessage({token: token}, '*')
     }
-    if (response.data.code !== '00000') {
+    if (response.config.responseType === 'json' && response.data.code !== '00000') {
       store.dispatch('alerts', {
         code: response.data.code,
         message: response.data.message
@@ -123,13 +124,11 @@ instance.interceptors.response.use(
               status: error.status,
               message: error.message
             })
-            sessionStorage.removeItem('userInfo')
             router.replace({path: 'login'})
           })
           break
         case 700:
           // 主动登出
-          sessionStorage.removeItem('userInfo')
           router.replace({path: 'login'})
           break
         default:
@@ -156,8 +155,8 @@ function get (url) {
 }
 
 function download (url, data, fileName) {
-  let config = {responseType: 'blob'}
-  postConfig(url, data, config, (response) => {
+  const config = {responseType: 'blob'}
+  instance.post(url, data, config).then((response) => {
     const blob = new Blob([response]) // 构造一个blob对象来处理数据
     // 对于<a>标签，只有 Firefox 和 Chrome（内核） 支持 download 属性
     // IE10以上支持blob但是依然不支持download

@@ -2,7 +2,7 @@ import Vue from 'vue'
 import Router from 'vue-router'
 import login from '@/html/home/login'
 import sign from '@/html/home/sign'
-import index from '@/html/layout/index'
+import index from '@/html/home/index'
 import components from '@/component.js'
 
 Vue.use(Router);
@@ -31,6 +31,10 @@ const router = new Router({
       name: 'index',
       component: index,
       children: components
+    },
+    {
+      path: '/index/login',
+      redirect: '/login'
     }
   ]
 })

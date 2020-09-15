@@ -13,7 +13,7 @@
                     typeCode="button"
                     desc="新增用户"
                     operateCode="insert">
-          <Button type="primary" size="small" style="margin-right: 80px" @click="addItem">新增</Button>
+          <Button type="primary" size="small" style="margin-right: 80px" @click="add">新增</Button>
         </SystemAuth>
         <Divider style="margin: 4px 0px 0px 0px"></Divider>
       </div>
@@ -117,7 +117,7 @@
                   }
                 }, '权限')
                 let authUserSetMenuTree = this.$auth.createAuth(h, this.menuData.menuId)
-                  .config('权限设置', '前往菜单树页面设置用户权限等', 'update', 'link').setSlot(userSetMenuTree).build()
+                  .link('权限设置', '前往菜单树页面设置用户权限等', this.$auth.OPERATE.UPDATE).build(userSetMenuTree)
                 return [authUserSetMenuTree]
               }
             },
@@ -130,22 +130,7 @@
                   },
                   on: {
                     click: () => {
-                      this.modalForm.modal = true
-                      this.modalForm.title = '修改记录'
-                      this.modalForm.url = this.url.modify
-                      let keys = Object.keys(this.modalForm.fields)
-                      keys.forEach(k => {
-                        let value = this.modalForm.fields[k]
-                        if (k === 'gender') {
-                          value['value'] = params.row[k] + ''
-                        } else {
-                          value['value'] = params.row[k]
-                        }
-                      })
-                      this.modalForm.fields.password.rule = {required: false}
-                      this.modalForm.extraParams = {
-                        userId: params.row.userId
-                      }
+                      this.modify(params)
                     }
                   }
                 }, '修改')
@@ -155,13 +140,7 @@
                   },
                   on: {
                     click: () => {
-                      this.state.modal = true
-                      this.state.url = this.url.stop
-                      this.state.msg = '用户：' + params.row.username
-                      this.state.title = '确定要停用以下记录吗？'
-                      this.state.params = {
-                        userId: params.row.userId
-                      }
+                      this.stop(params)
                     }
                   }
                 }, '停用')
@@ -171,13 +150,7 @@
                   },
                   on: {
                     click: () => {
-                      this.state.modal = true
-                      this.state.msg = '用户：' + params.row.username
-                      this.state.url = this.url.restart
-                      this.state.title = '确定要启用以下记录吗？'
-                      this.state.params = {
-                        userId: params.row.userId
-                      }
+                      this.restart(params)
                     }
                   }
                 }, '启用')
@@ -187,21 +160,16 @@
                   },
                   on: {
                     click: () => {
-                      this.state.modal = true
-                      this.state.msg = '用户：' + params.row.username
-                      this.state.url = this.url.del
-                      this.state.params = {
-                        userId: params.row.userId
-                      }
+                      this.delete(params)
                     }
                   }
                 }, '删除')
                 // 创建权限组件的class类
                 const auth = this.$auth.createAuth(h, this.menuData.menuId)
-                const authModify = auth.config('编辑', '修改用户信息', 'update', 'link').setSlot(modify).build()
-                const authStop = auth.config('停用', '停用用户', 'update', 'link').setSlot(stop).build()
-                const authRestart = auth.config('重启', '重新启用用户', 'update', 'link').setSlot(restart).build()
-                const authDelete = auth.config('删除', '删除用户', 'delete', 'link').setSlot(del).build()
+                const authModify = auth.link('编辑', '修改用户信息', this.$auth.OPERATE.UPDATE).build(modify)
+                const authStop = auth.link('停用', '停用用户', this.$auth.OPERATE.UPDATE).build(stop)
+                const authRestart = auth.link('重启', '重新启用用户', this.$auth.OPERATE.UPDATE).build(restart)
+                const authDelete = auth.link('删除', '删除用户', this.$auth.OPERATE.DELETE).build(del)
                 let ops = []
                 if (params.row.state === 0) {
                   ops = [authModify, authStop, authDelete]
@@ -215,16 +183,56 @@
         }
       }
     },
+    computed: {
+      getSuperMenuId () {
+        if (this.menuData) {
+          return this.menuData.menuId
+        }
+      }
+    },
     methods: {
-      addItem () {
+      add () {
         this.modalForm.modal = true
         this.modalForm.title = '新增记录'
         this.modalForm.url = this.url.add
-        let keys = Object.keys(this.modalForm.fields)
-        keys.forEach(k => {
-          this.modalForm.fields[k]['value'] = ''
-        })
+        this.$utils.resetModalFields(this.modalForm.fields)
         this.modalForm.fields.password.rule = {required: true, message: `请输入用户密码`, trigger: 'blur'}
+      },
+      modify (params) {
+        this.modalForm.modal = true
+        this.modalForm.title = '修改记录'
+        this.modalForm.url = this.url.modify
+        this.$utils.initModalFields(this.modalForm.fields, params.row)
+        this.modalForm.fields.password.rule = {required: false}
+        this.modalForm.extraParams = {
+          userId: params.row.userId
+        }
+      },
+      stop (params) {
+        this.state.modal = true
+        this.state.url = this.url.stop
+        this.state.msg = '用户：' + params.row.username
+        this.state.title = '确定要停用以下记录吗？'
+        this.state.params = {
+          userId: params.row.userId
+        }
+      },
+      restart (params) {
+        this.state.modal = true
+        this.state.msg = '用户：' + params.row.username
+        this.state.url = this.url.restart
+        this.state.title = '确定要启用以下记录吗？'
+        this.state.params = {
+          userId: params.row.userId
+        }
+      },
+      delete (params) {
+        this.state.modal = true
+        this.state.msg = '用户：' + params.row.username
+        this.state.url = this.url.del
+        this.state.params = {
+          userId: params.row.userId
+        }
       },
       reload (value) {
         if (value) {

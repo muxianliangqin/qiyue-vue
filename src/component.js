@@ -1,5 +1,5 @@
 import Vue from 'vue'
-import baseUtil from '@/assets/utils/baseUtil.js'
+import utils from '@/assets/utils/index.js'
 
 const htmlRequire = require.context(
   // 其组件目录的相对路径
@@ -16,8 +16,8 @@ function newComponents (requires, prefix) {
   requires.keys().forEach(fileName => {
     // console.log(fileName)
     // 获取组件的 PascalCase 命名
-    const componentName = baseUtil.generateCompName(fileName)
-    let path = '/' + componentName + '/'
+    const componentName = utils.generateComponentName(fileName)
+    let path = componentName
     let name = componentName
     // 获取组件配置
     const componentConfig = requires(fileName)

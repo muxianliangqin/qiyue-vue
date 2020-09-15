@@ -41,9 +41,12 @@
         // 超级管理员拥有所有菜单及页面元素的使用权限，如果此时元素是数据库不存在的，则新增数据
         // TODO 是否是超级管理员
         const isSuperAdmin = true
+        if (undefined === this.superMenuId) {
+          return
+        }
         // 从store中获取组件是否已授权
         let authHtml = this.$store.getters.findMenuByMenuId(this.superMenuId)
-        if (!authHtml) {
+        if (undefined === authHtml) {
           return
         }
         let authButton = undefined
@@ -90,6 +93,7 @@
         }
         const permissionType = this.authMenu.element.data.permissionType
         switch (permissionType) {
+          // 1-show显示，2-disabled禁用，3-hidden隐藏
           case 1:
             break
           case 2:
