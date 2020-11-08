@@ -96,7 +96,7 @@
                   </Tabs>
                 </Header>
                 <Content :ref="ref.view"
-                         :style="contentStyle">
+                         :style="computeContentStyle">
                   <keep-alive>
                     <router-view :is="view.name" :params="view.params" :menuData="view.menuData"></router-view>
                   </keep-alive>
@@ -186,14 +186,14 @@ export default {
     userInfo () {
       return this.getUserInfo()
     },
-    // contentStyle () {
-    //   let contentHeight = this.contentHeight()
-    //   return {
-    //     padding: '0 8px',
-    //     height: contentHeight + 'px',
-    //     backgroundColor: 'white'
-    //   }
-    // }
+    computeContentStyle () {
+      let contentHeight = this.contentHeight()
+      return {
+        padding: '0 8px',
+        height: contentHeight + 'px',
+        backgroundColor: 'white'
+      }
+    }
   },
   created () {
     const userInfo = this.getUserInfo()
@@ -312,7 +312,7 @@ export default {
       if (this.$refs[this.ref.module] && this.$refs[this.ref.module].$el) {
         moduleHeight = this.$refs[this.ref.module].$el.clientHeight
       }
-      let breadcrumbHeight = 0//this.$refs[this.layout.breadcrumb.ref].$el.clientHeight;
+      let breadcrumbHeight = 0// this.$refs[this.layout.breadcrumb.ref].$el.clientHeight;
       let footHeight = 0
       if (this.$refs[this.ref.foot] && this.$refs[this.ref.foot].$el) {
         footHeight = this.$refs[this.ref.foot].$el.clientHeight
@@ -324,7 +324,7 @@ export default {
       let contentHeight = clientHeight - moduleHeight - breadcrumbHeight - tabsHeight - footHeight - 25
       this.$store.dispatch('setViewHeight', contentHeight)
       this.contentStyle.height = contentHeight + 'px'
-      // return contentHeight
+      return contentHeight
     },
     /**
      * 根据menuId从menus数组中获得menu
@@ -363,9 +363,7 @@ export default {
      */
     logout (name) {
       if (name === 'logout') {
-        this.$http.instance.get(this.url.logout, () => {
-          this.$router.push({path: '/login'})
-        })
+        this.$http.instance.get(this.url.logout)
       } else if (name === 'sign') {
         this.$router.push({path: '/sign'})
       }

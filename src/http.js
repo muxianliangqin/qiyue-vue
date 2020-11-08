@@ -119,16 +119,20 @@ instance.interceptors.response.use(
           break
         case 511:
           // 用户没有权限 Network Authentication Required
-          get('/user/logout', () => {
+          get('/user/logout').catch(() => {
             store.dispatch('alerts', {
               status: error.status,
               message: error.message
+            }).then(() => {
+              router.replace({path: 'login'})
             })
-            router.replace({path: 'login'})
+          }).finally(() => {
+            window.localStorage.removeItem('userInfo')
           })
           break
         case 700:
           // 主动登出
+          window.localStorage.removeItem('userInfo')
           router.replace({path: 'login'})
           break
         default:
