@@ -7,7 +7,7 @@
         获取插件的token
         <div slot="content">
           <Button type="primary" @click="getToken">获取token</Button>
-          <span style="margin-left: 3em">{{token}}</span>
+          <span style="margin-left: 3em">{{ token }}</span>
         </div>
       </Panel>
       <Panel name="2">
@@ -48,20 +48,20 @@
 </template>
 
 <script>
-  export default {
-    name: "download",
-    data () {
-      return {
-        unfold: "1",
-        token: ''
-      }
-    },
-    methods: {
-      getToken () {
-        this.token = this.$store.getters.userInfo.token
-      }
+export default {
+  name: 'download',
+  data () {
+    return {
+      unfold: '1',
+      token: ''
+    }
+  },
+  methods: {
+    getToken () {
+      this.token = this.$store.getters.userInfo.token
     }
   }
+}
 </script>
 
 <style scoped>

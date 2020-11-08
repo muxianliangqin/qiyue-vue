@@ -17,47 +17,47 @@
 </template>
 <script>
 
-  export default {
-    data () {
-      return {
-        url: {
-          login: '/user/login'
-        },
-        formInline: {
-          username: '',
-          password: ''
-        },
-        ruleInline: {
-          username: [
-            {required: true, message: 'Please fill in the username', trigger: 'blur'}
-          ],
-          password: [
-            {required: true, message: 'Please fill in the password.', trigger: 'blur'},
-            {type: 'string', min: 3, message: 'The password length cannot be less than 6 bits', trigger: 'blur'}
-          ]
-        }
-      }
-    },
-    computed: {
-      login () {
-        return {
-          'max-width': '300px',
-          'margin': '0 auto'
-        }
-      }
-    },
-    methods: {
-      handleSubmit (name) {
-        this.$refs[name].validate((valid) => {
-          if (valid) {
-            this.$http.post('/user/login', this.formInline).then((response) => {
-              this.$store.dispatch('setUserInfo', response.content).then(() => {
-                this.$router.push({name: 'index'})
-              })
-            })
-          }
-        })
+export default {
+  data () {
+    return {
+      url: {
+        login: '/user/login'
+      },
+      formInline: {
+        username: '',
+        password: ''
+      },
+      ruleInline: {
+        username: [
+          {required: true, message: 'Please fill in the username', trigger: 'blur'}
+        ],
+        password: [
+          {required: true, message: 'Please fill in the password.', trigger: 'blur'},
+          {type: 'string', min: 3, message: 'The password length cannot be less than 6 bits', trigger: 'blur'}
+        ]
       }
     }
+  },
+  computed: {
+    login () {
+      return {
+        'max-width': '300px',
+        'margin': '0 auto'
+      }
+    }
+  },
+  methods: {
+    handleSubmit (name) {
+      this.$refs[name].validate((valid) => {
+        if (valid) {
+          this.$http.post('/user/login', this.formInline).then((response) => {
+            this.$store.dispatch('setUserInfo', response.content).then(() => {
+              this.$router.push({name: 'index'})
+            })
+          })
+        }
+      })
+    }
   }
+}
 </script>

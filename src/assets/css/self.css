@@ -9,12 +9,7 @@
   padding-bottom: 4px;
   position: relative;
 }
-.self-page{
-  position: absolute;
-  bottom: 4px;
-  left: 50%;
-  transform: translateX(-50%);
-}
+
 .self-root-div{
   position: relative;
 }

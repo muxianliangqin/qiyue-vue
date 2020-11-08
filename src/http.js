@@ -70,7 +70,7 @@ instance.interceptors.response.use(
     let token = response.headers[AUTHENTICATION_TOKEN]
     if (token) {
       instance.defaults.headers.common[AUTHENTICATION_TOKEN] = token
-      window.postMessage({token: token}, '*')
+      window.postMessage({'token': token}, '*')
     }
     if (response.config.responseType === 'json' && response.data.code !== '00000') {
       store.dispatch('alerts', {

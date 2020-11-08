@@ -1,10 +1,13 @@
 import utils from '@/assets/utils/index.js'
 import http from '../http.js'
+import user from '../html/user/show/user'
 
 const saveMenuUrl = 'user/menu/add'
-const userInfo = () => {return {}}
+const userInfo = () => {
+  return {}
+}
 const initTabs = () => {
-  return {                       // 内容展示标签区
+  return {                      // 内容展示标签区
     height: 300,                // 标签区的高度
     contentHeight: 0,           // 标签区内容的高度
     active: 'HomeWelcome',      // 活动标签
@@ -34,6 +37,7 @@ const state = {
 const actions = {
   setUserInfo ({commit}, userInfo) {
     commit('setUserInfo', userInfo)
+    window.localStorage.setItem('userInfo', JSON.stringify(userInfo))
     commit('refreshTabs')
   },
   addComponent ({commit, state}, component) {
@@ -108,7 +112,13 @@ const actions = {
 }
 
 const getters = {
-  userInfo: (state) => state.userInfo,
+  userInfo: (state) => () => {
+    const userInfo = window.localStorage.getItem('userInfo')
+    if (userInfo) {
+      return JSON.parse(userInfo)
+    }
+    return state.userInfo
+  },
   tabs: (state) => state.tabs,
   menuRoot: (state) => state.menuTree,
   activeMenu: (state) => state.tabs.activeMenu,
@@ -120,7 +130,7 @@ const getters = {
       return state.newAuthMenus[menuId][name]
     }
     return false
-  },
+  }
 }
 
 const mutations = {
@@ -166,12 +176,11 @@ const mutations = {
     const superMenuId = component.menuData.menuId
     const componentName = component.name
     // 来源页面不存在
-    let superMenu = menuUtil.findByNodeId(state.menuTree, superMenuId)
+    let superMenu = utils.findByNodeId(state.menuTree, superMenuId)
     if (!superMenu) {
       return
     }
-    let menu = undefined
-    menu = superMenu.children.find((k) => {
+    let menu = superMenu.children.find((k) => {
       return k.element.data.componentName === componentName
     })
     // 页面已注册
@@ -185,7 +194,7 @@ const mutations = {
       rankNo: superMenu.element.data.rankNo + 1,
       sortNo: superMenu.children.length + 1,
       typeCode: 'html',
-      operateCode: 'select',
+      operateCode: 'select'
     }).then((response) => {
       component.menuData = response.content
       state.tabs.active = component.name
