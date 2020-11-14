@@ -197,10 +197,10 @@ export default {
   },
   created () {
     const userInfo = this.getUserInfo()
-    if (!userInfo.username) {
-      this.isVisitor()
-    } else {
+    if (userInfo) {
       this.initLayout()
+    } else {
+      this.isVisitor()
     }
   },
   methods: {

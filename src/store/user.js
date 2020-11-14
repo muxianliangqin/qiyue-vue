@@ -3,9 +3,6 @@ import http from '../http.js'
 import user from '../html/user/show/user'
 
 const saveMenuUrl = 'user/menu/add'
-const userInfo = () => {
-  return {}
-}
 const initTabs = () => {
   return {                      // 内容展示标签区
     height: 300,                // 标签区的高度
@@ -27,7 +24,8 @@ const initTabs = () => {
 }
 
 const state = {
-  userInfo: userInfo(), // 用户信息
+  userInfo: undefined, // 用户信息
+  token: undefined,
   tabs: initTabs(),
   menuTree: {},
   // 新增鉴权组件时，标记已经保存到数据库，以免重复保存
@@ -37,8 +35,19 @@ const state = {
 const actions = {
   setUserInfo ({commit}, userInfo) {
     commit('setUserInfo', userInfo)
+    // 因为页面刷新时 store的内容会重置，故保存在localStorage中
     window.localStorage.setItem('userInfo', JSON.stringify(userInfo))
     commit('refreshTabs')
+  },
+  setToken ({commit}, token) {
+    commit('setToken', token)
+    window.localStorage.setItem('token', token)
+  },
+  clearAuthInfo ({commit}) {
+    window.localStorage.removeItem('userInfo')
+    window.localStorage.removeItem('token')
+    commit('clearUserInfo')
+    commit('clearToken')
   },
   addComponent ({commit, state}, component) {
     // 组件默认显示
@@ -113,11 +122,18 @@ const actions = {
 
 const getters = {
   userInfo: (state) => () => {
-    const userInfo = window.localStorage.getItem('userInfo')
+    const userInfo = state.userInfo
     if (userInfo) {
-      return JSON.parse(userInfo)
+      return userInfo
     }
-    return state.userInfo
+    let userInfoStr = window.localStorage.getItem('userInfo')
+    return JSON.parse(userInfoStr)
+  },
+  token: (state) => () => {
+    if (state.token) {
+      return state.token
+    }
+    return window.localStorage.getItem('token')
   },
   tabs: (state) => state.tabs,
   menuRoot: (state) => state.menuTree,
@@ -136,6 +152,15 @@ const getters = {
 const mutations = {
   setUserInfo (state, userInfo) {
     state.userInfo = userInfo
+  },
+  setToken (state, token) {
+    state.token = token
+  },
+  clearUserInfo (state) {
+    state.userInfo = {}
+  },
+  clearToken (state) {
+    state.token = ''
   },
   addComponent (state, component) {
     if (state.tabs.active === component.name) {

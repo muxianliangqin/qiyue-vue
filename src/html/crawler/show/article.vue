@@ -51,7 +51,8 @@ export default {
     return {
       url: {
         findBySpecification: '/crawler/article/findBySpecification',
-        download: '/crawler/file/download'
+        download: '/crawler/file/download',
+        findContent: '/crawler/content/findByContentId'
       },
       ref: {
         tablePage: 'tablePage'
@@ -105,8 +106,12 @@ export default {
             }
           },
           {
-            title: '操作', align: 'center', width: 150,
+            title: '正文和附件', align: 'center',
             render: (h, params) => {
+              const contentId = params.row.contentId
+              if (!contentId) {
+                return h('span', '尚未获取到正文和附件')
+              }
               let text = h('a', {
                 style: {
                   marginLeft: '8px',
@@ -114,9 +119,7 @@ export default {
                 },
                 on: {
                   click: () => {
-                    this.modal.text.show = true
-                    this.modal.text.title = params.row.title
-                    this.modal.text.content = params.row.text
+                    this.getContent(params.row)
                   }
                 }
               }, '正文')
@@ -135,7 +138,7 @@ export default {
                       this.modal.attachment.content = JSON.parse(attachmentStr)
                     } else {
                       this.modal.attachment.hasAttachment = false
-                      this.modal.attachment.placeholder = '公文无附件'
+                      this.modal.attachment.placeholder = '此文章无附件'
                     }
                   }
                 }
@@ -169,6 +172,16 @@ export default {
     }
   },
   methods: {
+    getContent(row) {
+      this.$http.post(this.url.findContent, row.contentId).then((response) => {
+        let content = response.content
+        if (content) {
+          this.modal.text.show = true
+          this.modal.text.title = row.title
+          this.modal.text.content = content.text
+        }
+      })
+    },
     download (item) {
       this.$http.download(this.url.download, item['fileId'], item.name)
     },

@@ -1,5 +1,4 @@
 import axios from 'axios'
-import qs from 'qs'
 import router from './router/index'
 import store from './store/index'
 
@@ -53,7 +52,7 @@ instance.interceptors.request.use(
         return JSON.stringify(data)
       }
     ]
-    let token = config.headers.common[AUTHENTICATION_TOKEN]
+    let token = store.getters.token()
     if (token) {
       config.headers[AUTHENTICATION_TOKEN] = token
     }
@@ -69,8 +68,9 @@ instance.interceptors.response.use(
   (response) => {
     let token = response.headers[AUTHENTICATION_TOKEN]
     if (token) {
-      instance.defaults.headers.common[AUTHENTICATION_TOKEN] = token
-      window.postMessage({'token': token}, '*')
+      store.dispatch('setToken', token).then(() => {
+        window.postMessage({AUTHENTICATION_TOKEN: token}, '*')
+      })
     }
     if (response.config.responseType === 'json' && response.data.code !== '00000') {
       store.dispatch('alerts', {
@@ -123,17 +123,18 @@ instance.interceptors.response.use(
             store.dispatch('alerts', {
               status: error.status,
               message: error.message
-            }).then(() => {
-              router.replace({path: 'login'})
             })
           }).finally(() => {
-            window.localStorage.removeItem('userInfo')
+            store.dispatch('clearAuthInfo').then(() => {
+              router.replace({path: 'login'})
+            })
           })
           break
         case 700:
           // 主动登出
-          window.localStorage.removeItem('userInfo')
-          router.replace({path: 'login'})
+          store.dispatch('clearAuthInfo').then(() => {
+            router.replace({path: 'login'})
+          })
           break
         default:
           error.message = '未知异常'
