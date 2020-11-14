@@ -69,7 +69,8 @@ instance.interceptors.response.use(
     let token = response.headers[AUTHENTICATION_TOKEN]
     if (token) {
       store.dispatch('setToken', token).then(() => {
-        window.postMessage({AUTHENTICATION_TOKEN: token}, '*')
+        // 对象里的属性不能用变量
+        window.postMessage({'token': token}, '*')
       })
     }
     if (response.config.responseType === 'json' && response.data.code !== '00000') {
