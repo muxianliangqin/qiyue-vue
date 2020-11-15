@@ -96,7 +96,8 @@
                   </Tabs>
                 </Header>
                 <Content :ref="ref.view"
-                         :style="contentStyle">
+                         :style="{padding: contentStyle.padding, backgroundColor: contentStyle.backgroundColor,
+                         height: computeContentHeight}">
                   <keep-alive>
                     <router-view :is="view.name" :params="view.params" :menuData="view.menuData"></router-view>
                   </keep-alive>
@@ -186,13 +187,8 @@ export default {
     userInfo () {
       return this.getUserInfo()
     },
-    computeContentStyle () {
-      let contentHeight = this.contentHeight()
-      return {
-        padding: '0 8px',
-        height: contentHeight + 'px',
-        backgroundColor: 'white'
-      }
+    computeContentHeight () {
+      return this.contentHeight()
     }
   },
   created () {
