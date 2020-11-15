@@ -91,12 +91,22 @@ export default {
               }, params.row.title)
             }
           },
-          {title: '网址链接', key: 'url'},
+          {
+            title: '网址链接', key: 'url', render: (h, params) => {
+              return h('a', {
+                attrs: {
+                  href: params.row.url,
+                  target: '_blank'
+                }
+              }, params.row.url)
+            }
+          },
           {title: '标题路径', key: 'xpathArticleTitle'},
           {title: '正文路径', key: 'xpathArticleContent'},
-          {title: '编码', width: 100, align: 'center', key: 'charset'},
+          {title: '分页路径', key: 'xpathArticlePage'},
+          {title: '编码', key: 'charset', align: 'center', width: 90},
           {
-            title: '操作', align: 'center', width: 200,
+            title: '操作', align: 'center',
             render: (h, params) => {
               let test = h('a', {
                 style: {
@@ -145,6 +155,7 @@ export default {
           url: {label: '分类链接', value: ''},
           xpathArticleTitle: {label: '标题路径', value: ''},
           xpathArticleContent: {label: '正文路径', value: ''},
+          xpathArticlePage: {label: '分页路径', value: ''},
           charset: {label: '编码', value: ''},
         },
         extraParams: {}

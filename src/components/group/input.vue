@@ -1,24 +1,24 @@
 <template>
   <div>
-    <Row>
-      <Col span="18">
-        <Row class="vertical-center group-inputs" v-if="show">
-          <Col span="8" v-for="(v, k) in inputsBuffer">
-            <Row class="vertical-center">
-              <Col span="8" style="text-align: right;">
-                <span>{{ v.label }}</span>
-                <span style="padding-right: 4px;">:</span>
-              </Col>
-              <Col span="12" style="text-align: left">
-                <SystemInput :input="v" v-model="values[k]"></SystemInput>
-              </Col>
-            </Row>
+    <Row v-if="show">
+      <Col span="6" v-for="(v, k) in inputsBuffer" class="group-inputs">
+        <Row class="vertical-center">
+          <Col span="8" style="text-align: right;">
+            <span>{{ v.label }}</span>
+            <span style="padding-right: 4px;">:</span>
+          </Col>
+          <Col span="12" style="text-align: left">
+            <SystemInput :input="v" v-model="values[k]"></SystemInput>
           </Col>
         </Row>
       </Col>
-      <Col span="6">
-        <Button @click="select">搜索</Button>
-        <Button @click="reset">重置</Button>
+      <Col span="6"
+           :offset="(3 - Object.keys(inputsBuffer).length % 4) * 6"
+           v-if="Object.keys(inputsBuffer).length > 0">
+        <Col span="12" style="text-align: left" :offset="8">
+          <Button @click="select" type="primary">搜索</Button>
+          <Button @click="reset" type="primary">重置</Button>
+        </Col>
       </Col>
     </Row>
   </div>

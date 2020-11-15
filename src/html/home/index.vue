@@ -96,7 +96,7 @@
                   </Tabs>
                 </Header>
                 <Content :ref="ref.view"
-                         :style="computeContentStyle">
+                         :style="contentStyle">
                   <keep-alive>
                     <router-view :is="view.name" :params="view.params" :menuData="view.menuData"></router-view>
                   </keep-alive>

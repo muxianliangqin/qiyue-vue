@@ -2,6 +2,9 @@
   <div class="self-root-div"
        :ref="ref.rootDiv"
        :style="{height: contentHeight + 'px'}">
+    <GroupInput :inputs="selectInputs" @on-select="selectByConditions" @on-reset="resetConditions">
+    </GroupInput>
+    <Divider style="margin: 0.5em 0"></Divider>
     <slot :name="slot.buttons"></slot>
     <Divider style="margin: 0"></Divider>
     <Table :border="true"
@@ -46,7 +49,19 @@ export default {
       }
     },
     // 自定义table的列是否展示及顺序，数组为columns的下标，如[0,2,1,4]表示按顺序显示第1、3、2、4列
-    customColumns: {type: Array, default: undefined}
+    customColumns: {type: Array, default: () => []},
+    // 搜索区
+    selectInputs: {
+      type: Object, default: () => {
+        return {}
+      }
+    },
+    // 按钮区
+    buttons: {
+      type: Object, default: () => {
+        return {}
+      }
+    },
   },
   data () {
     return {
@@ -136,7 +151,7 @@ export default {
       return contentHeight
     },
     computeCustomColumns () {
-      if (!this.customColumns) {
+      if (!this.customColumns || this.customColumns.length === 0) {
         this.tableColumns = this.columns
         return
       }
@@ -151,6 +166,14 @@ export default {
     },
     reset () {
       this.tableExtraParams = {}
+    },
+    selectByConditions (values) {
+      this.tableExtraParams = Object.assign(this.extraParams, values)
+      this.reload()
+    },
+    resetConditions () {
+      this.reset()
+      this.reload()
     }
   },
   created () {

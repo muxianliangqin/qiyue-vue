@@ -3,7 +3,8 @@
     <label v-if="inputDefine.type === TYPE.SELECT">
       <Select v-model="inputDefine.value"
               :disabled="inputDefine.disabled"
-              :multiple="inputDefine.multiple">
+              :multiple="inputDefine.multiple"
+              clearable>
         <Option v-for="option in inputDefine.options"
                 :value="option.value"
                 :lable="option.label"
@@ -43,7 +44,10 @@
     </div>
     <!-- 普通输入框 -->
     <label v-else>
-      <Input v-model="inputDefine.value" :placeholder="inputDefine.placeholder" :disabled="inputDefine.disabled"/>
+      <Input v-model="inputDefine.value"
+             :placeholder="inputDefine.placeholder"
+             :disabled="inputDefine.disabled"
+             clearable/>
     </label>
   </div>
 </template>

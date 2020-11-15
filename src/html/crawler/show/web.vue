@@ -6,6 +6,7 @@
                :columns="tablePage.columns"
                :stripe="false"
                :ref="ref.TablePage"
+               :selectInputs="tablePage.selectInputs"
                :extraParams="tablePage.extraParams">
       <div slot="buttons" style="float: right;margin-bottom: 8px">
         <Button type="primary" size='small' style="margin-right: 70px" @click="add">
@@ -110,7 +111,13 @@ export default {
             }
           }
         ],
-        extraParams: {}
+        extraParams: {},
+        selectInputs: {
+          webId: {
+            type: 'autoComplete', label: '网站标题', value: '',
+            url: '/crawler/web/findByTitleLike', valueField: 'webId', labelField: 'title'
+          }
+        }
       },
       modalForm: {
         modal: false,

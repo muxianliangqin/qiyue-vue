@@ -5,12 +5,9 @@
                :ref="ref.tablePage"
                :customColumns="tablePage.customColumns"
                :extraParams="tablePage.extraParams"
+               :selectInputs="tablePage.selectInputs"
                v-bind="$attrs"
                v-on="$listeners">
-      <div slot="buttons">
-        <GroupInput :inputs="groupInputs" @on-select="selectByConditions" @on-reset="resetConditions">
-        </GroupInput>
-      </div>
     </TablePage>
     <!-- 新闻正文 -->
     <Modal v-model="modal.text.show" :footer-hide="true" :width="modalWidth">
@@ -108,8 +105,7 @@ export default {
           {
             title: '正文和附件', align: 'center',
             render: (h, params) => {
-              const contentId = params.row.contentId
-              if (!contentId) {
+              if (!params.row.contentId) {
                 return h('span', '尚未获取到正文和附件')
               }
               let text = h('a', {
@@ -123,6 +119,9 @@ export default {
                   }
                 }
               }, '正文')
+              if (!params.row['attachments']) {
+                return text
+              }
               let attachment = h('a', {
                 style: {
                   marginLeft: '8px',
@@ -149,19 +148,31 @@ export default {
         ],
         // 自定义展示表格的列
         customColumns: [0, 1, 4],
-        extraParams: {}
-      },
-      // 搜索条件输入框
-      groupInputs: {
-        webId: {
-          type: 'autoComplete', label: '网站标题', value: '',
-          url: '/crawler/web/findByTitleLike', valueField: 'webId', labelField: 'title'
-        },
-        columnId: {
-          type: 'autoComplete', label: '栏目标题', value: '',
-          url: '/crawler/column/findByTitleLike', valueField: 'columnId', labelField: 'title'
-        },
-        title: {type: 'text', label: '文章标题', value: ''}
+        extraParams: {},
+        // 搜索条件输入框
+        selectInputs: {
+          webId: {
+            type: 'autoComplete', label: '网站标题', value: '',
+            url: '/crawler/web/findByTitleLike', valueField: 'webId', labelField: 'title'
+          },
+          columnId: {
+            type: 'autoComplete', label: '栏目标题', value: '',
+            url: '/crawler/column/findByTitleLike', valueField: 'columnId', labelField: 'title'
+          },
+          title: {type: 'text', label: '文章标题', value: ''},
+          haveText: {
+            type: 'select', label: '是否有正文', value: '', options: [
+              {value: '1', label: '有正文'},
+              {value: '0', label: '无正文'}
+            ]
+          },
+          haveAttachment: {
+            type: 'select', label: '是否有附件', value: '', options: [
+              {value: '1', label: '有附件'},
+              {value: '0', label: '无附件'}
+            ]
+          }
+        }
       }
     }
   },
@@ -172,7 +183,7 @@ export default {
     }
   },
   methods: {
-    getContent(row) {
+    getContent (row) {
       this.$http.post(this.url.findContent, row.contentId).then((response) => {
         let content = response.content
         if (content) {
@@ -190,15 +201,6 @@ export default {
     },
     reset () {
       this.$refs[this.ref.tablePage].reset()
-    },
-    selectByConditions (values) {
-      this.tablePage.extraParams = Object.assign(this.tablePage.extraParams, values)
-      this.reload()
-    },
-    resetConditions () {
-      this.tablePage.extraParams = {}
-      this.reset()
-      this.reload()
     }
   }
 }
