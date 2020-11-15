@@ -18,14 +18,17 @@
            :style="{border: 'none'}"
            :size="size">
     </Table>
-    <Page :total='page.totalElements'
-          :ref="ref.page"
-          :page-size-opts="[10, 20, 50, 100]"
-          show-total
-          show-sizer
-          class="self-page"
-          @on-change="pageChange"
-          @on-page-size-change="pageSizeChange"/>
+    <div>
+      <Divider style="margin: 0"></Divider>
+      <Page :total='page.totalElements'
+            :ref="ref.page"
+            :page-size-opts="[10, 20, 50, 100]"
+            show-total
+            show-sizer
+            class="self-page"
+            @on-change="pageChange"
+            @on-page-size-change="pageSizeChange"/>
+    </div>
   </div>
 </template>
 

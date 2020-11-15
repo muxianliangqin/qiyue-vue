@@ -97,7 +97,7 @@
                 </Header>
                 <Content :ref="ref.view"
                          :style="{padding: contentStyle.padding, backgroundColor: contentStyle.backgroundColor,
-                         height: computeContentHeight}">
+                         height: contentStyle.height}">
                   <keep-alive>
                     <router-view :is="view.name" :params="view.params" :menuData="view.menuData"></router-view>
                   </keep-alive>
