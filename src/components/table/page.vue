@@ -191,6 +191,7 @@ export default {
 
 <style scoped>
 .self-page {
+  width: 100%;
   position: absolute;
   bottom: 4px;
   left: 50%;
